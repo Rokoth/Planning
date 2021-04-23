@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="Project.ProjectRow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Project"
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="700">
+    <Grid>
+
+        <Label Name="NameLabel" Content="{Binding Path=Title}" HorizontalAlignment="Left" Margin="2,2,0,0" VerticalAlignment="Top" Height="46" Width="112"/>
+        <TextBox Name="Path" Text="{Binding Path=Path}" HorizontalAlignment="Left" Height="23" Margin="119,2,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="578"/>
+        <TextBox Name="FromDate" HorizontalAlignment="Left" Height="20" Margin="119,28,0,0" TextWrapping="Wrap" Text="{Binding Path=DateBegin}" VerticalAlignment="Top" Width="120"/>
+        <TextBox Name="ToDate" HorizontalAlignment="Left" Height="20" Margin="243,28,0,0" TextWrapping="Wrap" Text="{Binding Path=DateEnd}" VerticalAlignment="Top" Width="120"/>
+        <Button Name="Edit" Content="Edit" HorizontalAlignment="Left" Margin="389,28,0,0" VerticalAlignment="Top" Width="75" Click="Edit_Click"/>
+        <Button Name="Open" Content="Open" HorizontalAlignment="Left" Margin="466,28,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Name="End" Content="End" HorizontalAlignment="Left" Margin="544,28,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Name="Delete" Content="Delete" HorizontalAlignment="Left" Margin="622,28,0,0" VerticalAlignment="Top" Width="75"/>
+    </Grid>
+</UserControl>

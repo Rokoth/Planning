@@ -3,3 +3,13 @@
 ################################################################################
 
 /Client/App/Project/Project/bin/Debug
+/Client/App/Project/.vs/Project/v16
+/Client/App/Project/Project/obj/Debug
+/Server/App/Planning/.vs/Planning
+/Server/App/Planning/Contract/obj
+/Server/App/Planning/DB/bin/Debug/netcoreapp3.1
+/Client/App/Project/Project/Properties
+/Server/App/Planning/DB/obj
+/Server/App/Planning/Planning/obj
+/Server/App/Planning/Planning/Properties
+/Server/App/Planning/Service/obj
