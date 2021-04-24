@@ -2,10 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Version>0.0.1</Version>
+    <Description>Клиентские модели</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Rokoth/Planning</PackageProjectUrl>
+    <RepositoryType>gti</RepositoryType>
+    <Copyright>2021 Dmitriy Rokoth</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Abstractions\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Rokoth/Planning</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>0.0.1</Version>
+    <Description>Сервисные классы приложения</Description>
+    <Copyright>2021 Dmitriy Rokoth</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +18,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Contract\Contract.csproj" />
     <ProjectReference Include="..\DB\DB.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
