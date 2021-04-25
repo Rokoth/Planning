@@ -13,3 +13,14 @@
 /Server/App/Planning/Planning/obj
 /Server/App/Planning/Planning/Properties
 /Server/App/Planning/Service/obj
+/Server/App/Planning/Client/bin/Debug
+/Server/App/Planning/Client/obj/Debug
+/Server/App/Planning/Client/Properties
+/Server/App/Planning/Common/bin/Debug/netstandard2.0
+/Server/App/Planning/Common/obj
+/Server/App/Planning/Contract/bin/Debug/netcoreapp3.1
+/Server/App/Planning/DbClient/bin/Debug/netstandard2.0
+/Server/App/Planning/DbClient/obj
+/Server/App/Planning/packages
+/Server/App/Planning/Planning/bin/Debug/netcoreapp3.1
+/Server/App/Planning/Service/bin/Debug/netcoreapp3.1
