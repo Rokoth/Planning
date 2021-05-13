@@ -1,10 +1,10 @@
-﻿using DB.Context;
+﻿using Planning.DB.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace DB.Repository
+namespace Planning.DB.Repository
 {
     public interface IRepository<TEntity> where TEntity : Entity
     {

@@ -1,42 +1,43 @@
-﻿using System;
+﻿//Copyright 2021 Dmitriy Rokoth
+//Licensed under the Apache License, Version 2.0
+//
+//ref1
+using System;
 
-namespace Contract.Model
+namespace Planning.Contract.Model
 {
-    public class Entity
-    {
-        public Guid Id { get; set; }
-        public DateTimeOffset VersionDate { get; set; }
-    }
-
+    /// <summary>
+    /// Проект
+    /// </summary>
     public class Project : Entity
     {
+        /// <summary>
+        /// Наименование
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Наименование для ФС
+        /// </summary>
         public string Path { get; set; }
+        /// <summary>
+        /// Родитель
+        /// </summary>
         public Guid? ParentId { get; set; }
-        public bool IsProject { get; set; }
-        public bool IsDeleted { get; set; }
+        /// <summary>
+        /// Является ли листом дерева
+        /// </summary>
+        public bool IsLeaf { get; set; }        
+        /// <summary>
+        /// Дата последнего добавления в расписание
+        /// </summary>
         public DateTimeOffset? LastUsedDate { get; set; }
-        public int Period { get; set; } //In minutes
-        public int Priority { get; set; }
-        public int PriorityActual => Priority + (int)(((DateTimeOffset.Now - (LastUsedDate ?? VersionDate)).TotalMinutes - Period) / Period);
-    }
-
-    public class ProjectPeriod : Entity
-    {
-        public int Order { get; set; }
-        public Guid ProjectId { get; set; }
-        public DateTimeOffset? DateBegin { get; set; }
-        public DateTimeOffset? DateEnd { get; set; }
-        public bool IsClosed { get; set; }
-        public Project Project { get; set; }
-    }
-
-    public class ProjectFilter
-    {
-        public bool? IsProject { get; set; }
-        public DateTimeOffset? LastUsedDateBegin { get; set; }
-        public DateTimeOffset? LastUsedDateEnd { get; set; }
-        public string Name { get; set; }
-        public Guid? ParentId { get; set; }
+        /// <summary>
+        /// Период действия в расписании (в минутах)
+        /// </summary>
+        public int? Period { get; set; } 
+        /// <summary>
+        /// Приоритет (0-10000)
+        /// </summary>
+        public int Priority { get; set; }        
     }
 }

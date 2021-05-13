@@ -1,7 +1,7 @@
-﻿using DB.Context;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Planning.DB.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,16 +9,16 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace DB.Repository
+namespace Planning.DB.Repository
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity
     {
-        private readonly MainContext mainContext;
+        private readonly DbPgContext mainContext;
         private readonly ILogger<Repository<TEntity>> logger;
 
         public Repository(IServiceProvider serviceProvider)
         {
-            mainContext = serviceProvider.GetRequiredService<MainContext>();
+            mainContext = serviceProvider.GetRequiredService<DbPgContext>();
             logger = serviceProvider.GetRequiredService<ILogger<Repository<TEntity>>>();
         }
 

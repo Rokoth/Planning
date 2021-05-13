@@ -13,9 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project", "Client\Project.csproj", "{ED882BB3-7AE9-4AE9-BCA9-885754D1AD08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{285D0399-DA8C-4860-A7C0-7B3890E97FCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{285D0399-DA8C-4860-A7C0-7B3890E97FCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbClient", "DbClient\DbClient.csproj", "{740A2E39-8EF9-48BB-BFF5-34A23A2C20F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbClient", "DbClient\DbClient.csproj", "{740A2E39-8EF9-48BB-BFF5-34A23A2C20F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy", "Deploy\Deploy.csproj", "{4F280D86-D659-479C-AB81-7F3E6F3A11DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{740A2E39-8EF9-48BB-BFF5-34A23A2C20F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{740A2E39-8EF9-48BB-BFF5-34A23A2C20F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{740A2E39-8EF9-48BB-BFF5-34A23A2C20F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F280D86-D659-479C-AB81-7F3E6F3A11DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F280D86-D659-479C-AB81-7F3E6F3A11DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F280D86-D659-479C-AB81-7F3E6F3A11DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F280D86-D659-479C-AB81-7F3E6F3A11DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DB.Context
+namespace Planning.DB.Context
 {
     public class Project : Entity
     {

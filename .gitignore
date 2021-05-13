@@ -24,3 +24,6 @@
 /Server/App/Planning/packages
 /Server/App/Planning/Planning/bin/Debug/netcoreapp3.1
 /Server/App/Planning/Service/bin/Debug/netcoreapp3.1
+/Server/App/Planning/Deploy/obj
+/Server/App/Planning/Deploy/bin/Debug/netcoreapp3.1
+/Server/App/Planning/Planning/Planning.csproj.user
