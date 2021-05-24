@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <PackageProjectUrl>https://github.com/Rokoth/Planning</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -22,6 +22,10 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Contract\Contract.csproj" />
   </ItemGroup>
 
 </Project>

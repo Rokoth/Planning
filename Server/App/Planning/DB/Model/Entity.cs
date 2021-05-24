@@ -1,9 +1,10 @@
 ﻿using Planning.DB.Attributes;
 using System;
+using System.Linq.Expressions;
 
 namespace Planning.DB.Context
 {
-    public abstract class Entity
+    public abstract class Entity : IEntity
     {
         public Guid Id { get; set; }
         public bool IsDeleted { get; set; }
@@ -50,10 +51,38 @@ namespace Planning.DB.Context
         public bool IsDeleted { get; set; }
     }
 
+    [TableName("user")]
+    public class User : Entity, IIdentity
+    {
+        [ColumnName("name")]
+        public string Name { get; set; }
+        [ColumnName("description")]
+        public string Description { get; set; }
+        [ColumnName("login")]
+        public string Login { get; set; }
+        [ColumnName("password")]
+        public byte[] Password { get; set; }
+    }
+
+    public interface IIdentity
+    {
+        string Login { get; set; }
+        byte[] Password { get; set; }
+    }
+
     public interface IEntity
     {
         Guid Id { get; set; }
         bool IsDeleted { get; set; }
         DateTimeOffset VersionDate { get; set; }
+    }
+
+    public class Filter<T> where T : IEntity
+    {
+        public int Page { get; set; }
+        public int Size { get; set; }
+        public string Sort { get; set; }
+
+        public Expression<Func<T, bool>> Selector { get; set; }
     }
 }

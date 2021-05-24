@@ -59,10 +59,10 @@ create table if not exists project(
 	, is_private     bool          not null
 	, version_date   timestamptz   not null
 	, is_deleted     boolean       not null	
-)
+);
 
 create table if not exists h_project(
-	  h_id           long          not null primary key
+	  h_id           bigserial     not null primary key
 	, id             uuid          null
 	, "name"         varchar(100)  null
 	, path_name      varchar(255)  null
@@ -82,20 +82,20 @@ create table if not exists h_project(
 	, is_deleted     boolean       null
 	, "user_id"      varchar       null
 	, change_date    timestamptz   not null
-)
+);
 
 
 create table if not exists h_schedule(	 
-      h_id         long            not null primary key
-	, id		   uuid            null primary key
+      h_id         bigserial       not null primary key
+	, id		   uuid            null
 	, project_id   uuid            null
 	, userid       uuid            null
 	, "order"      bigint          null
 	, begin_date   timestamptz     null
 	, end_date	   timestamptz     null	
-	, elapsed_time int             null default 0
+	, elapsed_time int             null
 	, version_date timestamptz     null
-	, is_deleted   boolean         null default false
+	, is_deleted   boolean         null
 	, "user_id"    varchar         null
 	, change_date  timestamptz     not null
 );

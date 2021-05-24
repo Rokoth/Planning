@@ -13,6 +13,18 @@ add constraint fk_schedule_project_id
 
 
 
+--project
+alter table project 
+add constraint fk_project_user_id 
+	foreign key(userid) 
+		references "user"(id) 
+		on delete no action on update no action;
+
+alter table project 
+add constraint fk_project_parent_id 
+	foreign key(parent_id) 
+		references project(id) 
+		on delete no action on update no action;
 
 
 
