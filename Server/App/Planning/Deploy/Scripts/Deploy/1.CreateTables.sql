@@ -41,6 +41,17 @@ create table if not exists schedule(
 	, is_deleted   boolean     not null default false
 );
 
+create table if not exists schedule_cursor(	 
+	  id		   uuid        not null primary key
+	, schedule_id  uuid        not null
+	, userid       uuid        not null	
+	, begin_date   timestamptz not null
+	, end_date	   timestamptz not null	
+	, elapsed_time int         not null default 0
+	, version_date timestamptz not null
+	, is_deleted   boolean     not null default false
+);
+
 create table if not exists project(
 	  id             uuid          not null primary key
 	, "name"         varchar(100)  not null
@@ -109,7 +120,17 @@ create table if not exists formula(
 	, is_deleted    boolean       not null
 );
 
-
+create table if not exists h_formula(
+      h_id          bigserial     not null primary key
+	, id            uuid          null
+	, "name"        varchar(100)  null
+	, "text"        varchar(1000) null	
+	, is_default    boolean       null
+	, version_date  timestamptz   null
+	, is_deleted    boolean       null
+	, "user_id"     varchar       null
+	, change_date   timestamptz   not null
+);
 
 
 

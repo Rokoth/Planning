@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Deploy;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +15,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Planning.Common;
 using Planning.DB.Context;
+using Planning.Service;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Planning
 {
@@ -35,18 +43,64 @@ namespace Planning
                 var connectionString = Configuration.GetConnectionString("MainConnection");
                 opt.UseNpgsql(connectionString);
             });
-            //services.AddScoped<IRepository<Tree>, Repository<Tree>>();
-            //services.AddScoped<IRepository<TreeItem>, Repository<TreeItem>>();
-            //services.AddScoped<IRepository<Formula>, Repository<Formula>>();
-            //services.AddScoped<IRepositoryHistory<TreeHistory>, RepositoryHistory<TreeHistory>>();
-            //services.AddScoped<IRepositoryHistory<TreeItemHistory>, RepositoryHistory<TreeItemHistory>>();
-            //services.AddScoped<IRepositoryHistory<FormulaHistory>, RepositoryHistory<FormulaHistory>>();
-            //services.AddScoped<IDataService, DataService>();
-            //services.AddScoped<IDeployService, DeployService>();
-            //services.AddScoped<ICalculator, CalculatorNCalc>();
-            services.ConfigureAutoMapper();
-            services.AddSwaggerGen();
+            services.AddScoped<DB.Repository.IRepository<User>, DB.Repository.Repository<User>>();            
+            services.AddScoped<DB.Repository.IRepository<UserHistory>, DB.Repository.Repository<UserHistory>>();
+            services.AddScoped<DB.Repository.IRepository<Formula>, DB.Repository.Repository<Formula>>();
+            services.AddScoped<DB.Repository.IRepository<FormulaHistory>, DB.Repository.Repository<FormulaHistory>>();
 
+            services.AddScoped<IDeployService, DeployService>();            
+            services.AddDataServices();
+            services.ConfigureAutoMapper();
+ 
+            services.AddCors();
+            services.AddAuthentication()
+            .AddJwtBearer("Token", options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    //// укзывает, будет ли валидироваться издатель при валидации токена
+                    ValidateIssuer = true,
+                    //// строка, представляющая издателя
+                    ValidIssuer = AuthOptions.ISSUER,
+
+                    //// будет ли валидироваться потребитель токена
+                    ValidateAudience = true,
+                    //// установка потребителя токена
+                    ValidAudience = AuthOptions.AUDIENCE,
+                    //// будет ли валидироваться время существования
+                    ValidateLifetime = true,
+
+                    // установка ключа безопасности
+                    IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                    // валидация ключа безопасности
+                    ValidateIssuerSigningKey = true,
+
+                };
+            }).AddCookie("Cookies", options => {
+                options.LoginPath = new PathString("/Account/Login");
+                options.LogoutPath = new PathString("/Account/Logout");
+            });
+
+            services
+                .AddAuthorization(options =>
+                {
+                    var cookiePolicy = new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .AddAuthenticationSchemes("Cookies")
+                        .Build();
+                    options.AddPolicy("Cookie", cookiePolicy);
+                    options.AddPolicy("Token", new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .AddAuthenticationSchemes("Token")
+                        .Build());
+                    options.DefaultPolicy = cookiePolicy;
+                });
+            services.AddSwaggerGen(s =>
+            {
+                s.OperationFilter<AddRequiredHeaderParameter>();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,31 +134,71 @@ namespace Planning
             });
         }
     }
-        
+
+    public class AddRequiredHeaderParameter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            if (operation.Parameters == null)
+                operation.Parameters = new List<OpenApiParameter>();
+
+            operation.Parameters.Add(new OpenApiParameter
+            {
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Description = "access token",
+                Required = true,
+                Schema = new OpenApiSchema
+                {
+                    Type = "string",
+                    Default = new OpenApiString("Bearer ")
+                }
+            });
+        }
+    }
+
     public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-        //    CreateMap<TreeCreator, Tree>()
-        //        .ForMember(s => s.Id, s => s.MapFrom(c => Helper.GenerateGuid(new string[] { c.Name })))
-        //        .ForMember(s => s.VersionDate, s => s.MapFrom(c => DateTimeOffset.Now));
+            CreateMap<User, Contract.Model.User>();
 
-        //    CreateMap<TreeUpdater, Tree>()
-        //        .ForMember(s => s.Id, s => s.MapFrom(c => Helper.GenerateGuid(new string[] { c.Name })))
-        //        .ForMember(s => s.VersionDate, s => s.MapFrom(c => DateTimeOffset.Now));
+            CreateMap<Contract.Model.UserCreator, User>()
+                .ForMember(s => s.Password, s => s.Ignore());
 
-        //    CreateMap<Tree, TreeModel>();
+            CreateMap<UserHistory, Contract.Model.UserHistory>();
 
-        //    CreateMap<TreeItem, TreeItemModel>();
+            CreateMap<Contract.Model.UserUpdater, User>()
+                .ForMember(s => s.Password, s => s.Ignore());
 
-        //    CreateMap<FormulaCreator, Formula>();
+            CreateMap<Formula, Contract.Model.Formula>();
 
-        //    CreateMap<FormulaUpdater, Formula>();
+            CreateMap<Contract.Model.FormulaCreator, Formula>();
 
-        //    CreateMap<Formula, FormulaModel>();
-        //    CreateMap<TreeHistory, TreeHistoryModel>();
-        //    CreateMap<TreeItemHistory, TreeItemHistoryModel>();
-        //    CreateMap<FormulaHistory, FormulaHistoryModel>();
+            CreateMap<FormulaHistory, Contract.Model.FormulaHistory>();
+
+            CreateMap<Contract.Model.FormulaUpdater, Formula>();
+
+            //    CreateMap<TreeCreator, Tree>()
+            //        .ForMember(s => s.Id, s => s.MapFrom(c => Helper.GenerateGuid(new string[] { c.Name })))
+            //        .ForMember(s => s.VersionDate, s => s.MapFrom(c => DateTimeOffset.Now));
+
+            //    CreateMap<TreeUpdater, Tree>()
+            //        .ForMember(s => s.Id, s => s.MapFrom(c => Helper.GenerateGuid(new string[] { c.Name })))
+            //        .ForMember(s => s.VersionDate, s => s.MapFrom(c => DateTimeOffset.Now));
+
+            //    CreateMap<Tree, TreeModel>();
+
+            //    CreateMap<TreeItem, TreeItemModel>();
+
+            //    CreateMap<FormulaCreator, Formula>();
+
+            //    CreateMap<FormulaUpdater, Formula>();
+
+            //    CreateMap<Formula, FormulaModel>();
+            //    CreateMap<TreeHistory, TreeHistoryModel>();
+            //    CreateMap<TreeItemHistory, TreeItemHistoryModel>();
+            //    CreateMap<FormulaHistory, FormulaHistoryModel>();
         }
     }
 }

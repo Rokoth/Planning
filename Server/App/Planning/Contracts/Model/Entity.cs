@@ -3,10 +3,8 @@
 //
 //ref1
 
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Planning.Contract.Model
@@ -14,25 +12,20 @@ namespace Planning.Contract.Model
     /// <summary>
     /// Базовый класс моделей
     /// </summary>
-    public abstract class Entity
+    public abstract class Entity : IEntity
     {
         /// <summary>
         /// Идентификтаор
         /// </summary>
-        [DisplayName("Идентификатор")]
+        [Display(Name = "Идентификатор")]
         public Guid Id { get; set; }
         /// <summary>
         /// Дата последнего изменения
         /// </summary>
-        [DisplayName("Дата последнего изменения")]
-        public DateTimeOffset VersionDate { get; set; }
-        /// <summary>
-        /// Удалённый
-        /// </summary>
-        [DisplayName("Удалённый")]
-        public bool IsDeleted { get; set; }
+        [Display(Name = "Дата последнего изменения")]
+        public DateTimeOffset VersionDate { get; set; }       
     }
-        
+
     public class ClientIdentityResponse
     {
         public string Token { get; set; }
@@ -57,7 +50,7 @@ namespace Planning.Contract.Model
     {
         [Display(Name = "Имя")]
         [Required(ErrorMessage = "Поле должно быть установлено")]
-        [Remote("CheckName", "User", ErrorMessage = "Имя уже используется")]
+        [Microsoft.AspNetCore.Mvc.Remote("CheckName", "User", ErrorMessage = "Имя уже используется")]
         public string Name { get; set; }
 
         [Display(Name = "Описание")]
@@ -65,7 +58,7 @@ namespace Planning.Contract.Model
 
         [Display(Name = "Логин")]
         [Required(ErrorMessage = "Поле должно быть установлено")]
-        [Remote("CheckLogin", "User", ErrorMessage = "Логин уже используется")]
+        [Microsoft.AspNetCore.Mvc.Remote("CheckLogin", "User", ErrorMessage = "Логин уже используется")]
         public string Login { get; set; }
     }
 
@@ -74,9 +67,9 @@ namespace Planning.Contract.Model
         public PagedResult(IEnumerable<T> data, int allCount)
         {
             Data = data;
-            AllCount = allCount;
+            PageCount = allCount;
         }
         public IEnumerable<T> Data { get; }
-        public int AllCount { get; }
+        public int PageCount { get; }
     }
 }

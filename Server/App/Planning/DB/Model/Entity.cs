@@ -6,8 +6,11 @@ namespace Planning.DB.Context
 {
     public abstract class Entity : IEntity
     {
+        [ColumnName("id")]
         public Guid Id { get; set; }
+        [ColumnName("is_deleted")]
         public bool IsDeleted { get; set; }
+        [ColumnName("version_date")]
         public DateTimeOffset VersionDate { get; set; }
     }
 
@@ -84,5 +87,31 @@ namespace Planning.DB.Context
         public string Sort { get; set; }
 
         public Expression<Func<T, bool>> Selector { get; set; }
+    }
+
+    [TableName("formula")]
+    public class Formula : Entity
+    {
+        [ColumnName("name")]
+        public string Name { get; set; }
+
+        [ColumnName("text")]
+        public string Text { get; set; }
+
+        [ColumnName("is_default")]
+        public bool IsDefault { get; set; }
+    }
+
+    [TableName("h_formula")]
+    public class FormulaHistory : EntityHistory
+    {
+        [ColumnName("name")]
+        public string Name { get; set; }
+
+        [ColumnName("text")]
+        public string Text { get; set; }
+
+        [ColumnName("is_default")]
+        public bool IsDefault { get; set; }
     }
 }

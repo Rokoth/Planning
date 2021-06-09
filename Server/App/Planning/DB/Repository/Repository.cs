@@ -7,108 +7,169 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Linq.Dynamic.Core;
 
 namespace Planning.DB.Repository
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity
+    public class Repository<T> : IRepository<T> where T : class, IEntity
     {
-        private readonly DbPgContext mainContext;
-        private readonly ILogger<Repository<TEntity>> logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger _logger;
 
         public Repository(IServiceProvider serviceProvider)
         {
-            mainContext = serviceProvider.GetRequiredService<DbPgContext>();
-            logger = serviceProvider.GetRequiredService<ILogger<Repository<TEntity>>>();
+            _serviceProvider = serviceProvider;
+            _logger = _serviceProvider.GetRequiredService<ILogger<Repository<T>>>();
         }
 
-        public async Task<IEnumerable<TEntity>> GetList(Expression<Func<TEntity, bool>> filter)
+        /// <summary>
+        /// Метод добавления модели в базу
+        /// </summary>
+        /// <param name="entity">модель</param>
+        /// <param name="withSave">с сохраннеием</param>
+        /// <param name="token">токен</param>
+        /// <returns>модель</returns>
+        public async Task<T> AddAsync(T entity, bool withSave, CancellationToken token)
         {
-            return await CallFunc(async () =>
-            {
-                return await mainContext.Set<TEntity>().Where(s => !s.IsDeleted).Where(filter).ToListAsync();
-            }, "GetList");
+            return await ExecuteAsync(async (context) => {
+                var item = context.Set<T>().Add(entity).Entity;
+                if (withSave) await context.SaveChangesAsync();
+                return item;
+            }, "AddAsync");
         }
 
-        public async Task<IEnumerable<TEntity>> GetDeletedList(Expression<Func<TEntity, bool>> filter)
+        public async Task<T> DeleteAsync(T entity, bool withSave, CancellationToken token)
         {
-            return await CallFunc(async () =>
-            {
-                return await mainContext.Set<TEntity>().Where(s => s.IsDeleted).Where(filter).ToListAsync();
-            }, "GetDeletedList");
-        }
-
-        public async Task<TEntity> Get(Guid id)
-        {
-            return await CallFunc(async () =>
-            {
-                return await mainContext.Set<TEntity>().Where(s => s.Id == id).FirstOrDefaultAsync();
-            }, "Get");
-        }
-
-        public async Task<TEntity> Add(TEntity entity, bool withSaving)
-        {
-            return await CallFunc(async () =>
-            {
-                var result = mainContext.Add(entity).Entity;
-                if (withSaving) await mainContext.SaveChangesAsync();
-                return result;
-            }, "Add");
-        }
-
-        public async Task<TEntity> Update(TEntity entity, bool withSaving)
-        {
-            return await CallFunc(async () =>
-            {
-                entity.VersionDate = DateTimeOffset.Now;
-                var result = mainContext.Update(entity).Entity;
-                if (withSaving) await mainContext.SaveChangesAsync();
-                return result;
-            }, "Update");
-        }
-
-        public async Task<TEntity> Delete(TEntity entity, bool withSaving)
-        {
-            return await CallFunc(async () =>
-            {
+            return await ExecuteAsync(async (context) => {
                 entity.IsDeleted = true;
-                entity.VersionDate = DateTimeOffset.Now;
-                var result = mainContext.Update(entity).Entity;
-                if (withSaving) await mainContext.SaveChangesAsync();
-                return result;
-            }, "Delete");
+                var item = context.Set<T>().Update(entity).Entity;
+                if (withSave) await context.SaveChangesAsync();
+                return item;
+            }, "DeleteAsync");
         }
 
-        private async Task<T> CallFunc<T>(Func<Task<T>> func, string method)
+        /// <summary>
+        /// Метод получения отфильтрованного списка моделей с постраничной отдачей
+        /// </summary>
+        /// <param name="filter">фильтр</param>
+        /// <param name="token">токен</param>
+        /// <returns>список моделей</returns>
+        public async Task<Contract.Model.PagedResult<T>> GetAsync(Filter<T> filter, CancellationToken token)
+        {
+            return await ExecuteAsync(async (context) => {
+                var all = context.Set<T>().Where(s => !s.IsDeleted).Where(filter.Selector);
+                if (!string.IsNullOrEmpty(filter.Sort))
+                {
+                    all = all.OrderBy(filter.Sort);
+                }
+                var result = await all
+                    .Skip(filter.Size * filter.Page)
+                    .Take(filter.Size)
+                    .ToListAsync();
+                var count = await all.CountAsync();
+                var pageCount = Math.Max(((count % filter.Size) == 0) ? (count / filter.Size) : ((count / filter.Size) + 1), 1);
+                return new Contract.Model.PagedResult<T>(result, pageCount);
+            }, "GetAsync");
+        }
+
+        /// <summary>
+        /// Метод получения модели по id
+        /// </summary>
+        /// <param name="id">id</param>
+        /// <param name="token">token</param>
+        /// <returns></returns>
+        public async Task<T> GetAsync(Guid id, CancellationToken token)
+        {
+            return await ExecuteAsync(async (context) => {
+                return await context.Set<T>()
+                    .Where(s => !s.IsDeleted && s.Id == id).FirstOrDefaultAsync();
+            }, "GetAsync");
+        }
+
+        public async Task<Contract.Model.PagedResult<T>> GetAsyncDeleted(Filter<T> filter, CancellationToken token)
+        {
+            return await ExecuteAsync(async (context) => {
+                var all = context.Set<T>().Where(filter.Selector);
+                if (!string.IsNullOrEmpty(filter.Sort))
+                {
+                    all = all.OrderBy(filter.Sort);
+                }
+                var result = await all
+                    .Skip(filter.Size * filter.Page)
+                    .Take(filter.Size)
+                    .ToListAsync();
+                var count = await all.CountAsync();
+                var pageCount = Math.Max(((count % filter.Size) == 0) ? (count / filter.Size) : ((count / filter.Size) + 1), 1);
+                return new Contract.Model.PagedResult<T>(result, pageCount);
+            }, "GetAsyncDeleted");
+        }
+
+        public async Task<T> GetAsyncDeleted(Guid id, CancellationToken token)
+        {
+            return await ExecuteAsync(async (context) => {
+                return await context.Set<T>()
+                    .Where(s => s.Id == id).FirstOrDefaultAsync();
+            }, "GetAsync");
+        }
+
+        public async Task<T> UpdateAsync(T entity, bool withSave, CancellationToken token)
+        {
+            return await ExecuteAsync(async (context) => {
+                var item = context.Set<T>().Update(entity).Entity;
+                if (withSave) await context.SaveChangesAsync();
+                return item;
+            }, "UpdateAsync");
+        }
+
+        private async Task<TEx> ExecuteAsync<TEx>(Func<DbPgContext, Task<TEx>> action, string method)
         {
             try
             {
-                return await func();
+                var context = _serviceProvider.GetRequiredService<DbPgContext>();
+                return await action(context);
             }
             catch (Exception ex)
             {
-                logger.LogError($"Exception throws in {method}: {ex.Message}\r\nStackTrace: {ex.StackTrace}");
-                throw new RepositoryException($"Exception throws in {method}: {ex.Message}");
+                _logger.LogError($"Ошибка в методе {method} Repository: {ex.Message} {ex.StackTrace}");
+                throw new RepositoryException($"Ошибка в методе {method} Repository: {ex.Message}");
             }
         }
-
     }
 
     [Serializable]
-    internal class RepositoryException : Exception
+    public class RepositoryException : Exception
     {
+        /// <summary>
+        /// default ctor
+        /// </summary>
         public RepositoryException()
         {
         }
 
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="message"></param>
         public RepositoryException(string message) : base(message)
         {
         }
 
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="innerException"></param>
         public RepositoryException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="context"></param>
         protected RepositoryException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

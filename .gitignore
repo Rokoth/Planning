@@ -27,3 +27,6 @@
 /Server/App/Planning/Deploy/obj
 /Server/App/Planning/Deploy/bin/Debug/netcoreapp3.1
 /Server/App/Planning/Planning/Planning.csproj.user
+/Server/App/Planning/Contracts/bin/Debug/netstandard2.0
+/Server/App/Planning/Contracts/obj/Debug/netstandard2.0
+/Server/App/Planning/Contracts/obj
