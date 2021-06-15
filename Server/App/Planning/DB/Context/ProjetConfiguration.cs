@@ -12,7 +12,7 @@ namespace Planning.DB.Context
             builder.Property(s => s.Name).HasColumnName("name");
             builder.Property(s => s.Path).HasColumnName("path");
             builder.Property(s => s.ParentId).HasColumnName("parent_id");
-            builder.Property(s => s.IsProject).HasColumnName("is_project");
+            builder.Property(s => s.IsLeaf).HasColumnName("is_project");
             builder.Property(s => s.IsDeleted).HasColumnName("is_deleted");
             builder.Property(s => s.LastUsedDate).HasColumnName("last_used_date");
             builder.Property(s => s.VersionDate).HasColumnName("version_date");

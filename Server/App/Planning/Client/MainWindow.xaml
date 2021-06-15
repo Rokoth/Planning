@@ -7,15 +7,21 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800">
     <Grid Margin="0,0,0,0">
-        <Grid Name="MenuGrid" HorizontalAlignment="Stretch" Height="35" Margin="0,0,0,0" VerticalAlignment="Top"/>
-        <Grid Name="HeaderGrid" HorizontalAlignment="Stretch" Height="35" Margin="0,35,0,0" VerticalAlignment="Top">
+        <Grid Name="MenuGrid" HorizontalAlignment="Stretch" Height="35" Margin="0,0,0,0" VerticalAlignment="Top">
+            <Menu HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="792">
+                <MenuItem Header="Файл" Height="25" Margin="0" Width="52">
+                    <MenuItem Header="Выход" Height="100" Width="100" Click="CloseButtonClick"/>
+                </MenuItem>
+            </Menu>
+        </Grid>
+        <Grid Name="HeaderGrid" HorizontalAlignment="Stretch" Height="35" Margin="0,25,0,0" VerticalAlignment="Top">
             <Button x:Name="ProjectsButton" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0" Width="35" Height="35" Click="ProjectsButton_Click">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="./icons/project.png" Margin="0,0,0,0" Stretch="Fill" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </StackPanel>
             </Button>
         </Grid>
-        <Grid Name="ContentGrid" HorizontalAlignment="Stretch" Margin="0,70,0,35" VerticalAlignment="Stretch">
+        <Grid Name="ContentGrid" HorizontalAlignment="Stretch" Margin="0,60,0,35" VerticalAlignment="Stretch">
 
         </Grid>
         <Grid Name="FooterGrid" HorizontalAlignment="Stretch" Height="35" Margin="0,0,0,0" VerticalAlignment="Bottom"/>

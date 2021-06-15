@@ -26,5 +26,10 @@ namespace Project
             win.ShowDialog();
             
         }
+
+        private void CloseButtonClick(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }

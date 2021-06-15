@@ -72,6 +72,36 @@ namespace Planning.Contract.Model
         public Guid? ParentId { get; set; }
     }
 
+    public class ProjectHistoryFilter : Filter<ProjectHistory>
+    {
+        public ProjectHistoryFilter(int size, int page, string sort, string name,
+            DateTimeOffset? changedDateBegin, DateTimeOffset? changedDateEnd, Guid? id) : base(size, page, sort)
+        {
+            Name = name;
+
+            ChangedDateBegin = changedDateBegin;
+            ChangedDateEnd = changedDateEnd;
+            Id = id;
+        }
+                
+        /// <summary>
+        /// Used date filter
+        /// </summary>
+        public DateTimeOffset? ChangedDateBegin { get; set; }
+        /// <summary>
+        /// Used date filter
+        /// </summary>
+        public DateTimeOffset? ChangedDateEnd { get; set; }
+        /// <summary>
+        /// Name filter
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// parent filter
+        /// </summary>
+        public Guid? Id { get; set; }
+    }
+
     public interface IFilter<T> where T : IEntity
     {
         int Page { get; }

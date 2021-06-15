@@ -37,9 +37,26 @@ namespace Planning.Controllers
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(size, page, sort, name, isLeaf, 
                     lastUsedDateBegin, lastUsedDateEnd, parentId), source.Token);
-                var pages = (result.PageCount % size == 0) ? (result.PageCount / size) : ((result.PageCount / size) + 1);
-                Response.Headers.Add("x-pages", pages.ToString());
+                
+                Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Error", new { Message = ex.Message });
+            }
+        }
+
+        // GET: UserController/Details/5
+        [Authorize]
+        public async Task<ActionResult> Details([FromRoute] Guid id)
+        {
+            try
+            {
+                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+                var cancellationTokenSource = new CancellationTokenSource(30000);
+                var result = await _dataService.GetAsync(id, cancellationTokenSource.Token);
+                return View(result);
             }
             catch (Exception ex)
             {
