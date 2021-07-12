@@ -92,6 +92,12 @@ namespace ClientHttpClient
             return true;
         }
 
+        public async Task<(int, IEnumerable<T>)> Get<T>(string param, Type apiType = null) where T : class
+        {
+            return await Execute(client =>
+                client.GetAsync($"{GetApi<T>(apiType)}/{param}"), "Get", s => s.ParseResponseArray<T>());
+        }
+
         private async Task<T> Execute<T>(
             Func<HttpClient, Task<HttpResponseMessage>> action,
             string method,
@@ -204,6 +210,8 @@ namespace ClientHttpClient
         event EventHandler OnConnect;
 
         Task<bool> Auth(UserIdentity identity);
+        Task<(int, IEnumerable<T>)> Get<T>(string param, Type apiType = null) where T : class;
+
         void ConnectToServer(string server, Action<bool, bool, string> onResult);
         void Dispose();
        

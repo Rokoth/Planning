@@ -40,7 +40,7 @@ namespace Planning.Contract.Model
 
     public class ProjectFilter : Filter<Project>
     {
-        public ProjectFilter(int size, int page, string sort, string name, 
+        public ProjectFilter(Guid? userId, int size, int page, string sort, string name, 
             bool? isLeaf, DateTimeOffset? lastUsedDateBegin, DateTimeOffset? lastUsedDateEnd, Guid? parentId) : base(size, page, sort)
         {
             Name = name;
@@ -48,6 +48,7 @@ namespace Planning.Contract.Model
             LastUsedDateBegin = lastUsedDateBegin;
             LastUsedDateEnd = lastUsedDateEnd;
             ParentId = parentId;
+            UserId = userId;
         }
        
         /// <summary>
@@ -70,6 +71,7 @@ namespace Planning.Contract.Model
         /// parent filter
         /// </summary>
         public Guid? ParentId { get; set; }
+        public Guid? UserId { get; set; }
     }
 
     public class ProjectHistoryFilter : Filter<ProjectHistory>

@@ -33,9 +33,10 @@ namespace Planning.Controllers
         {
             try
             {
+                var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new ProjectFilter(size, page, sort, name, isLeaf, 
+                var result = await _dataService.GetAsync(new ProjectFilter(userId, size, page, sort, name, isLeaf, 
                     lastUsedDateBegin, lastUsedDateEnd, parentId), source.Token);
                 
                 Response.Headers.Add("x-pages", result.PageCount.ToString());

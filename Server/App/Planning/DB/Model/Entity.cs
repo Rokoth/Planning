@@ -36,6 +36,8 @@ namespace Planning.DB.Context
         public string Login { get; set; }
         [ColumnName("password")]
         public byte[] Password { get; set; }
+        [ColumnName("formula_id")]
+        public Guid FormulaId { get; set; }
     }
 
     public abstract class EntityHistory : IEntity
@@ -65,6 +67,8 @@ namespace Planning.DB.Context
         public string Login { get; set; }
         [ColumnName("password")]
         public byte[] Password { get; set; }
+        [ColumnName("formula_id")]
+        public Guid FormulaId { get; set; }
     }
 
     public interface IIdentity
@@ -82,8 +86,8 @@ namespace Planning.DB.Context
 
     public class Filter<T> where T : IEntity
     {
-        public int Page { get; set; }
-        public int Size { get; set; }
+        public int? Page { get; set; }
+        public int? Size { get; set; }
         public string Sort { get; set; }
 
         public Expression<Func<T, bool>> Selector { get; set; }

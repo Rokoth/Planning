@@ -27,6 +27,11 @@ add constraint fk_project_parent_id
 		on delete no action on update no action;
 
 
-
+--user
+alter table "user" 
+add constraint fk_user_formula_id 
+	foreign key(formula_id) 
+		references formula(id) 
+		on delete no action on update no action;
 
 

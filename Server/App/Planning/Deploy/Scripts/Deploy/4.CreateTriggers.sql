@@ -44,6 +44,24 @@ $BODY$
   FOR EACH ROW
   EXECUTE PROCEDURE history_trigger();
 
+  CREATE TRIGGER tr_hist_formula
+  AFTER INSERT OR UPDATE OR DELETE
+  ON formula
+  FOR EACH ROW
+  EXECUTE PROCEDURE history_trigger();
+
+  CREATE TRIGGER tr_hist_project
+  AFTER INSERT OR UPDATE OR DELETE
+  ON project
+  FOR EACH ROW
+  EXECUTE PROCEDURE history_trigger();
+
+  CREATE TRIGGER tr_hist_schedule
+  AFTER INSERT OR UPDATE OR DELETE
+  ON schedule
+  FOR EACH ROW
+  EXECUTE PROCEDURE history_trigger();
+
     
 --allow_delete
 CREATE OR REPLACE FUNCTION public.before_modify_table()
@@ -71,5 +89,23 @@ $BODY$
 CREATE TRIGGER tr_onmodify_user
   AFTER INSERT OR UPDATE OR DELETE
   ON "user"
+  FOR EACH ROW
+  EXECUTE PROCEDURE before_modify_table();
+
+  CREATE TRIGGER tr_onmodify_formula
+  AFTER INSERT OR UPDATE OR DELETE
+  ON formula
+  FOR EACH ROW
+  EXECUTE PROCEDURE before_modify_table();
+
+  CREATE TRIGGER tr_onmodify_project
+  AFTER INSERT OR UPDATE OR DELETE
+  ON project
+  FOR EACH ROW
+  EXECUTE PROCEDURE before_modify_table();
+
+  CREATE TRIGGER tr_onmodify_schedule
+  AFTER INSERT OR UPDATE OR DELETE
+  ON schedule
   FOR EACH ROW
   EXECUTE PROCEDURE before_modify_table();

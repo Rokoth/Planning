@@ -13,6 +13,8 @@ namespace Planning.Client.ClientHttpClient
 
         Task<bool> Auth(UserIdentity identity);
         void ConnectToServer(string server, Action<bool, bool, string> onResult);
-        void Dispose();       
+        void Dispose();
+
+        Task<ListResult<T>> Get<T>(string param, Type apiType = null) where T : class;
     }
 }

@@ -17,6 +17,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -28,8 +29,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>0.0.1.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <ApplicationVersion>0.0.2.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -242,6 +242,9 @@
     <Compile Include="ProjectWindow.xaml.cs">
       <DependentUpon>ProjectWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ScheduleAddEditWindow.xaml.cs">
+      <DependentUpon>ScheduleAddEditWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Services\ClientHttpClient.cs" />
     <Compile Include="Services\IClientHttpClient.cs" />
     <Compile Include="Services\IHttpClientSettings.cs" />
@@ -266,6 +269,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ProjectWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ScheduleAddEditWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

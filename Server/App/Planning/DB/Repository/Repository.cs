@@ -64,12 +64,28 @@ namespace Planning.DB.Repository
                 {
                     all = all.OrderBy(filter.Sort);
                 }
-                var result = await all
-                    .Skip(filter.Size * filter.Page)
-                    .Take(filter.Size)
-                    .ToListAsync();
+                List<T> result = null;
+                if (filter.Size != null)
+                {
+                    result = await all
+                        .Skip(filter.Size.Value * (filter.Page ?? 0))
+                        .Take(filter.Size.Value)
+                        .ToListAsync();
+                }
+                else
+                {
+                    result = await all.ToListAsync();
+                }
                 var count = await all.CountAsync();
-                var pageCount = Math.Max(((count % filter.Size) == 0) ? (count / filter.Size) : ((count / filter.Size) + 1), 1);
+                int pageCount = 0;
+                if (filter.Size != null)
+                {
+                    pageCount = Math.Max(((count % filter.Size.Value) == 0) ? (count / filter.Size.Value) : ((count / filter.Size.Value) + 1), 1);
+                }
+                else
+                {
+                    pageCount = 1;
+                }
                 return new Contract.Model.PagedResult<T>(result, pageCount);
             }, "GetAsync");
         }
@@ -96,12 +112,28 @@ namespace Planning.DB.Repository
                 {
                     all = all.OrderBy(filter.Sort);
                 }
-                var result = await all
-                    .Skip(filter.Size * filter.Page)
-                    .Take(filter.Size)
-                    .ToListAsync();
+                List<T> result = null;
+                if (filter.Size != null)
+                {
+                    result = await all
+                        .Skip(filter.Size.Value * (filter.Page ?? 0))
+                        .Take(filter.Size.Value)
+                        .ToListAsync();
+                }
+                else
+                {
+                    result = await all.ToListAsync();
+                }
                 var count = await all.CountAsync();
-                var pageCount = Math.Max(((count % filter.Size) == 0) ? (count / filter.Size) : ((count / filter.Size) + 1), 1);
+                int pageCount = 0;
+                if (filter.Size != null)
+                {
+                    pageCount = Math.Max(((count % filter.Size.Value) == 0) ? (count / filter.Size.Value) : ((count / filter.Size.Value) + 1), 1);
+                }
+                else
+                {
+                    pageCount = 1;
+                }
                 return new Contract.Model.PagedResult<T>(result, pageCount);
             }, "GetAsyncDeleted");
         }

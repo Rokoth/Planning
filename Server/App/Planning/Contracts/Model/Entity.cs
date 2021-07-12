@@ -60,6 +60,14 @@ namespace Planning.Contract.Model
         [Required(ErrorMessage = "Поле должно быть установлено")]
         [Microsoft.AspNetCore.Mvc.Remote("CheckLogin", "User", ErrorMessage = "Логин уже используется")]
         public string Login { get; set; }
+
+        [Display(Name = "ИД формулы")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        public Guid FormulaId { get; set; }
+
+        [Display(Name = "Формула")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        public string Formula { get; set; }
     }
 
     public class PagedResult<T>

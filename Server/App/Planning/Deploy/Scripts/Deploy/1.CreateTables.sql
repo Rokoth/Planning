@@ -6,6 +6,7 @@ create table if not exists "user"(
 	, "description" varchar(1000) null
 	, "login"       varchar(100)  not null
 	, "password"    bytea         not null
+	, formula_id    uuid          not null
 	, version_date  timestamptz   not null default now()
 	, is_deleted    boolean       not null
 );
@@ -17,6 +18,7 @@ create table if not exists "h_user"(
 	, "description" varchar(1000) null
 	, "login"       varchar(100)  null
 	, "password"    bytea         null
+	, formula_id    uuid          not null
 	, version_date  timestamptz   null
 	, is_deleted    boolean       null
 	, change_date   timestamptz   not null default now()

@@ -34,3 +34,5 @@
 /Server/App/Planning/ClientHttpClient/obj/Debug/netstandard2.0
 /Server/App/Planning/ClientHttpClient/obj
 /Server/App/Planning/ClientHttpClient/bin/Debug/netstandard2.0
+/Server/App/Planning/UnitTests/bin/Debug/netcoreapp3.1
+/Server/App/Planning/UnitTests/obj

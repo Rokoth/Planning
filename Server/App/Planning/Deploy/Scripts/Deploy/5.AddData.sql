@@ -1,3 +1,6 @@
-﻿INSERT INTO "user"(
-	id, name, description, login, password, version_date, is_deleted)
-	VALUES (uuid_generate_v4(), 'admin', 'admin', 'admin', sha512('admin'), now(), false);
+﻿insert into formula( id , "name" , "text" , is_default, version_date, is_deleted)
+values (uuid_generate_v4(), 'default_formula', '', true, now(), false);
+
+insert into "user"(id, name, description, login, password, formula_id, version_date, is_deleted)
+values (uuid_generate_v4(), 'admin', 'admin', 'admin', sha512('admin'),  (select id from formula limit 1), now(), false);
+

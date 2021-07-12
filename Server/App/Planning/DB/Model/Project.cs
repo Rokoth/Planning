@@ -11,6 +11,8 @@ namespace Planning.DB.Context
         public DateTimeOffset? LastUsedDate { get; set; }
         public int? Period { get; set; } //In minutes
         public int Priority { get; set; }
+        public Guid UserId { get; set; }
+        public int AddTime { get; set; }
     }
 
     public class ProjectHistory : EntityHistory
@@ -22,5 +24,18 @@ namespace Planning.DB.Context
         public DateTimeOffset? LastUsedDate { get; set; }
         public int? Period { get; set; } //In minutes
         public int Priority { get; set; }
+        public Guid UserId { get; set; }
+    }
+
+    public class Schedule : Entity
+    {
+        public Guid ProjectId { get; set; }
+        public Guid UserId { get; set; }
+        public int Order { get; set; }
+        public DateTimeOffset BeginDate { get; set; }
+        public DateTimeOffset? EndDate { get; set; }
+        public bool IsRunning { get; set; }
+        public int ElapsedTime { get; set; }
+        public DateTimeOffset StartDate { get; set; }
     }
 }

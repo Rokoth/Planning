@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using System.IO;
 using Planning.Contract.Model;
+using System.Net;
 
 namespace Planning.Client.ClientHttpClient
 {
@@ -93,6 +94,24 @@ namespace Planning.Client.ClientHttpClient
             if (result == null) return false;
             _token = result.Token;
             return true;
+        }
+
+        public async Task<ListResult<T>> Get<T>(string param, Type apiType = null) where T : class
+        {
+            return await Execute(client =>
+                {
+                    var request = new HttpRequestMessage()
+                    {
+                        Headers = {
+                            { HttpRequestHeader.Authorization.ToString(), $"Bearer {_token}" },
+                            { HttpRequestHeader.ContentType.ToString(), "application/json" },
+                        },
+                        RequestUri = new Uri($"{GetApi<T>(apiType)}/{param}"),
+                        Method = HttpMethod.Get
+                    };
+
+                    return client.SendAsync(request);                    
+                }, "Get", s => s.ParseResponseArray<T>());
         }
 
         private async Task<T> Execute<T>(
@@ -188,7 +207,7 @@ namespace Planning.Client.ClientHttpClient
             return null;
         }
 
-        public static async Task<ArrayResponse<T>> ParseResponseArray<T>(this HttpResponseMessage result) where T : class
+        public static async Task<ListResult<T>> ParseResponseArray<T>(this HttpResponseMessage result) where T : class
         {
             if (result != null && result.IsSuccessStatusCode)
             {
@@ -203,20 +222,47 @@ namespace Planning.Client.ClientHttpClient
                 {
                     int.TryParse(pageHeaders.FirstOrDefault(), out count);
                 }
-                return new ArrayResponse<T>(count, ret);
+                return new ListResult<T>(count, ret);
             }
-            return new ArrayResponse<T>(0, null);
+            return new ListResult<T>(0, null);
         }
     }
 
-    public class ArrayResponse<T> where T : class
+    
+    public class ListResult<T> where T : class
     {
-        public ArrayResponse(int count, IEnumerable<T> items)
+        public ListResult(int count, IEnumerable<T> items)
         {
             Count = count;
             Items = items;
         }
         public int Count { get; set; }
         public IEnumerable<T> Items { get; set; }
+    }
+
+    public interface IDataService
+    {        
+        Task<ListResult<Schedule>> GetSchedules(string name, int? page, int? size, string sort);
+    }
+
+    public class DataService : IDataService
+    {
+        public Task<ListResult<Schedule>> GetSchedules(string name, int? page, int? size, string sort)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public interface IDbService
+    {
+        void SaveSettings(string v, string serverAddress);
+    }
+
+    public class DbService : IDbService
+    {
+        public void SaveSettings(string v, string serverAddress)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
