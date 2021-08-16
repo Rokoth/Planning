@@ -90,7 +90,7 @@ namespace Planning.Client.ClientHttpClient
         public async Task<bool> Auth(UserIdentity identity)
         {
             var result = await Execute(client =>
-                client.PostAsync($"{GetApi<UserIdentity>()}", identity.SerializeRequest()), "Post", s => s.ParseResponse<ClientIdentityResponse>());
+                client.PostAsync($"{GetApi<UserIdentity>()}", identity.SerializeRequest()), "Auth", s => s.ParseResponse<ClientIdentityResponse>());
             if (result == null) return false;
             _token = result.Token;
             return true;
