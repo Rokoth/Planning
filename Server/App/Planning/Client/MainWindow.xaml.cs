@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Project
+namespace PlanningClient
 {
     public class ErrorEventArgs
     {
@@ -145,12 +145,8 @@ namespace Project
 
         private void ProjectsButton_Click(object sender, RoutedEventArgs e)
         {
-            var win = _serviceProvider.GetRequiredService<ProjectWindow>();
-            
-
-
-            win.ShowDialog();
-            
+            var win = _serviceProvider.GetRequiredService<ProjectWindow>(); 
+            win.ShowDialog();            
         }
 
         private void CloseButtonClick(object sender, RoutedEventArgs e)
@@ -240,6 +236,27 @@ namespace Project
             {
                 FillTable();
             }
+        }
+
+        private void FormulasButton_Click(object sender, RoutedEventArgs e)
+        {
+            var win = _serviceProvider.GetRequiredService<FormulaWindow>();
+            win.ShowDialog();
+        }
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            FillTable();
+        }
+
+        private void AddProjectButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AddFormulaButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

@@ -7,10 +7,29 @@
 <h1>@ViewData["Title"]</h1>
 
 <hr />
+
+<!-- Modal -->
+<div class="modal fade" id="modal-action-id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Выбор формулы</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dialogContent">
+                
+            </div>            
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="FormulaId" class="form-control" />
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
@@ -32,8 +51,49 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Formula" class="control-label" ></label>
+                <input asp-for="Formula" class="form-control" disabled/>
+                <span asp-validation-for="FormulaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ScheduleMode" class="control-label"></label>
+                <select asp-for="ScheduleMode" asp-items="Html.GetEnumSelectList<Planning.Contract.Model.ScheduleMode>()">
+                    <option selected="selected" value="">Please select</option>
+                </select>
+                <span asp-validation-for="ScheduleMode" class="text-danger"></span>                
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="ScheduleCount" class="control-label"></label>
+                <input asp-for="ScheduleCount" class="form-control" />
+                <span asp-validation-for="ScheduleCount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ScheduleTimeSpan" class="control-label"></label>
+                <input asp-for="ScheduleTimeSpan" class="form-control" />
+                <span asp-validation-for="ScheduleTimeSpan" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LeafOnly" class="control-label"></label>
+                <input asp-for="LeafOnly" class="form-control" />
+                <span asp-validation-for="LeafOnly" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DefaultProjectTimespan" class="control-label"></label>
+                <input asp-for="DefaultProjectTimespan" class="form-control" />
+                <span asp-validation-for="DefaultProjectTimespan" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ScheduleTimeSpan" class="control-label"></label>
+                <input asp-for="ScheduleTimeSpan" class="form-control" />
+                <span asp-validation-for="ScheduleTimeSpan" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Добавить" class="btn btn-dark" />
                 <a asp-action="Details" class="btn btn-dark">Вернуться</a>
+                @Html.ActionLink("Выбрать формулу", "ListSelect", "Formula",
+                    new { id = Model.FormulaId },
+                    new { @class = "btn btn-dark", @id = "formula_select" })
             </div>
         </form>
     </div>
@@ -42,4 +102,53 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script type="text/javascript">
+
+        function setFormula(formula_id, formula) {
+            alert(formula_id + ' ' + formula);
+            $("#FormulaId").val(formula_id);
+            $("#Formula").val(formula);
+        }
+
+        $(function () {
+            // boostrap 4 load modal example from docs
+
+            $.ajaxSetup({ cache: false });
+            $("#formula_select").click(function (e) {
+                e.preventDefault();
+                $.get(this.href, function (data) {                    
+                    $('#modal-action-id').modal('show');
+                    $('#dialogContent').html(data);
+                });
+            });
+
+            $('#modal-container').on('show.bs.modal', function (event) {
+                
+                //var button = $(event.relatedTarget); // Button that triggered the modal
+
+                //var url = button.attr("href");
+
+                //var modal = $(this);
+
+                //// note that this will replace the content of modal-content everytime the modal is opened
+                //modal.find('.modal-content').load(url);
+
+            });
+
+            $('#modal-container').on('hidden.bs.modal', function () {
+
+                // remove the bs.modal data attribute from it
+
+                $(this).removeData('bs.modal');
+
+                // and empty the modal-content element
+
+                $('#modal-container .modal-content').empty();
+
+            });
+        }); 
+
+       
+    </script>
 }

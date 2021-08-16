@@ -44,6 +44,12 @@ $BODY$
   FOR EACH ROW
   EXECUTE PROCEDURE history_trigger();
 
+    CREATE TRIGGER tr_hist_user_settings
+  AFTER INSERT OR UPDATE OR DELETE
+  ON user_settings
+  FOR EACH ROW
+  EXECUTE PROCEDURE history_trigger();
+
   CREATE TRIGGER tr_hist_formula
   AFTER INSERT OR UPDATE OR DELETE
   ON formula
@@ -109,3 +115,11 @@ CREATE TRIGGER tr_onmodify_user
   ON schedule
   FOR EACH ROW
   EXECUTE PROCEDURE before_modify_table();
+  
+  CREATE TRIGGER tr_onmodify_user_settings
+  AFTER INSERT OR UPDATE OR DELETE
+  ON user_settings
+  FOR EACH ROW
+  EXECUTE PROCEDURE before_modify_table();
+
+  

@@ -1,0 +1,122 @@
+﻿@model Planning.Contract.Model.ProjectCreator
+
+@{
+    ViewData["Title"] = "Добавить проект";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<hr />
+
+<div class="modal fade" id="modal-action-id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Выбор родителя</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dialogContent">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ParentId" class="form-control" />
+            <input type="hidden" asp-for="UserId" class="form-control" />
+            <input type="hidden" asp-for="IsLeaf" class="form-control" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Path" class="control-label"></label>
+                <input asp-for="Path" class="form-control" />
+                <span asp-validation-for="Path" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Parent" class="control-label"></label>
+                <input asp-for="Parent" class="form-control" disabled />
+                <span asp-validation-for="ParentId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Period" class="control-label"></label>
+                <input asp-for="Period" class="form-control" />
+                <span asp-validation-for="Period" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Priority" class="control-label"></label>
+                <input asp-for="Priority" class="form-control" />
+                <span asp-validation-for="Priority" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Добавить" class="btn btn-dark" />
+                <a asp-action="Details" class="btn btn-dark">Вернуться</a>
+                @Html.ActionLink("Выбрать родителя", "ListSelect", "Project",
+                    new { id = Model.ParentId },
+                    new { @class = "btn btn-dark", @id = "parent_select" })
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+<script type="text/javascript">
+
+    function setProject(project_id, project) {
+            //alert(formula_id + ' ' + formula);
+        $("#ParentId").val(project_id);
+        $("#Parent").val(project);
+    }
+
+        $(function () {
+            // boostrap 4 load modal example from docs
+
+            $.ajaxSetup({ cache: false });
+            $("#parent_select").click(function (e) {
+                e.preventDefault();
+                $.get(this.href, function (data) {
+                    $('#modal-action-id').modal('show');
+                    $('#dialogContent').html(data);
+                });
+            });
+
+            $('#modal-container').on('show.bs.modal', function (event) {
+
+                //var button = $(event.relatedTarget); // Button that triggered the modal
+
+                //var url = button.attr("href");
+
+                //var modal = $(this);
+
+                //// note that this will replace the content of modal-content everytime the modal is opened
+                //modal.find('.modal-content').load(url);
+
+            });
+
+            $('#modal-container').on('hidden.bs.modal', function () {
+
+                // remove the bs.modal data attribute from it
+
+                $(this).removeData('bs.modal');
+
+                // and empty the modal-content element
+
+                $('#modal-container .modal-content').empty();
+
+            });
+        });
+
+
+</script>
+}

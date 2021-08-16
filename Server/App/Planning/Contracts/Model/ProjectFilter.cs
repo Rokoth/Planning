@@ -18,7 +18,7 @@ namespace Planning.Contract.Model
         /// <param name="size">Page size</param>
         /// <param name="page">Page number</param>
         /// <param name="sort">Sort field</param>
-        public Filter(int size, int page, string sort)
+        public Filter(int? size, int? page, string sort)
         {
             Size = size;
             Page = page;
@@ -27,11 +27,11 @@ namespace Planning.Contract.Model
         /// <summary>
         /// Page size
         /// </summary>
-        public int Size { get; }
+        public int? Size { get; }
         /// <summary>
         /// Page number
         /// </summary>
-        public int Page { get; }
+        public int? Page { get; }
         /// <summary>
         /// Sort field
         /// </summary>
@@ -40,10 +40,11 @@ namespace Planning.Contract.Model
 
     public class ProjectFilter : Filter<Project>
     {
-        public ProjectFilter(Guid? userId, int size, int page, string sort, string name, 
-            bool? isLeaf, DateTimeOffset? lastUsedDateBegin, DateTimeOffset? lastUsedDateEnd, Guid? parentId) : base(size, page, sort)
+        public ProjectFilter(Guid? userId, int? size, int? page, string sort, string name, 
+            bool? isLeaf, DateTimeOffset? lastUsedDateBegin, DateTimeOffset? lastUsedDateEnd, Guid? parentId, string path) : base(size, page, sort)
         {
             Name = name;
+            Path = path;
             IsLeaf = isLeaf;
             LastUsedDateBegin = lastUsedDateBegin;
             LastUsedDateEnd = lastUsedDateEnd;
@@ -67,6 +68,7 @@ namespace Planning.Contract.Model
         /// Name filter
         /// </summary>
         public string Name { get; set; }
+        public string Path { get; set; }
         /// <summary>
         /// parent filter
         /// </summary>
@@ -77,13 +79,14 @@ namespace Planning.Contract.Model
     public class ProjectHistoryFilter : Filter<ProjectHistory>
     {
         public ProjectHistoryFilter(int size, int page, string sort, string name,
-            DateTimeOffset? changedDateBegin, DateTimeOffset? changedDateEnd, Guid? id) : base(size, page, sort)
+            DateTimeOffset? changedDateBegin, DateTimeOffset? changedDateEnd, Guid? id, Guid userId) : base(size, page, sort)
         {
             Name = name;
 
             ChangedDateBegin = changedDateBegin;
             ChangedDateEnd = changedDateEnd;
             Id = id;
+            UserId = userId;
         }
                 
         /// <summary>
@@ -102,12 +105,13 @@ namespace Planning.Contract.Model
         /// parent filter
         /// </summary>
         public Guid? Id { get; set; }
+        public Guid UserId { get; set; }
     }
 
     public interface IFilter<T> where T : IEntity
     {
-        int Page { get; }
-        int Size { get; }
+        int? Page { get; }
+        int? Size { get; }
         string Sort { get; }
     }
 }

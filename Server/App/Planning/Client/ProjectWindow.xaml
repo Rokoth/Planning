@@ -5,8 +5,59 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PlanningClient"
         mc:Ignorable="d"
-        Title="ProjectWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="Проекты" Height="450" Width="800">
+    <Grid Margin="0,0,0,0">
+        <Grid Name="HeaderGrid" HorizontalAlignment="Stretch" Height="35" Margin="0,0,0,0" VerticalAlignment="Top">
+            <Button x:Name="AddButton" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0" Width="35" Height="35" Click="AddButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="./icons/add.png" Margin="0,0,0,0" Stretch="Fill" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="EditButton" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="35,0,0,0" Width="35" Height="35" Click="EditButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="./icons/edit.png" Margin="0,0,0,0" Stretch="Fill" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="DeleteButton" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="70,0,0,0" Width="35" Height="35" Click="DeleteButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="./icons/delete.png" Margin="0,0,0,0" Stretch="Fill" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="CloseButton" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="105,0,0,0" Width="35" Height="35" Click="CloseButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="./icons/close.png" Margin="0,0,0,0" Stretch="Fill" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+        <Grid Name="ContentGrid" HorizontalAlignment="Stretch" Margin="0,40,0,5" VerticalAlignment="Stretch">
+            <Grid HorizontalAlignment="Stretch" Height="30" Margin="0,0,0,0" VerticalAlignment="Top" Width="1004">
+                <Label Content="Фильтры" HorizontalAlignment="Left" Height="30" Margin="0,0,0,0" VerticalAlignment="Top" Width="60"/>
+                <Label Content="Наименование: " HorizontalAlignment="Left" Margin="70,0,0,0" VerticalAlignment="Top" Height="30"/>
+                <Button x:Name="FilterButton" Content="Применить" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Margin="560,0,0,0" Click="FilterButton_Click"/>
+                <TextBox x:Name="FilterTextBox" HorizontalAlignment="Left" Height="30" Margin="175,0,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="380"/>
+            </Grid>
+            <DataGrid x:Name="DataGridMain" HorizontalAlignment="Stretch" Margin="0,30,0,40" VerticalAlignment="Stretch" SelectionChanged="DataGridMain_SelectionChanged" Loaded="DataGridMain_Loaded" IsReadOnly="True">
+                <DataGrid.Columns>
+                    
+                    <DataGridTextColumn x:Name="Id" Header="Id" Visibility="Hidden" Binding="{Binding Path=Id}"/>                   
+                    <DataGridTextColumn x:Name="UserId" Header="UserId" Visibility="Hidden" Binding="{Binding Path=UserId}"/>
+                    
+                </DataGrid.Columns>
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <EventSetter Event="PreviewMouseDown" Handler="DataGridCell_PreviewMouseDown"/>
+                        <EventSetter Event="MouseDoubleClick" Handler="DataGridCell_MouseDoubleClick"/>
+                    </Style>
+                </DataGrid.CellStyle>
+            </DataGrid>
+            <Button x:Name="BeginButton" Content="&lt;&lt;" HorizontalAlignment="Left" Margin="0,0,0,5" VerticalAlignment="Bottom" Width="22" Click="BeginButton_Click"/>
+            <Button x:Name="BackButton" Content="&lt;" HorizontalAlignment="Left" Margin="27,0,0,5" VerticalAlignment="Bottom" Width="24" RenderTransformOrigin="0.293,0.478" Click="BackButton_Click"/>
+            <Label x:Name="CountLabel" Content="Страница 1 из 1" HorizontalAlignment="Left" Margin="56,0,0,5" VerticalAlignment="Bottom" Width="124"/>
+            <Button x:Name="ForwardButton" Content="&gt;" HorizontalAlignment="Left" Margin="185,0,0,5" VerticalAlignment="Bottom" Width="24" Click="ForwardButton_Click"/>
+            <Button x:Name="EndButton" Content="&gt;&gt;" HorizontalAlignment="Left" Margin="214,0,0,5" VerticalAlignment="Bottom" Width="24" Click="EndButton_Click"/>
+            <Label Content=" Показывать по" HorizontalAlignment="Left" Margin="252,0,0,5" VerticalAlignment="Bottom" Width="100"/>
+            <TextBox x:Name="CountTextBox"  PreviewTextInput="CountTextBox_PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="352,0,0,5" TextWrapping="Wrap" Text="10" VerticalAlignment="Bottom" Width="47" TextChanged="CountTextBox_TextChanged"/>
+            <Label Content="элементов" HorizontalAlignment="Left" Margin="404,0,0,5" VerticalAlignment="Bottom" Width="71"/>
+        </Grid>       
     </Grid>
 </Window>

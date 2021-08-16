@@ -1,0 +1,56 @@
+﻿@model IEnumerable<Planning.Contract.Model.Project>
+
+@{
+    ViewData["Title"] = "Проекты";
+}
+
+<div class="container">
+    @Html.ActionLink("Добавить", "Create", new { }, new { @class = "btn btn-dark" })
+    @Html.ActionLink("История", "History", new { }, new { @class = "btn btn-dark" })
+    <hr>
+    @foreach (var item in Model)
+    {
+        <div>
+            <div style="margin-top:4px;padding:0px;">
+                @Html.HiddenFor(m => item.Id)
+                @Html.LabelFor(m => item.Name) : @Html.DisplayFor(m => item.Name)
+                @Html.LabelFor(m => item.Path) : @Html.DisplayFor(m => item.Path)
+                <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id')" loaded="false">+</button>
+                @Html.ActionLink("Add", "Create",
+                    new { parentId = item.Id },
+                    new { @class = "btn btn-dark" })
+                @Html.ActionLink("Edit", "Edit",
+                    new { parentId = item.Id },
+                    new { @class = "btn btn-dark" })
+                @Html.ActionLink("Delete", "Delete",
+                    new { parentId = item.Id },
+                    new { @class = "btn btn-dark" })
+            </div>
+            <div id="child_@item.Id" style="margin-left:20px"></div>
+        </div>
+    }
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        function LoadChilds(parent_id) {
+            var loaded = $('#btn_' + parent_id).attr("loaded");           
+            if (loaded == "true") {
+                $('#btn_' + parent_id).attr("loaded", "false");
+                $('#btn_' + parent_id).attr("class", "btn btn-dark btn-expand");
+                $('#child_' + parent_id).html("");
+            }
+            else {
+                $('#btn_' + parent_id).attr("loaded", "true");
+                $('#btn_' + parent_id).attr("class", "btn btn-light btn-expand");
+                $.get("Project/IndexChilds/?parentId=" + parent_id, function (data, textStatus, request) {
+                    $('#child_' + parent_id).html(data);
+                });
+            }
+        };
+    </script>
+}
+      
+
+

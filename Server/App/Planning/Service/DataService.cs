@@ -50,6 +50,21 @@ namespace Planning.Service
             await Task.CompletedTask;
         }
 
+        protected virtual async Task ActionAfterAdd(DB.Repository.IRepository<TEntity> repository, TCreator creator, TEntity entity, CancellationToken token)
+        {
+            await Task.CompletedTask;
+        }
+
+        protected virtual async Task ActionAfterUpdate(DB.Repository.IRepository<TEntity> repository, TUpdater updater, TEntity entity, CancellationToken token)
+        {
+            await Task.CompletedTask;
+        }
+
+        protected virtual async Task ActionAfterDelete(DB.Repository.IRepository<TEntity> repository, TEntity entity, CancellationToken token)
+        {
+            await Task.CompletedTask;
+        }
+
         /// <summary>
         /// add item method
         /// </summary>
@@ -62,7 +77,9 @@ namespace Planning.Service
             {
                 var entity = MapToEntityAdd(creator);
                 await PrepareBeforeAdd(repo, creator, token);
-                var result = await repo.AddAsync(entity, true, token);
+                var result = await repo.AddAsync(entity, false, token);
+                await ActionAfterAdd(repo, creator, result, token);
+                await repo.SaveChangesAsync();
                 var prepare = _mapper.Map<Tdto>(result);
                 prepare = await Enrich(prepare, token);
                 return prepare;
@@ -78,7 +95,9 @@ namespace Planning.Service
                 var entry = await repo.GetAsync(entity.Id, token);
                 entry = UpdateFillFields(entity, entry);
                 await PrepareBeforeUpdate(repo, entity, token);
-                TEntity result = await repo.UpdateAsync(entry, true, token);
+                TEntity result = await repo.UpdateAsync(entry, false, token);
+                await ActionAfterUpdate(repo, entity, result, token);
+                await repo.SaveChangesAsync();
                 var prepare = _mapper.Map<Tdto>(result);
                 prepare = await Enrich(prepare, token);
                 return prepare;
@@ -92,7 +111,9 @@ namespace Planning.Service
                 var entity = await repo.GetAsync(id, token);
                 if (entity == null) throw new DataServiceException($"Entity with id = {id} not found in DB");
                 await PrepareBeforeDelete(repo, entity, token);
-                entity = await repo.DeleteAsync(entity, true, token);
+                entity = await repo.DeleteAsync(entity, false, token);
+                await ActionAfterDelete(repo, entity, token);
+                await repo.SaveChangesAsync();
                 var prepare = _mapper.Map<Tdto>(entity);
                 prepare = await Enrich(prepare, token);
                 return prepare;

@@ -71,5 +71,6 @@ namespace Planning.DB.Repository
         /// <param name="token">token</param>
         /// <returns></returns>
         Task<T> UpdateAsync(T entity, bool withSave, CancellationToken token);
+        Task SaveChangesAsync();
     }
 }

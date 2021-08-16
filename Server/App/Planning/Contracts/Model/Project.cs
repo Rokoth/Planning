@@ -16,7 +16,7 @@ namespace Planning.Contract.Model
         /// <summary>
         /// Наименование
         /// </summary>
-        [Display(Name="Наименование")]
+        [Display(Name = "Наименование")]
         [Required(ErrorMessage = "Поле должно быть установлено")]
         [Remote("CheckName", "Project", ErrorMessage = "Имя уже используется")]
         public string Name { get; set; }
@@ -57,17 +57,12 @@ namespace Planning.Contract.Model
         /// </summary>
         [Display(Name = "Дополнительное время")]
         public int AddTime { get; set; }
-    }
+        /// <summary>
+        /// Родитель
+        /// </summary>
+        [Display(Name = "Родитель")]
+        public string Parent { get; set; }
 
-    public class Schedule : Entity
-    {
-        public Guid ProjectId { get; set; }
         public Guid UserId { get; set; }
-        public int Order { get; set; }
-        public DateTimeOffset BeginDate { get; set; }
-        public DateTimeOffset? EndDate { get; set; }
-        public bool IsRunning { get; set; }
-        public int ElapsedTime { get; set; }
-        public DateTimeOffset StartDate { get; set; }
     }
 }

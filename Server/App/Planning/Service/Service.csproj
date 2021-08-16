@@ -6,17 +6,19 @@
     <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Rokoth/Planning</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>0.0.4</Version>
+    <Version>0.0.5</Version>
     <Description>Сервисные классы приложения</Description>
     <Copyright>2021 Dmitriy Rokoth</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="NCalc2" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DB\DB.csproj" />
   </ItemGroup>
 

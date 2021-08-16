@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 using Planning.Common;
 using Planning.Service;
 using Deploy;
+using Planning.DB.Context;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Planning.UnitTests
 {
@@ -41,13 +44,15 @@ namespace Planning.UnitTests
             serviceCollection.AddLogging(configure => configure.AddSerilog());
             serviceCollection.AddDataServices();
             serviceCollection.AddScoped<IDeployService, DeployService>();
+            serviceCollection.AddScoped<IAuthService, AuthService>();
 
             serviceCollection.AddDbContext<DB.Context.DbPgContext>(opt => opt.UseNpgsql(ConnectionString));
             serviceCollection.AddScoped<DB.Repository.IRepository<DB.Context.User>, DB.Repository.Repository<DB.Context.User>>();
+            serviceCollection.AddScoped<DB.Repository.IRepository<DB.Context.Formula>, DB.Repository.Repository<DB.Context.Formula>>();
             //serviceCollection.AddScoped<IRepository<Client>, Repository<Client>>();
             //serviceCollection.AddScoped<IRepositoryHistory<UserHistory>, RepositoryHistory<UserHistory>>();
             //serviceCollection.AddScoped<IRepositoryHistory<ClientHistory>, RepositoryHistory<ClientHistory>>();
-          
+
             serviceCollection.ConfigureAutoMapper();
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
@@ -76,6 +81,39 @@ namespace Planning.UnitTests
             {
                 logger.LogError($"Error on dispose: {ex.Message}; StackTrace: {ex.StackTrace}");
             }
+        }
+
+        public Formula CreateFormula()
+        {
+            var id = Guid.NewGuid();
+            var formula = new Formula()
+            {
+                Id = id,
+                IsDefault = true,
+                IsDeleted = false,
+                Name = "TestFormula",
+                Text = "Min(SelectCount)",
+                VersionDate = DateTimeOffset.Now
+            };
+            return formula;
+        }
+
+        public User CreateUser(string nameMask, string descriptionMask, string loginMask, string passwordMask, Guid formulaId)
+        {
+
+            var id = Guid.NewGuid();
+            var user = new User()
+            {
+                Name = string.Format(nameMask, id),
+                Id = id,
+                Description = string.Format(descriptionMask, id),
+                IsDeleted = false,
+                Login = string.Format(loginMask, id),
+                Password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Format(passwordMask, id))),
+                VersionDate = DateTimeOffset.Now,
+                FormulaId = formulaId
+            };
+            return user;
         }
     }
 }

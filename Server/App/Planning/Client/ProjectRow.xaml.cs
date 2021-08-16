@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Controls;
 
-namespace Project
+namespace PlanningClient
 {
     /// <summary>
     /// Логика взаимодействия для ProjectRow.xaml

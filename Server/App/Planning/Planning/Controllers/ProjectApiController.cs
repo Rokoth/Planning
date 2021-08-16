@@ -27,7 +27,7 @@ namespace Planning.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(string name = null, int size = 10, 
+        public async Task<IActionResult> Get(string name = null, string path = null, int size = 10, 
             int page = 0, string sort = null, bool? isLeaf = null, DateTimeOffset? lastUsedDateBegin = null, DateTimeOffset? lastUsedDateEnd = null, Guid? parentId = null)
         {
             try
@@ -36,7 +36,7 @@ namespace Planning.Controllers
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, size, page, sort, name, isLeaf,
-                    lastUsedDateBegin, lastUsedDateEnd, parentId), source.Token);                
+                    lastUsedDateBegin, lastUsedDateEnd, parentId, path), source.Token);                
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return Ok(result.Data);
             }

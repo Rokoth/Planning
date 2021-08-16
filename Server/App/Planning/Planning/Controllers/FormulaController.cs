@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Planning.Contract.Model;
 using Planning.Service;
 using System;
@@ -14,37 +15,91 @@ namespace Planning.Controllers
     public class FormulaController : Controller
     {
         private IServiceProvider _serviceProvider;
+        private ILogger _logger;
 
         public FormulaController(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _logger = _serviceProvider.GetRequiredService<ILogger<FormulaController>>();
         }
 
         // GET: UserController
         [Authorize]
 
-        public ActionResult Index([FromRoute] Guid clientId)
-        {
-            ViewData["ClientId"] = clientId.ToString();
+        public ActionResult Index()
+        {            
             return View();
         }
 
         [Authorize]
-        public async Task<ActionResult> ListPaged([FromRoute]Guid clientId,  
-            [FromQuery]int page = 0, [FromQuery]int size = 10,
+        public async Task<ActionResult> ListPaged([FromQuery]int page = 0, [FromQuery]int size = 10,
             [FromQuery]string sort = null, [FromQuery]string name = null)
         {
             try
             {                
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new FormulaFilter(size, page, sort, name), source.Token);
+                var result = await _dataService.GetAsync(new FormulaFilter(size, page, sort, name, null), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
             }
             catch (Exception ex)
             {
                 return RedirectToAction("Index", "Error", new { Message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> CheckName(string name)
+        {
+            bool result = false;
+            if (!string.IsNullOrEmpty(name))
+            {
+                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var check = await _dataService.GetAsync(new FormulaFilter(10, 0, null, name, null), source.Token);
+                result = !check.Data.Any();
+            }
+            return Json(result);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> CheckNameEdit(string name, Guid id)
+        {
+            bool result = false;
+            if (!string.IsNullOrEmpty(name))
+            {
+                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var check = await _dataService.GetAsync(new FormulaFilter(10, 0, null, name, null), source.Token);
+                result = !check.Data.Where(s=>s.Id!=id).Any();
+            }
+            return Json(result);
+        }
+
+        [Authorize]
+
+        public ActionResult ListSelect()
+        {
+            return PartialView();
+        }
+
+        [Authorize]
+        public async Task<IActionResult> ListSelectPaged([FromQuery] int page = 0, [FromQuery] int size = 10,
+            [FromQuery] string sort = null, [FromQuery] string name = null)
+        {
+            try
+            {
+                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var result = await _dataService.GetAsync(new FormulaFilter(size, page, sort, name, null), source.Token);
+                Response.Headers.Add("x-pages", result.PageCount.ToString());
+                return PartialView(result.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Method FormulaController::ListSelect exception: {ex.Message} + ST: {ex.StackTrace}");
+                return RedirectToAction("Error", $"Method FormulaController::ListSelect exception: {ex.Message} + ST: {ex.StackTrace}");
             }
         }
 

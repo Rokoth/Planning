@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
+﻿//Copyright 2021 Dmitriy Rokoth
+//Licensed under the Apache License, Version 2.0
+//
+//ref1
+using Microsoft.EntityFrameworkCore;
 
 namespace Planning.DbClient
 {
@@ -20,23 +22,5 @@ namespace Planning.DbClient
             base.OnConfiguring(optionsBuilder);
             optionsBuilder.EnableSensitiveDataLogging(true);
         }
-    }
-
-    public class SettingsEntityConfiguration : IEntityTypeConfiguration<Settings>
-    {
-        public void Configure(EntityTypeBuilder<Settings> builder)
-        {            
-            builder.ToTable("settings");
-            builder.HasKey(s => s.Id);
-            builder.Property(s => s.ParamName).HasColumnName("param_name");
-            builder.Property(s => s.ParamValue).HasColumnName("param_value");
-        }
-    }
-
-    public class Settings
-    {
-        public int Id { get; set; }
-        public string ParamName { get; set; }
-        public string ParamValue { get; set; }
     }
 }

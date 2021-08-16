@@ -1,5 +1,7 @@
 ﻿using Planning.DB.Attributes;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 
 namespace Planning.DB.Context
@@ -67,8 +69,60 @@ namespace Planning.DB.Context
         public string Login { get; set; }
         [ColumnName("password")]
         public byte[] Password { get; set; }
-        [ColumnName("formula_id")]
+        [ColumnName("formula_id")]       
         public Guid FormulaId { get; set; }
+
+        [ForeignKey("FormulaId")]
+        [Ignore]
+        public Formula Formula { get; set; }
+        [Ignore]
+        public List<Project> Projects { get; set; }
+        [Ignore]
+        public List<Schedule> Schedules { get; set; }
+    }
+
+    
+
+    [TableName("user_settings")]
+    public class UserSettings : Entity
+    {
+        [ColumnName("userid")]        
+        public Guid UserId { get; set; }
+        [ColumnName("schedule_mode")]
+        public Contract.Model.ScheduleMode ScheduleMode { get; set; }
+        [ColumnName("schedule_count")]
+        public int? ScheduleCount { get; set; }
+        [ColumnName("schedule_timespan")]
+        public int? ScheduleTimeSpan { get; set; } // hours
+        [ColumnName("default_project_timespan")]
+        public int DefaultProjectTimespan { get; set; }
+        [ColumnName("leaf_only")]
+        public bool LeafOnly { get; set; }
+        [ColumnName("schedule_shift")]
+        public int ScheduleShift { get; set; }
+
+        [Ignore]
+        [ForeignKey("UserId")]
+        public User User { get; set; }
+    }
+
+    [TableName("h_user_settings")]
+    public class UserSettingsHistory : EntityHistory
+    {
+        [ColumnName("userid")]
+        public Guid UserId { get; set; }
+        [ColumnName("schedule_mode")]
+        public Contract.Model.ScheduleMode ScheduleMode { get; set; }
+        [ColumnName("schedule_count")]
+        public int? ScheduleCount { get; set; }
+        [ColumnName("schedule_timespan")]
+        public int? ScheduleTimeSpan { get; set; } // hours
+        [ColumnName("default_project_timespan")]
+        public int DefaultProjectTimespan { get; set; }
+        [ColumnName("leaf_only")]
+        public bool LeafOnly { get; set; }
+        [ColumnName("schedule_shift")]
+        public int ScheduleShift { get; set; }
     }
 
     public interface IIdentity
@@ -104,6 +158,9 @@ namespace Planning.DB.Context
 
         [ColumnName("is_default")]
         public bool IsDefault { get; set; }
+
+        [Ignore]
+        public List<User> Users { get; set; }
     }
 
     [TableName("h_formula")]

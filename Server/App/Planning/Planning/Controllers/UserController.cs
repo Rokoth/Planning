@@ -87,12 +87,20 @@ namespace Planning.Controllers
 
         // GET: UserController/Create
         [Authorize]
-        public ActionResult Create()
+        public async Task<IActionResult> Create()
         {
             //Fill default fields
+            var _formulaDataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+            CancellationTokenSource source = new CancellationTokenSource(30000);
+            var defaultFormula = (await _formulaDataService.GetAsync(new FormulaFilter(1, 0, null, null, true), source.Token)).Data.FirstOrDefault();
+            if (defaultFormula == null)
+            {
+                defaultFormula = (await _formulaDataService.GetAsync(new FormulaFilter(1, 0, null, null, null), source.Token)).Data.FirstOrDefault();
+            }
             var user = new UserCreator()
             {
-
+                FormulaId = defaultFormula.Id,
+                Formula = defaultFormula.Name
             };
             return View(user);
         }
@@ -131,7 +139,15 @@ namespace Planning.Controllers
                     Id = result.Id,
                     Login = result.Login,
                     Name = result.Name,
-                    PasswordChanged = false
+                    PasswordChanged = false,
+                    ScheduleTimeSpan = result.ScheduleTimeSpan,
+                    ScheduleShift = result.ScheduleShift,
+                    ScheduleMode = result.ScheduleMode,
+                    ScheduleCount = result.ScheduleCount,
+                    LeafOnly = result.LeafOnly,
+                    Formula = result.Formula,
+                    DefaultProjectTimespan = result.DefaultProjectTimespan,
+                    FormulaId = result.FormulaId
                 };
                 return View(updater);
             }

@@ -35,7 +35,7 @@ namespace Planning
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CommonOptions>(Configuration);
+            services.Configure<CommonOptions>(Configuration);            
             services.AddControllersWithViews();
             services.AddDbContextPool<DbPgContext>((opt) =>
             {
@@ -43,12 +43,20 @@ namespace Planning
                 var connectionString = Configuration.GetConnectionString("MainConnection");
                 opt.UseNpgsql(connectionString);
             });
-            services.AddScoped<DB.Repository.IRepository<User>, DB.Repository.Repository<User>>();            
-            services.AddScoped<DB.Repository.IRepository<UserHistory>, DB.Repository.Repository<UserHistory>>();
-            services.AddScoped<DB.Repository.IRepository<Formula>, DB.Repository.Repository<Formula>>();
-            services.AddScoped<DB.Repository.IRepository<FormulaHistory>, DB.Repository.Repository<FormulaHistory>>();
+            services.AddScoped<DB.Repository.IRepository<User>, DB.Repository.Repository<User>>();   
+            services.AddScoped<DB.Repository.IRepository<Formula>, DB.Repository.Repository<Formula>>();    
+            services.AddScoped<DB.Repository.IRepository<UserSettings>, DB.Repository.Repository<UserSettings>>();
+            services.AddScoped<DB.Repository.IRepository<Project>, DB.Repository.Repository<Project>>();
+            services.AddScoped<DB.Repository.IRepository<Schedule>, DB.Repository.Repository<Schedule>>();
 
-            services.AddScoped<IDeployService, DeployService>();            
+            services.AddScoped<DB.Repository.IRepository<UserHistory>, DB.Repository.Repository<UserHistory>>();
+            services.AddScoped<DB.Repository.IRepository<FormulaHistory>, DB.Repository.Repository<FormulaHistory>>();
+            services.AddScoped<DB.Repository.IRepository<UserSettingsHistory>, DB.Repository.Repository<UserSettingsHistory>>();
+            services.AddScoped<DB.Repository.IRepository<ProjectHistory>, DB.Repository.Repository<ProjectHistory>>();
+            services.AddScoped<DB.Repository.IRepository<ScheduleHistory>, DB.Repository.Repository<ScheduleHistory>>();
+
+            services.AddScoped<IDeployService, DeployService>();
+            services.AddScoped<IProjectSelectService, ProjectSelectService>();
             services.AddDataServices();
             services.ConfigureAutoMapper();
  
@@ -101,6 +109,8 @@ namespace Planning
             {
                 s.OperationFilter<AddRequiredHeaderParameter>();
             });
+
+            services.AddHostedService<BuildScheduleHostedService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -164,12 +174,14 @@ namespace Planning
             CreateMap<User, Contract.Model.User>();
 
             CreateMap<Contract.Model.UserCreator, User>()
-                .ForMember(s => s.Password, s => s.Ignore());
+                 .ForMember(s => s.Password, s => s.Ignore())
+                 .ForMember(s => s.Formula, s => s.Ignore());
 
             CreateMap<UserHistory, Contract.Model.UserHistory>();
 
             CreateMap<Contract.Model.UserUpdater, User>()
-                .ForMember(s => s.Password, s => s.Ignore());
+                .ForMember(s => s.Password, s => s.Ignore())
+                .ForMember(s => s.Formula, s => s.Ignore());
 
             CreateMap<Formula, Contract.Model.Formula>();
 
@@ -179,26 +191,24 @@ namespace Planning
 
             CreateMap<Contract.Model.FormulaUpdater, Formula>();
 
-            //    CreateMap<TreeCreator, Tree>()
-            //        .ForMember(s => s.Id, s => s.MapFrom(c => Helper.GenerateGuid(new string[] { c.Name })))
-            //        .ForMember(s => s.VersionDate, s => s.MapFrom(c => DateTimeOffset.Now));
 
-            //    CreateMap<TreeUpdater, Tree>()
-            //        .ForMember(s => s.Id, s => s.MapFrom(c => Helper.GenerateGuid(new string[] { c.Name })))
-            //        .ForMember(s => s.VersionDate, s => s.MapFrom(c => DateTimeOffset.Now));
+            CreateMap<Project, Contract.Model.Project>();
 
-            //    CreateMap<Tree, TreeModel>();
+            CreateMap<Contract.Model.ProjectCreator, Project>();
 
-            //    CreateMap<TreeItem, TreeItemModel>();
+            CreateMap<ProjectHistory, Contract.Model.ProjectHistory>();
 
-            //    CreateMap<FormulaCreator, Formula>();
+            CreateMap<Contract.Model.ProjectUpdater, Project>();
 
-            //    CreateMap<FormulaUpdater, Formula>();
 
-            //    CreateMap<Formula, FormulaModel>();
-            //    CreateMap<TreeHistory, TreeHistoryModel>();
-            //    CreateMap<TreeItemHistory, TreeItemHistoryModel>();
-            //    CreateMap<FormulaHistory, FormulaHistoryModel>();
+            CreateMap<Schedule, Contract.Model.Schedule>();
+
+            CreateMap<Contract.Model.ScheduleCreator, Schedule>();
+
+            CreateMap<ScheduleHistory, Contract.Model.ScheduleHistory>();
+
+            CreateMap<Contract.Model.ScheduleUpdater, Schedule>();
+
         }
     }
 }

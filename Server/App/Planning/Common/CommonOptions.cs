@@ -16,6 +16,7 @@ namespace Planning.Common
     {
         public string ConnectionString { get; set; }
         public ClientMode ClientMode { get; set; }
+        public ErrorNotifyOptions ErrorNotifyOptions { get; set; }
     }
 
     public class AuthOptions
@@ -28,5 +29,15 @@ namespace Planning.Common
         {
             return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(KEY));
         }
+    }
+
+    public class ErrorNotifyOptions
+    {
+        public bool SendError { get; set; }
+        public string Server { get; set; }
+        public string Login { get; set; }
+        public string Password { get; set; }
+        public string FeedbackContact { get; set; }
+        public string DefaultTitle { get; set; }
     }
 }

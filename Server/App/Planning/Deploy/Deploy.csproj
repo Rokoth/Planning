@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>Deploy lib's wrapper</Description>
-    <Version>0.0.4</Version>
+    <Version>0.0.5</Version>
   </PropertyGroup>
 
   <ItemGroup>

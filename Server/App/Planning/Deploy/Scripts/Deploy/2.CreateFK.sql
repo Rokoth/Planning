@@ -34,4 +34,8 @@ add constraint fk_user_formula_id
 		references formula(id) 
 		on delete no action on update no action;
 
-
+alter table user_settings
+add constraint fk_user_settings_userid 
+	foreign key(userid) 
+		references "user"(id) 
+		on delete no action on update no action;

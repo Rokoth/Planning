@@ -17,10 +17,12 @@ namespace Planning.DB.Repository
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
+        private readonly DbPgContext _context;
 
         public Repository(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _context = _serviceProvider.GetRequiredService<DbPgContext>();
             _logger = _serviceProvider.GetRequiredService<ILogger<Repository<T>>>();
         }
 
@@ -146,6 +148,11 @@ namespace Planning.DB.Repository
             }, "GetAsync");
         }
 
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<T> UpdateAsync(T entity, bool withSave, CancellationToken token)
         {
             return await ExecuteAsync(async (context) => {
@@ -158,9 +165,8 @@ namespace Planning.DB.Repository
         private async Task<TEx> ExecuteAsync<TEx>(Func<DbPgContext, Task<TEx>> action, string method)
         {
             try
-            {
-                var context = _serviceProvider.GetRequiredService<DbPgContext>();
-                return await action(context);
+            {                
+                return await action(_context);
             }
             catch (Exception ex)
             {

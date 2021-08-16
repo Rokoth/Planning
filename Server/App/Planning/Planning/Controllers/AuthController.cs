@@ -1,33 +1,42 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿//Copyright 2021 Dmitriy Rokoth
+//Licensed under the Apache License, Version 2.0
+//
+//ref1
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Planning.Common;
 using Planning.Contract.Model;
 using Planning.Service;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Planning.Controllers
 {
+    /// <summary>
+    /// Auth api controller
+    /// </summary>
     [Route("api/v1/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private IServiceProvider _serviceProvider;
-
+        private readonly IServiceProvider _serviceProvider;
 
         public AuthController(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-
         }
 
+        /// <summary>
+        /// Auth method
+        /// </summary>
+        /// <param name="login">login</param>
+        /// <returns></returns>
         [HttpPost("auth")]
-        public async Task<IActionResult> Auth([FromBody] Contract.Model.UserIdentity login)
+        public async Task<IActionResult> Auth([FromBody] UserIdentity login)
         {
             try
             {
@@ -41,7 +50,6 @@ namespace Planning.Controllers
                 }
 
                 var now = DateTime.UtcNow;
-                // создаем JWT-токен
                 var jwt = new JwtSecurityToken(
                         issuer: AuthOptions.ISSUER,
                         audience: AuthOptions.AUDIENCE,

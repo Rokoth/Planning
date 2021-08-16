@@ -241,12 +241,36 @@ namespace Planning.Client.ClientHttpClient
     }
 
     public interface IDataService
-    {        
+    {
+        Task<Project> AddProject(ProjectCreator projectCreator);
+        Task<bool> DeleteProject(Guid id);
+        Task<Project> GetProject(Guid id);
+        Task<ListResult<Contract.Model.Project>> GetProjects(string name, int? page, int? size, string sort);
         Task<ListResult<Schedule>> GetSchedules(string name, int? page, int? size, string sort);
     }
 
     public class DataService : IDataService
     {
+        public Task<Project> AddProject(ProjectCreator projectCreator)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> DeleteProject(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Project> GetProject(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ListResult<Contract.Model.Project>> GetProjects(string name, int? page, int? size, string sort)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<ListResult<Schedule>> GetSchedules(string name, int? page, int? size, string sort)
         {
             throw new NotImplementedException();
