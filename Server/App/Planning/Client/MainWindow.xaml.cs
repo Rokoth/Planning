@@ -251,12 +251,20 @@ namespace PlanningClient
 
         private void AddProjectButton_Click(object sender, RoutedEventArgs e)
         {
-
+            var win = _serviceProvider.GetRequiredService<ProjectAddEditWindow>();
+            win.ShowDialog(AddEditMode.Add, null);
         }
 
         private void AddFormulaButton_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void AddScheduleButton_Click(object sender, RoutedEventArgs e)
+        {
+            var win = _serviceProvider.GetRequiredService<ScheduleAddEditWindow>();
+            win.ShowDialog(AddEditMode.Add, null);
+            FillTable();
         }
     }
 }

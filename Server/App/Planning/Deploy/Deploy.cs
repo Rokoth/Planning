@@ -1,23 +1,20 @@
-﻿using Deployer;
+﻿//Copyright 2021 Dmitriy Rokoth
+//Licensed under the Apache License, Version 2.0
+//
+//ref1
+using Deployer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using Planning.Common;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Deploy
 {
-    public interface IDeployService
-    {
-        Task Deploy(int? num = null);
-    }
 
     /// <summary>
     /// Wrapper for deploy lib
@@ -132,46 +129,6 @@ namespace Deploy
                 throw new DeployException($"Не удалось развернуть базу данных: " +
                     $"ошибка при проверке или создании базы: {ex.Message} {ex.StackTrace}");
             }
-        }
-    }
-
-    /// <summary>
-    /// wrapper for deploy exceptions
-    /// </summary>
-    [Serializable]
-    public class DeployException : Exception
-    {
-        /// <summary>
-        /// default ctor
-        /// </summary>
-        public DeployException()
-        {
-        }
-
-        /// <summary>
-        /// ctor
-        /// </summary>
-        /// <param name="message"></param>
-        public DeployException(string message) : base(message)
-        {
-        }
-
-        /// <summary>
-        /// ctor
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="innerException"></param>
-        public DeployException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// ctor
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="context"></param>
-        protected DeployException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
         }
     }
 }

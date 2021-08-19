@@ -24,7 +24,7 @@ namespace PlanningClient
             InitializeComponent();
         }
 
-        internal void ShowDialog(AddEditMode edit, Guid id)
+        internal void ShowDialog(AddEditMode edit, Guid? id)
         {
             throw new NotImplementedException();
         }

@@ -114,6 +114,24 @@ namespace Planning.Client.ClientHttpClient
                 }, "Get", s => s.ParseResponseArray<T>());
         }
 
+        public async Task<T> GetItem<T>(Guid id, Type apiType = null) where T : class
+        {
+            return await Execute(client =>
+            {
+                var request = new HttpRequestMessage()
+                {
+                    Headers = {
+                            { HttpRequestHeader.Authorization.ToString(), $"Bearer {_token}" },
+                            { HttpRequestHeader.ContentType.ToString(), "application/json" },
+                        },
+                    RequestUri = new Uri($"{GetApi<T>(apiType)}/{id}"),
+                    Method = HttpMethod.Get
+                };
+
+                return client.SendAsync(request);
+            }, "Get", s => s.ParseResponse<T>());
+        }
+
         private async Task<T> Execute<T>(
             Func<HttpClient, Task<HttpResponseMessage>> action,
             string method,

@@ -31,7 +31,7 @@ namespace Planning.UnitTests
                 Id = Guid.NewGuid(),
                 IsDeleted = false,
                 LeafOnly = true,
-                ScheduleMode = ScheduleMode.Manual,
+                ScheduleMode = Contract.Model.ScheduleMode.Manual,
                 ScheduleShift = 1,
                 UserId = user.Id,
                 VersionDate = DateTimeOffset.Now

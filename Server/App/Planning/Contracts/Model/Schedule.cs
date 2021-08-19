@@ -80,4 +80,19 @@ namespace Planning.Contract.Model
         [Display(Name = "Наименование проекта")]
         public string Project { get; set; }
     }
+
+    /// <summary>
+    /// Filter for user model
+    /// </summary>
+    public class ScheduleFilter : Filter<Schedule>
+    {
+        public ScheduleFilter(int size, int page, string sort, string name) : base(size, page, sort)
+        {
+            Name = name;
+        }
+        /// <summary>
+        /// User Name
+        /// </summary>
+        public string Name { get; }
+    }
 }

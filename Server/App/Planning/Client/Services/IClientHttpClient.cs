@@ -16,5 +16,6 @@ namespace Planning.Client.ClientHttpClient
         void Dispose();
 
         Task<ListResult<T>> Get<T>(string param, Type apiType = null) where T : class;
+        Task<T> GetItem<T>(Guid id, Type apiType = null) where T : class;
     }
 }
