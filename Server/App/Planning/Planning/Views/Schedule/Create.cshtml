@@ -38,7 +38,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="BeginDate" class="control-label"></label>
-                <input id="datepicker" asp-for="BeginDate" class="form-control" value="@Model.BeginDate.ToString("yyyy-MM-ddThh:mm")" />
+                <input id="datepicker" asp-for="BeginDate" class="form-control datetimefield" value="@Model.BeginDate.ToString("yyyy-MM-ddThh:mm")" />
                 <span asp-validation-for="BeginDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -60,14 +60,7 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script type="text/javascript" src='https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.3.min.js'></script>
-    <script type="text/javascript" src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.3/js/bootstrap.min.js'></script>
-    <link rel="stylesheet" href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.3/css/bootstrap.min.css'
-          media="screen" />
-    <!-- Bootstrap -->
-    <!-- Bootstrap DatePicker -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.css" type="text/css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.js" type="text/javascript"></script>
+    
     <script type="text/javascript">
 
 
@@ -81,15 +74,17 @@
         $(function () {
             // boostrap 4 load modal example from docs
 
-            $("#datepicker").datetimepicker({
+            $.datetimepicker.setDateFormatter('moment');
+            $(".datetimefield").datetimepicker({
                 changeMonth: true,
                 changeYear: true,
                 changeDay: true,
                 changeHour: true,
                 changeMinute: true,
-                format: "yyyy-MM-dd HH:mm",
+                format: 'YYYY-MM-DD hh:mm',
+                formatTime: 'h:mm A',
                 language: "ru"
-            });
+            });            
 
             $.ajaxSetup({ cache: false });
             $("#project_select").click(function (e) {
