@@ -6,7 +6,7 @@
     <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Rokoth/Planning</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>0.0.5</Version>
+    <Version>0.0.6</Version>
     <Description>Сервисные классы приложения</Description>
     <Copyright>2021 Dmitriy Rokoth</Copyright>
   </PropertyGroup>

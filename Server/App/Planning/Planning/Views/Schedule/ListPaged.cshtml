@@ -1,0 +1,28 @@
+﻿@model IEnumerable<Planning.Contract.Model.Schedule>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(s => s.BeginDate)</th>
+            <th>@Html.DisplayNameFor(s => s.EndDate)</th>
+            <th>@Html.DisplayNameFor(s => s.Project)</th>            
+            <th>@Html.DisplayNameFor(s => s.IsRunning)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>@item.BeginDate</td>
+            <td>@item.EndDate</td>
+            <td>@item.Project</td>
+            <td>@item.IsRunning</td>
+            <td>
+                @Html.ActionLink("Редактировать", "Edit", "Schedule", new { id = item.Id }, new { @class = "btn btn-dark" })
+                @Html.ActionLink("Удалить", "Delete", "Schedule", new { id = item.Id }, new { @class = "btn btn-dark" })
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

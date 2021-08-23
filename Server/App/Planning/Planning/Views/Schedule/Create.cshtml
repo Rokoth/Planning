@@ -1,0 +1,131 @@
+﻿@model Planning.Contract.Model.ScheduleCreator
+
+@{
+    ViewData["Title"] = "Добавить задачу";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<hr />
+
+<!-- Modal -->
+<div class="modal fade" id="modal-action-id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Выбор проекта</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dialogContent">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ProjectId" class="form-control" />
+            <input type="hidden" asp-for="UserId" class="form-control" />
+            <div class="form-group">
+                <label asp-for="SetBeginDate" class="control-label"></label>
+                <input asp-for="SetBeginDate" class="form-control" />
+                <span asp-validation-for="SetBeginDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BeginDate" class="control-label"></label>
+                <input id="datepicker" asp-for="BeginDate" class="form-control" value="@Model.BeginDate.ToString("yyyy-MM-ddThh:mm")" />
+                <span asp-validation-for="BeginDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Project" class="control-label"></label>
+                <input asp-for="Project" class="form-control" disabled />
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Добавить" class="btn btn-dark" />
+                <a asp-action="Details" class="btn btn-dark">Вернуться</a>
+                @Html.ActionLink("Выбрать проект", "ListSelect", "Project",
+                  new { id = Model.ProjectId },
+                  new { @class = "btn btn-dark", @id = "project_select" })
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script type="text/javascript" src='https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.3.min.js'></script>
+    <script type="text/javascript" src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.3/js/bootstrap.min.js'></script>
+    <link rel="stylesheet" href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.3/css/bootstrap.min.css'
+          media="screen" />
+    <!-- Bootstrap -->
+    <!-- Bootstrap DatePicker -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.css" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+
+
+        function setProject(project_id, project) {
+            //alert(formula_id + ' ' + formula);
+            $("#ProjectId").val(project_id);
+            $("#Project").val(project);
+        }
+
+        $(function () {
+            // boostrap 4 load modal example from docs
+
+            $("#datepicker").datetimepicker({
+                changeMonth: true,
+                changeYear: true,
+                changeDay: true,
+                changeHour: true,
+                changeMinute: true,
+                format: "yyyy-MM-dd HH:mm",
+                language: "ru"
+            });
+
+            $.ajaxSetup({ cache: false });
+            $("#project_select").click(function (e) {
+                e.preventDefault();
+                $.get(this.href, function (data) {
+                    $('#modal-action-id').modal('show');
+                    $('#dialogContent').html(data);
+                });
+            });
+
+            $('#modal-container').on('show.bs.modal', function (event) {
+
+                //var button = $(event.relatedTarget); // Button that triggered the modal
+
+                //var url = button.attr("href");
+
+                //var modal = $(this);
+
+                //// note that this will replace the content of modal-content everytime the modal is opened
+                //modal.find('.modal-content').load(url);
+
+            });
+
+            $('#modal-container').on('hidden.bs.modal', function () {
+
+                // remove the bs.modal data attribute from it
+
+                $(this).removeData('bs.modal');
+
+                // and empty the modal-content element
+
+                $('#modal-container .modal-content').empty();
+
+            });
+        });
+
+
+    </script>
+}

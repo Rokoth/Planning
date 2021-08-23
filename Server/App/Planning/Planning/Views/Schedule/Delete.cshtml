@@ -1,0 +1,56 @@
+﻿@model Planning.Contract.Model.Schedule
+
+<h3>Вы действительно хотите удалить задачу?</h3>
+<div>   
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.BeginDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.BeginDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.EndDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EndDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Id)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IsRunning)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IsRunning)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Order)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Order)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Project)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Project)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ProjectId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ProjectId)
+        </dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="submit" value="Удалить" class="btn btn-dark" />
+        @Html.ActionLink("Вернуться", "Details", "Schedule", new { id = Model.Id }, new { @class = "btn btn-dark" })
+    </form>
+</div>

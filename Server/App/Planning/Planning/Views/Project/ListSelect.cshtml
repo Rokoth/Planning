@@ -32,7 +32,7 @@
         else {
             $('#btn_' + parent_id).attr("loaded", "true");
             $('#btn_' + parent_id).attr("class", "btn btn-light btn-expand");
-            $.get("ListSelectChilds/?parentId=" + parent_id, function (data, textStatus, request) {
+            $.get("/Project/ListSelectChilds/?parentId=" + parent_id, function (data, textStatus, request) {
                 $('#child_' + parent_id).html(data);
             });
         }
