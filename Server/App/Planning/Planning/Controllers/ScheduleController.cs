@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Planning.Contract.Model;
+using Planning.DB.Repository;
 using Planning.Service;
 using System;
 using System.Collections.Generic;
@@ -182,9 +183,16 @@ namespace Planning.Controllers
         {
             try
             {
-                var _dataService = _serviceProvider.GetRequiredService<IAddDataService<Schedule, ScheduleCreator>>();
-                CancellationTokenSource source = new CancellationTokenSource(30000);                
-                Schedule result = await _dataService.AddAsync(creator, source.Token);
+                var userId = Guid.Parse(User.Identity.Name);
+                var selectService = _serviceProvider.GetRequiredService<IProjectSelectService>();
+                var userSettingsRepo = _serviceProvider.GetRequiredService<IRepository<DB.Context.UserSettings>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
+                {
+                    Selector = s => s.UserId == userId
+                }, source.Token)).Data.Single();
+
+                var result = await selectService.AddProjectToSchedule(userId, userSettings, creator.ProjectId, creator.BeginDate, creator.SetBeginDate);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
             }
             catch (Exception ex)
