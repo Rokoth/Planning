@@ -12,9 +12,9 @@ namespace PlanningClient.Services.DataService
 {
     public abstract class DataService<T> where T:Entity
     {
-        private IServiceProvider _serviceProvider;
-        private ILogger _logger;
-        private IClientHttpClient _httpclient;
+        protected IServiceProvider _serviceProvider;
+        protected ILogger _logger;
+        protected IClientHttpClient _httpclient;
 
         public DataService(IServiceProvider serviceProvider)
         {
@@ -23,5 +23,13 @@ namespace PlanningClient.Services.DataService
             _httpclient = _serviceProvider.GetRequiredService<IClientHttpClient>();
         }
 
+    }
+
+    public class FormulaDataService : DataService<Formula>
+    {
+        public FormulaDataService(IServiceProvider serviceProvider) : base(serviceProvider)
+        { 
+        
+        }
     }
 }

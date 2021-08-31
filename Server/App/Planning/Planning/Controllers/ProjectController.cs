@@ -11,85 +11,62 @@ using System.Threading.Tasks;
 
 namespace Planning.Controllers
 {
-    public class ProjectController : Controller
-    {
-        private IServiceProvider _serviceProvider;
-
-        public ProjectController(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
+    public class ProjectController : CommonControllerBase
+    {        
+        public ProjectController(IServiceProvider serviceProvider):base(serviceProvider)
+        {            
         }
 
         // GET: UserController
         [Authorize]
-        public async Task<ActionResult> Index()
+        public async Task<IActionResult> Index()
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, null, null), source.Token);               
                 return View(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "Index");
         }
 
         [Authorize]
-        public async Task<ActionResult> IndexChilds(Guid parentId)
+        public async Task<IActionResult> IndexChilds(Guid parentId)
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, parentId, null), source.Token);
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "IndexChilds");
         }
 
         [Authorize]
-        public async Task<ActionResult> ListSelectChilds(Guid parentId)
+        public async Task<IActionResult> ListSelectChilds(Guid parentId)
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, parentId, null), source.Token);
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "ListSelectChilds");
         }
 
         // GET: UserController/Details/5
         [Authorize]
-        public async Task<ActionResult> Details([FromRoute] Guid id)
+        public async Task<IActionResult> Details([FromRoute] Guid id)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 var cancellationTokenSource = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, cancellationTokenSource.Token);
                 return View(result);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "Details");
         }
 
         [HttpGet]
@@ -160,27 +137,21 @@ namespace Planning.Controllers
 
         public async Task<IActionResult> ListSelect()
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, null, null), source.Token);               
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {                
-                return RedirectToAction("Error", $"Method ProjectController::ListSelect exception: {ex.Message} + ST: {ex.StackTrace}");
-            }
+            }, "ProjectController", "ListSelect");
         }               
 
         // GET: ClientController/Edit/5
         [Authorize]
         public async Task<IActionResult> Edit(Guid id)
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
@@ -201,30 +172,21 @@ namespace Planning.Controllers
                    UserId = userId
                 };
                 return View(updater);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "Edit");
         }
 
         // POST: ClientController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Edit(Guid id, ProjectUpdater updater)
+        public async Task<IActionResult> Edit(Guid id, ProjectUpdater updater)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<Project, ProjectUpdater>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Project result = await _dataService.UpdateAsync(updater, source.Token);
                 return RedirectToAction("Details", new { id = result.Id });
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "Edit");
         }
 
         // GET: UserController
@@ -235,30 +197,24 @@ namespace Planning.Controllers
         }
 
         [Authorize]
-        public async Task<ActionResult> HistoryListPaged([FromRoute] Guid id, [FromQuery] int page = 0, [FromQuery] int size = 10,
+        public async Task<IActionResult> HistoryListPaged([FromRoute] Guid id, [FromQuery] int page = 0, [FromQuery] int size = 10,
             [FromQuery] string sort = null, [FromQuery] string name = null)
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<ProjectHistory, ProjectHistoryFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectHistoryFilter(size, page, sort, name, null, null, id, userId), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "HistoryListPaged");
         }               
 
         // GET: UserController/Create
         [Authorize]
-        public async Task<ActionResult> Create(Guid? parentId)
+        public async Task<IActionResult> Create(Guid? parentId)
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var project = new ProjectCreator() { 
                    UserId = userId,
@@ -274,67 +230,48 @@ namespace Planning.Controllers
                 }                               
                 
                 return View(project);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }         
+            }, "ProjectController", "Create");
         }
 
         // POST: UserController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Create(ProjectCreator creator)
+        public async Task<IActionResult> Create(ProjectCreator creator)
         {
-            try
-            {
+            return await Execute(async () => {
                 creator.IsLeaf = true;
                 var _dataService = _serviceProvider.GetRequiredService<IAddDataService<Project, ProjectCreator>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Project result = await _dataService.AddAsync(creator, source.Token);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "Create");
         }
 
         // GET: UserController/Delete/5
         [Authorize]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, source.Token);
                 return View(result);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "Delete");
         }
 
         // POST: UserController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Delete(Guid id, Project model)
+        public async Task<IActionResult> Delete(Guid id, Project model)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IDeleteDataService<Project>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.DeleteAsync(id, source.Token);
                 return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ProjectController", "Delete");
         }
     }
 }

@@ -17,5 +17,6 @@ namespace Planning.Client.ClientHttpClient
 
         Task<ListResult<T>> Get<T>(string param, Type apiType = null) where T : class;
         Task<T> GetItem<T>(Guid id, Type apiType = null) where T : class;
+        Task<bool> SendErrorMessage(string message);
     }
 }

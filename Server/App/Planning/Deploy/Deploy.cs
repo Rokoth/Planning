@@ -23,6 +23,7 @@ namespace Deploy
     {
         private readonly ILogger<DeployService> _logger;
         private readonly string _connectionString;
+        private readonly IErrorNotifyService errorNotifyService;
 
         /// <summary>
         /// ctor from container
@@ -33,6 +34,7 @@ namespace Deploy
             _logger = serviceProvider.GetRequiredService<ILogger<DeployService>>();
             var _options = serviceProvider.GetRequiredService<IOptions<CommonOptions>>();
             _connectionString = _options.Value.ConnectionString;
+            errorNotifyService = serviceProvider.GetRequiredService<IErrorNotifyService>();
         }
 
         /// <summary>
@@ -89,12 +91,17 @@ namespace Deploy
                     throw new DeployException($"DB was not deploy, log: {deployLog}");
                 }
             }
-            catch (DeployException)
+            catch (DeployException ex)
             {
+                await errorNotifyService.Send($"Error while Deploy: {ex.Message} {ex.StackTrace}");
                 throw;
             }
             catch (Exception ex)
             {
+                await errorNotifyService.Send($"Error while Deploy DB.\r\n" +
+                    $"Message: {ex.Message}\r\n" +
+                    $"StackTrace: {ex.StackTrace}\r\n" +
+                    $"DeployLog: {deployLog}");
                 throw new DeployException(
                     $"Error while Deploy DB.\r\n" +
                     $"Message: {ex.Message}\r\n" +

@@ -21,13 +21,11 @@ namespace Planning.Controllers
     /// </summary>
     [Route("api/v1/auth")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : CommonControllerBase
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public AuthController(IServiceProvider serviceProvider)
+        public AuthController(IServiceProvider serviceProvider): base(serviceProvider)
         {
-            _serviceProvider = serviceProvider;
+            
         }
 
         /// <summary>
@@ -38,8 +36,7 @@ namespace Planning.Controllers
         [HttpPost("auth")]
         public async Task<IActionResult> Auth([FromBody] UserIdentity login)
         {
-            try
-            {
+            return await ExecuteApi(async ()=> {
                 var source = new CancellationTokenSource(30000);
                 var dataService = _serviceProvider.GetRequiredService<IAuthService>();
 
@@ -66,11 +63,7 @@ namespace Planning.Controllers
                 };
 
                 return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Ошибка при обработке запроса: {ex.Message}");
-            }
+            }, "AuthController", "Auth");
         }
     }
 }

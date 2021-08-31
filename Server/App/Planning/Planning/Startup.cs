@@ -58,7 +58,8 @@ namespace Planning
             services.AddScoped<IDeployService, DeployService>();
             services.AddScoped<IProjectSelectService, ProjectSelectService>();
             services.AddScoped<ICalculator, CalculatorNCalc>();
-            
+            services.AddScoped<IErrorNotifyService, ErrorNotifyService>();
+
             services.AddDataServices();
             services.ConfigureAutoMapper();
  

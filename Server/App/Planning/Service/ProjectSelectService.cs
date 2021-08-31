@@ -20,13 +20,14 @@ namespace Planning.Service
         private IServiceProvider _serviceProvider;
         private ILogger _logger;
         private IMapper _mapper;
-
+        private readonly IErrorNotifyService errorNotifyService;
 
         public ProjectSelectService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _logger = serviceProvider.GetRequiredService<ILogger<ProjectSelectService>>();
             _mapper = serviceProvider.GetRequiredService<IMapper>();
+            errorNotifyService = _serviceProvider.GetRequiredService<IErrorNotifyService>();
         }
 
         public async Task MoveNextSchedule(Guid userId, UserSettings settings)
@@ -73,6 +74,7 @@ namespace Planning.Service
             }
             catch (Exception ex)
             {
+                await errorNotifyService.Send($"Error in ProjectSelectService:: MoveNextSchedule: {ex.Message} {ex.StackTrace}");
                 _logger.LogError($"Error in ProjectSelectService:: MoveNextSchedule: {ex.Message} {ex.StackTrace}");
                 throw;
             }
@@ -120,6 +122,7 @@ namespace Planning.Service
             }
             catch (Exception ex)
             {
+                await errorNotifyService.Send($"Error in ProjectSelectService:: ShiftSchedule: {ex.Message} {ex.StackTrace}");
                 _logger.LogError($"Error in ProjectSelectService::ShiftSchedule: {ex.Message} {ex.StackTrace}");
                 throw;
             }
@@ -252,6 +255,7 @@ namespace Planning.Service
             }
             catch (Exception ex)
             {
+                await errorNotifyService.Send($"Error in ProjectSelectService:: AddProjectToSchedule: {ex.Message} {ex.StackTrace}");
                 _logger.LogError($"Error in ProjectSelectService::AddProjectToSchedule: {ex.Message} {ex.StackTrace}");
                 throw;
             }

@@ -62,7 +62,7 @@ namespace Planning.Contract.Model
         public bool SetBeginDate { get; set; }
     }
 
-    public class ScheduleUpdater
+    public class ScheduleUpdater: IEntity
     {
         [Display(Name = "ИД")]
         [Required(ErrorMessage = "Поле должно быть установлено")]
@@ -92,6 +92,8 @@ namespace Planning.Contract.Model
         /// User Name
         /// </summary>
         public string Name { get; }
+        public Guid UserId { get; set; }
+        public Guid ProjectId { get; set; }
     }
 
     public class ScheduleHistoryFilter : Filter<ScheduleHistory>

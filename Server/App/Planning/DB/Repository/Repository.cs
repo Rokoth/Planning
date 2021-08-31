@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq.Dynamic.Core;
+using Planning.Common;
 
 namespace Planning.DB.Repository
 {
@@ -18,12 +19,14 @@ namespace Planning.DB.Repository
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
         private readonly DbPgContext _context;
+        private readonly IErrorNotifyService errorNotifyService;
 
         public Repository(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _context = _serviceProvider.GetRequiredService<DbPgContext>();
             _logger = _serviceProvider.GetRequiredService<ILogger<Repository<T>>>();
+            errorNotifyService = _serviceProvider.GetRequiredService<IErrorNotifyService>();
         }
 
         /// <summary>
@@ -170,6 +173,7 @@ namespace Planning.DB.Repository
             }
             catch (Exception ex)
             {
+                await errorNotifyService.Send($"Ошибка в методе {method} Repository: {ex.Message} {ex.StackTrace}");
                 _logger.LogError($"Ошибка в методе {method} Repository: {ex.Message} {ex.StackTrace}");
                 throw new RepositoryException($"Ошибка в методе {method} Repository: {ex.Message}");
             }

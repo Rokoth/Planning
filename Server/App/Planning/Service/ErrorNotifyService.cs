@@ -1,15 +1,19 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Planning.Common;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public class ErrorNotifyService: IDisposable
+    public class ErrorNotifyService : IDisposable, IErrorNotifyService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ErrorNotifyService> _logger;
@@ -17,7 +21,6 @@ namespace Planning.Service
         private bool isConnected = false;
         private bool isAuth = false;
         private bool isDisposed = false;
-        private bool isCheckRun = false;
         private bool _sendMessage = false;
 
         private string _server;
@@ -27,8 +30,9 @@ namespace Planning.Service
         private string _defaultTitle;
 
         private object _lockObject = new object();
+        private bool isLock = false;
 
-        private string _token { get; set; }        
+        private string _token { get; set; }
 
         public ErrorNotifyService(IServiceProvider serviceProvider)
         {
@@ -47,7 +51,6 @@ namespace Planning.Service
                     _defaultTitle = settings.DefaultTitle;
 
                     Task.Factory.StartNew(CheckConnect, TaskCreationOptions.LongRunning);
-                    isCheckRun = true;
                 }
                 else
                 {
@@ -58,65 +61,101 @@ namespace Planning.Service
 
         private async Task<bool> Auth()
         {
+            bool _isLocked = false;
+            lock (_lockObject)
+            {
+                if (isLock)
+                {
+                    _isLocked = true;
+                }
+                else
+                {
+                    isLock = true;
+                }
+            }
+            if (_isLocked)
+            {
+                for (int i = 0; i < 60; i++)
+                {
+                    if (!isLock)
+                    {
+                        break;
+                    }
+                    await Task.Delay(1000);
+                }
+                if (!isLock)
+                {
+                    if (isAuth) return true;
+                    if (isConnected) return false;
+                }
+                else
+                {
+                    _logger.LogError($"ErrorNotifyService: Error in Auth method: cant wait for auth with lock");
+                    return false;
+                }
+            }
+
             var result = await Execute(client =>
                 client.PostAsync($"{_server}/api/v1/client/auth", new ErrorNotifyClientIdentity()
-                { 
+                {
                     Login = _login,
                     Password = _password
-                }.SerializeRequest()), "Post", s => s.ParseResponse<ErrorNotifyClientIdentityResponse>());
-            if (result == null)
+                }.SerializeRequest()), "Post", s => s.ParseResponseExt<ErrorNotifyClientIdentityResponse>(), false);
+            if (result.ResponseCode == ResponseEnum.Error)
             {
                 if (isConnected)
                 {
                     _logger.LogError($"ErrorNotifyService: Error in Auth method: wrong login or password");
                     _sendMessage = false;
-                }                
+                }
                 return false;
             }
-            _token = result.Token;
+            _token = result.ResponseBody.Token;
             isAuth = true;
+            lock (_lockObject)
+            {
+                isLock = false;
+            }
             return true;
         }
 
-        public async Task Send(string message, MessageLevelEnum level, string title = null)
+        public async Task Send(string message, MessageLevelEnum level = MessageLevelEnum.Error, string title = null)
         {
             if (_sendMessage)
             {
-                if (isAuth || await Auth())
+                var result = await Execute(client =>
                 {
-                    var result = await Execute(client =>
+                    var request = new HttpRequestMessage()
                     {
-                        var request = new HttpRequestMessage()
-                        {
-                            Headers = {
+                        Headers = {
                             { HttpRequestHeader.Authorization.ToString(), $"Bearer {_token}" },
                             { HttpRequestHeader.ContentType.ToString(), "application/json" },
                         },
-                            RequestUri = new Uri($"{_server}/api/v1/message/send"),
-                            Method = HttpMethod.Post,
-                            Content = new MessageCreator() { 
-                                Description = message,
-                                FeedbackContact = _feedback,
-                                Level = (int)level,
-                                Title = title ?? _defaultTitle
-                            }.SerializeRequest()
-                        };
+                        RequestUri = new Uri($"{_server}/api/v1/message/send"),
+                        Method = HttpMethod.Post,
+                        Content = new MessageCreator()
+                        {
+                            Description = message,
+                            FeedbackContact = _feedback,
+                            Level = (int)level,
+                            Title = title ?? _defaultTitle
+                        }.SerializeRequest()
+                    };
 
-                        return client.SendAsync(request);
-                    }, "Send", s => s.ParseResponse<MessageCreator>());
-                                       
-                    if (result == null)
-                    {
-                        _logger.LogError($"ErrorNotifyService: Error in Send method: cant send message error");
-                    }
+                    return client.SendAsync(request);
+                }, "Send", s => s.ParseResponseExt<MessageCreator>());
+
+                if (result.ResponseCode == ResponseEnum.Error)
+                {
+                    _logger.LogError($"ErrorNotifyService: Error in Send method: cant send message error");
                 }
             }
         }
 
-        private async Task<T> Execute<T>(
+        private async Task<Response<T>> Execute<T>(
             Func<HttpClient, Task<HttpResponseMessage>> action,
             string method,
-            Func<HttpResponseMessage, Task<T>> parseMethod)
+            Func<HttpResponseMessage, Task<Response<T>>> parseMethod, bool needAuth = true) where T : class
         {
             using (HttpClient client = new HttpClient())
             {
@@ -125,15 +164,37 @@ namespace Planning.Service
                     if (isConnected)
                     {
                         var result = await action(client);
-                        return await parseMethod(result);
+                        var resp = await parseMethod(result);
+                        if (resp.ResponseCode == ResponseEnum.NeedAuth)
+                        {
+                            if (needAuth && await Auth())
+                            {
+                                result = await action(client);
+                                resp = await parseMethod(result);
+                            }
+                            else
+                            {
+                                return new Response<T>()
+                                {
+                                    ResponseCode = ResponseEnum.Error
+                                };
+                            }
+                        }
+                        return resp;
                     }
                     _logger.LogError($"Error in {method}: server not connected");
-                    return default;
+                    return new Response<T>()
+                    {
+                        ResponseCode = ResponseEnum.Error
+                    };
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError($"Error in {method}: {ex.Message}; StackTrace: {ex.StackTrace}");
-                    return default;
+                    return new Response<T>()
+                    {
+                        ResponseCode = ResponseEnum.Error
+                    };
                 }
             }
         }
@@ -141,8 +202,8 @@ namespace Planning.Service
         private async Task CheckConnect()
         {
             while (!isDisposed)
-            {               
-                isConnected = await CheckConnectOnce(_server);                
+            {
+                isConnected = await CheckConnectOnce(_server);
                 await Task.Delay(1000);
             }
         }
@@ -171,4 +232,30 @@ namespace Planning.Service
             isDisposed = true;
         }
     }
+        
+    
+
+    public class ErrorNotifyClientIdentity
+    {
+        public string Login { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class ErrorNotifyClientIdentityResponse
+    {
+        public string Token { get; set; }
+        public string UserName { get; set; }
+    }
+
+    public class MessageCreator
+    {
+        public int Level { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string FeedbackContact { get; set; }
+    }
+
+    
+
+    
 }

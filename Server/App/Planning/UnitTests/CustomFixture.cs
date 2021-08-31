@@ -45,6 +45,7 @@ namespace Planning.UnitTests
             serviceCollection.AddDataServices();
             serviceCollection.AddScoped<IDeployService, DeployService>();
             serviceCollection.AddScoped<IAuthService, AuthService>();
+            serviceCollection.AddScoped<IErrorNotifyService, ErrorNotifyService>();            
 
             serviceCollection.AddDbContext<DB.Context.DbPgContext>(opt => opt.UseNpgsql(ConnectionString));
             serviceCollection.AddScoped<DB.Repository.IRepository<DB.Context.User>, DB.Repository.Repository<DB.Context.User>>();

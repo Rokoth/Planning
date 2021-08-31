@@ -13,15 +13,10 @@ using System.Threading.Tasks;
 
 namespace Planning.Controllers
 {
-    public class ScheduleController : Controller
-    {
-        private IServiceProvider _serviceProvider;
-        private ILogger _logger;
-
-        public ScheduleController(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-            _logger = _serviceProvider.GetRequiredService<ILogger<ScheduleController>>();
+    public class ScheduleController : CommonControllerBase
+    {      
+        public ScheduleController(IServiceProvider serviceProvider) : base(serviceProvider)
+        {          
         }
 
         // GET: UserController
@@ -33,21 +28,16 @@ namespace Planning.Controllers
         }
 
         [Authorize]
-        public async Task<ActionResult> ListPaged([FromQuery]int page = 0, [FromQuery]int size = 10,
+        public async Task<IActionResult> ListPaged([FromQuery]int page = 0, [FromQuery]int size = 10,
             [FromQuery]string sort = null, [FromQuery]string name = null)
         {
-            try
-            {                
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "ListPaged");
         }
 
         [Authorize]
@@ -61,27 +51,20 @@ namespace Planning.Controllers
         public async Task<IActionResult> ListSelectPaged([FromQuery] int page = 0, [FromQuery] int size = 10,
             [FromQuery] string sort = null, [FromQuery] string name = null)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Method ScheduleController::ListSelect exception: {ex.Message} + ST: {ex.StackTrace}");
-                return RedirectToAction("Error", $"Method ScheduleController::ListSelect exception: {ex.Message} + ST: {ex.StackTrace}");
-            }
+            }, "ScheduleController", "ListSelectPaged");
         }
 
         // GET: ClientController/Edit/5
         [Authorize]
         public async Task<IActionResult> Edit(Guid id)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Schedule result = await _dataService.GetAsync(id, source.Token);
@@ -92,30 +75,21 @@ namespace Planning.Controllers
                     BeginDate = result.BeginDate
                 };
                 return View(updater);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "Edit");
         }
 
         // POST: ClientController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Edit(Guid id, ScheduleUpdater updater)
+        public async Task<IActionResult> Edit(Guid id, ScheduleUpdater updater)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<Schedule, ScheduleUpdater>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Schedule result = await _dataService.UpdateAsync(updater, source.Token);
                 return RedirectToAction("Details", new { id = result.Id });
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "Edit");
         }
 
         // GET: UserController
@@ -126,38 +100,28 @@ namespace Planning.Controllers
         }
 
         [Authorize]
-        public async Task<ActionResult> HistoryListPaged([FromRoute] Guid id, [FromQuery] int page = 0, [FromQuery] int size = 10,
+        public async Task<IActionResult> HistoryListPaged([FromRoute] Guid id, [FromQuery] int page = 0, [FromQuery] int size = 10,
             [FromQuery] string sort = null, [FromQuery] string name = null)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<ScheduleHistory, ScheduleHistoryFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ScheduleHistoryFilter(size, page, sort, name, id), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "HistoryListPaged");
         }
 
         // GET: UserController/Details/5
         [Authorize]
-        public async Task<ActionResult> Details([FromRoute] Guid id)
+        public async Task<IActionResult> Details([FromRoute] Guid id)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 var cancellationTokenSource = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, cancellationTokenSource.Token);
                 return View(result);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "Details");
         }
 
         // GET: UserController/Create
@@ -179,10 +143,9 @@ namespace Planning.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Create(ScheduleCreator creator)
+        public async Task<IActionResult> Create(ScheduleCreator creator)
         {
-            try
-            {
+            return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var selectService = _serviceProvider.GetRequiredService<IProjectSelectService>();
                 var userSettingsRepo = _serviceProvider.GetRequiredService<IRepository<DB.Context.UserSettings>>();
@@ -194,47 +157,33 @@ namespace Planning.Controllers
 
                 var result = await selectService.AddProjectToSchedule(userId, userSettings, creator.ProjectId, creator.BeginDate, creator.SetBeginDate);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "Create");
         }
 
         // GET: UserController/Delete/5
         [Authorize]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Schedule result = await _dataService.GetAsync(id, source.Token);
                 return View(result);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "Delete");
         }
 
         // POST: UserController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Delete(Guid id, Schedule model)
+        public async Task<IActionResult> Delete(Guid id, Schedule model)
         {
-            try
-            {
+            return await Execute(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IDeleteDataService<Schedule>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Schedule result = await _dataService.DeleteAsync(id, source.Token);
                 return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "ScheduleController", "Delete");
         }
     }
 }

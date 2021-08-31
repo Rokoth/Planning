@@ -1,9 +1,10 @@
 ﻿using Deploy;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Planning.Common;
+using Planning.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +17,10 @@ namespace Planning.Controllers
     [Produces("application/json")]
     public class CommonController : CommonControllerBase
     {
-        private IServiceProvider _serviceProvider;
-        private ILogger _logger;
+              
 
-        public CommonController(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-            _logger = _serviceProvider.GetRequiredService<ILogger<CommonController>>();
+        public CommonController(IServiceProvider serviceProvider): base(serviceProvider)
+        {            
         }
 
         [HttpGet("ping")]
@@ -35,44 +33,28 @@ namespace Planning.Controllers
         [HttpPost("deploy")]
         public async Task<IActionResult> Deploy()
         {
-            try
+            return await ExecuteApi(async () =>
             {
                 var deployService = _serviceProvider.GetRequiredService<IDeployService>();
                 await deployService.Deploy();
                 return Ok();
+            }, "CommonController", "Deploy");
+        }
+
+        [HttpPost("send_error")]
+        [Authorize]
+        public async Task<IActionResult> SendErrorMessage([FromBody] ErrorNotifyMessage message)
+        {
+            try
+            {
+                await errorNotifyService.Send(message.Message, message.MessageLevel, message.Title);
+                return Ok();
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ошибка при раскатке БД: {ex.Message} {ex.StackTrace}");
-                return InternalServerError($"Ошибка при раскатке БД: {ex.Message}");
+                _logger.LogError($"Error at SendErrorMessage: {ex.Message} {ex.StackTrace}");
+                return InternalServerError(ex.Message);
             }
-        }
-    }
-
-    public abstract class CommonControllerBase : Controller
-    {       
-
-        protected InternalServerErrorObjectResult InternalServerError()
-        {
-            return new InternalServerErrorObjectResult();
-        }
-
-        protected InternalServerErrorObjectResult InternalServerError(object value)
-        {
-            return new InternalServerErrorObjectResult(value);
-        }       
-    }
-
-    public class InternalServerErrorObjectResult : ObjectResult
-    {
-        public InternalServerErrorObjectResult(object value) : base(value)
-        {
-            StatusCode = StatusCodes.Status500InternalServerError;
-        }
-
-        public InternalServerErrorObjectResult() : this(null)
-        {
-            StatusCode = StatusCodes.Status500InternalServerError;
         }
     }
 }

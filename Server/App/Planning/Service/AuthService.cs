@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Planning.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,59 +12,6 @@ using System.Threading.Tasks;
 namespace Planning.Service
 {
 
-    public enum MessageLevelEnum
-    {
-        Issue = 0,
-        Warning = 1,
-        Error = 10
-    }
-
-    public class ErrorNotifyClientIdentity
-    { 
-        public string Login { get; set; }
-        public string Password { get; set; }
-    }
-
-    public class ErrorNotifyClientIdentityResponse
-    {
-        public string Token { get; set; }
-        public string UserName { get; set; }        
-    }
-
-    public class MessageCreator
-    {        
-        public int Level { get; set; } 
-        public string Title { get; set; }       
-        public string Description { get; set; }        
-        public string FeedbackContact { get; set; }        
-    }
-
-    public static class HttpApiHelper
-    {
-        public static StringContent SerializeRequest<TReq>(this TReq entity)
-        {
-            var json = JsonConvert.SerializeObject(entity);
-            var data = new StringContent(json, Encoding.UTF8, "application/json");
-            return data;
-        }
-
-        public static async Task<TResp> ParseResponse<TResp>(this HttpResponseMessage result) where TResp : class
-        {
-            if (result != null && result.IsSuccessStatusCode)
-            {
-                var response = await result.Content.ReadAsStringAsync();
-                return JObject.Parse(response).ToObject<TResp>();
-            }
-            return null;
-        }        
-    }
-
-    public interface IAuthService
-    {
-        Task<ClaimsIdentity> AuthApi(Contract.Model.UserIdentity login, CancellationToken token);
-        Task<ClaimsIdentity> Auth(Contract.Model.UserIdentity login, CancellationToken token);
-    }
-
     public class AuthService : IAuthService
     {
         private const string CLIENT_ROLE_TYPE = "Client";
@@ -75,9 +20,12 @@ namespace Planning.Service
         private const string COOKIES_AUTH_TYPE = "Cookies";
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly IErrorNotifyService errorNotifyService;
+
         public AuthService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            errorNotifyService = _serviceProvider.GetRequiredService<IErrorNotifyService>();
         }
 
         /// <summary>

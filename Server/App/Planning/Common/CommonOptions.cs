@@ -1,9 +1,41 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Planning.Common
 {
+    public enum ResponseEnum
+    {
+        OK = 0,
+        Error = 1,
+        NeedAuth = 2
+    }
+
+    public class Response<TResp> where TResp : class
+    {
+        public ResponseEnum ResponseCode { get; set; }
+        public TResp ResponseBody { get; set; }
+    }
+
+    public interface IErrorNotifyService
+    {
+        Task Send(string message, MessageLevelEnum level = MessageLevelEnum.Error, string title = null);
+    }
+
+    public class ErrorNotifyMessage
+    {
+        public string Message { get; set; }
+        public string Title { get; set; }
+        public MessageLevelEnum MessageLevel { get; set; }
+    }
+    public enum MessageLevelEnum
+    {
+        Issue = 0,
+        Warning = 1,
+        Error = 10
+    }
+
     public enum ClientMode
     {
         ThickPriority = 1,

@@ -13,10 +13,10 @@
                 new { parentId = item.Id },
                 new { @class = "btn btn-dark" })
             @Html.ActionLink("Edit", "Edit",
-                new { parentId = item.Id },
+                new { id = item.Id },
                 new { @class = "btn btn-dark" })
             @Html.ActionLink("Delete", "Delete",
-                new { parentId = item.Id },
+                new { id = item.Id },
                 new { @class = "btn btn-dark" })
         </div>
         <div id="child_@item.Id" style="margin-left:20px"></div>

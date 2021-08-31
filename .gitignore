@@ -38,3 +38,6 @@
 /Server/App/Planning/UnitTests/obj
 /Docs/Architect/Planning 0.0.2.ldb
 /Docs/TechTask/0.0.1/~$chTask 0.0.11.docx
+/Server/App/Planning/Migrator/bin/Debug/netcoreapp3.1
+/Server/App/Planning/Migrator/obj
+/Server/App/Planning/Migrator/Migrator.csproj.user

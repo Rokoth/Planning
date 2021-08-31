@@ -123,6 +123,27 @@ namespace Planning.UnitTests
             }           
         }
 
+        /// <summary>
+        /// FormulaController. Test for Get method (positive scenario)
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task FormulaGetItemTest()
+        {
+            var formula = await AddFormula("default_formula_{0}");
+            var user = await AddUser(formula.Id);
+            var identity = await AuthAndAssert(user);
+
+            var testFormula = await AddFormula("formula_select_{0}");
+            
+            FormulaApiController controller = new FormulaApiController(_serviceProvider);
+            var res = await controller.GetItem(testFormula.Id);
+            Assert.True(res is OkObjectResult);
+            var result = res as OkObjectResult;
+            var actual = result.Value as Formula;
+            Assert.Equal(testFormula.Id, actual.Id);
+        }
+
         private async Task<ClientIdentityResponse> AuthAndAssert(DB.Context.User user)
         {
             var clientController = new AuthController(_serviceProvider);

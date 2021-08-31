@@ -10,17 +10,19 @@ using System.Threading.Tasks;
 using Planning.Contract.Model;
 using Planning.Service;
 
-namespace Planning.TaskCollector.Controllers
+namespace Planning.Controllers
 {
+
+
+
     /// <summary>
     /// Authentification methods
     /// </summary>
-    public class AccountController : Controller
+    public class AccountController : CommonControllerBase
     {
-        private readonly IServiceProvider _serviceProvider;
-        public AccountController(IServiceProvider serviceProvider)
+        public AccountController(IServiceProvider serviceProvider): base(serviceProvider)
         {
-            _serviceProvider = serviceProvider;
+            
         }
         
         // GET: AccountController/Login
@@ -44,8 +46,7 @@ namespace Planning.TaskCollector.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(UserIdentity userIdentity, string returnUrl)
         {
-            try
-            {
+            return await Execute(async ()=> {
                 if (ModelState.IsValid)
                 {
                     var source = new CancellationTokenSource(30000);
@@ -64,11 +65,7 @@ namespace Planning.TaskCollector.Controllers
                 }
                 if (!string.IsNullOrEmpty(returnUrl)) return Redirect(returnUrl);
                 return RedirectToAction("Index", "Home");
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { ex.Message });
-            }
+            }, "AccountController", "Login");
         }
 
         // POST: AccountController/Logout
@@ -79,15 +76,11 @@ namespace Planning.TaskCollector.Controllers
         [HttpGet]       
         public async Task<IActionResult> Logout()
         {
-            try
+            return await Execute(async () =>
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return RedirectToAction("Index", "Home");
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { ex.Message });
-            }
+            }, "AccountController", "Logout");
         }
     }
 }

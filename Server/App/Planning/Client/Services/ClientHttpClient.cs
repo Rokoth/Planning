@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using Planning.Contract.Model;
 using System.Net;
+using Planning.Common;
 
 namespace Planning.Client.ClientHttpClient
 {
@@ -94,6 +95,57 @@ namespace Planning.Client.ClientHttpClient
             if (result == null) return false;
             _token = result.Token;
             return true;
+        }
+
+        public async Task<bool> SendErrorMessage(string message)
+        {
+            var result = (await Execute(client =>
+            {
+                var request = new HttpRequestMessage()
+                {
+                    Headers = {
+                            { HttpRequestHeader.Authorization.ToString(), $"Bearer {_token}" },
+                            { HttpRequestHeader.ContentType.ToString(), "application/json" },
+                        },
+                    RequestUri = new Uri($"{_server}/api/v1/common/send_error"),
+                    Method = HttpMethod.Post,
+                    Content = new ErrorNotifyMessage()
+                    {
+                        Message = message,
+                        MessageLevel = MessageLevelEnum.Error,
+                        Title = "Ошибка в SoftUpdater client"
+                    }.SerializeRequest()
+                };
+
+                return client.SendAsync(request);
+            }, "SendErrorMessage", async s => {
+                await Task.CompletedTask;
+                if (s.IsSuccessStatusCode)
+                {
+                    return new Response<object>
+                    {
+                        ResponseCode = ResponseEnum.OK
+                    };
+                }
+                if (s.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    return new Response<object>
+                    {
+                        ResponseCode = ResponseEnum.NeedAuth
+                    };
+                }
+                return new Response<object>
+                {
+                    ResponseCode = ResponseEnum.Error
+                };
+            }));
+
+
+            if (result.ResponseCode != ResponseEnum.Error)
+            {
+                return true;
+            }
+            return false;
         }
 
         public async Task<ListResult<T>> Get<T>(string param, Type apiType = null) where T : class

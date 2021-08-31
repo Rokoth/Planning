@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿//Copyright 2021 Dmitriy Rokoth
+//Licensed under the Apache License, Version 2.0
+//
+//ref 1
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Planning.DB.Attributes;
 using System;
@@ -6,6 +10,10 @@ using System.Reflection;
 
 namespace Planning.DB.Context
 {
+    /// <summary>
+    /// class for build db models
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class EntityConfiguration<T> : IEntityTypeConfiguration<T>
         where T : class
     {
@@ -78,34 +86,5 @@ namespace Planning.DB.Context
         }
     }
 
-    //public class MigrateContext : DbContext
-    //{
-
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //    {
-    //        optionsBuilder.UseFirebird(@"database=localhost:projects.fdb;user=sysdba;password=Rash_Idio_123");
-    //        base.OnConfiguring(optionsBuilder);
-    //    }
-
-    //    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    //    {
-    //        base.OnModelCreating(modelBuilder);
-    //    }
-    //}
-
-    //public class MigrateProject
-    //{
-    //    public int Id { get; set; }
-    //    public int Lvl { get; set; }
-    //    public string Prjt { get; set; }
-    //    public int Parent { get; set; }
-    //    public int Endpoint { get; set; }
-    //    public int Prio { get; set; }
-    //    public int PrLvl { get; set; }
-    //    public int Timings { get; set; }
-    //    public string LastUse { get; set; }
-    //    public int Tims { get; set; }
-    //    public int Ddf { get; set; }
-    //    public string OutProjs { get; set; }
-    //}
+    
 }

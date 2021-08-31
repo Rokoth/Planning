@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Planning.Common;
 using Planning.DB.Context;
 using Planning.DB.Repository;
 using System;
@@ -16,12 +17,14 @@ namespace Planning.Service
         private ILogger _logger;
         private bool isRunning = true;
         private CancellationTokenSource _tokenSource;
+        private readonly IErrorNotifyService errorNotifyService;
 
         public BuildScheduleHostedService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _logger = _serviceProvider.GetRequiredService<ILogger<BuildScheduleHostedService>>();
             _tokenSource = new CancellationTokenSource();
+            errorNotifyService = _serviceProvider.GetRequiredService<IErrorNotifyService>();
         }
 
         public async Task Run(CancellationToken _cancellationToken)
@@ -85,6 +88,7 @@ namespace Planning.Service
                 }
                 catch (Exception ex)
                 {
+                    await errorNotifyService.Send($"Error in BuildScheduleHostedService: Run: {ex.Message} {ex.StackTrace}");
                     _logger.LogError($"Error in BuildScheduleHostedService: Run: {ex.Message} {ex.StackTrace}");
                 }
                 await Task.Delay(60000);

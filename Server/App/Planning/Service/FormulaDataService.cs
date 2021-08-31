@@ -86,30 +86,28 @@ namespace Planning.Service
 
     }
 
-    public class UserSettingsDataService : DataService<DB.Context.UserSettings, Contract.Model.UserSettings,
-       Contract.Model.UserSettingsFilter, Contract.Model.UserSettingsCreator, Contract.Model.UserSettingsUpdater>
+    public class ScheduleDataService : DataService<DB.Context.Schedule, Contract.Model.Schedule,
+       Contract.Model.ScheduleFilter, Contract.Model.ScheduleCreator, Contract.Model.ScheduleUpdater>
     {
-        public UserSettingsDataService(IServiceProvider serviceProvider) : base(serviceProvider)
+        public ScheduleDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
 
         }
 
-        protected override Expression<Func<DB.Context.UserSettings, bool>> GetFilter(Contract.Model.UserSettingsFilter filter)
+        protected override Expression<Func<DB.Context.Schedule, bool>> GetFilter(Contract.Model.ScheduleFilter filter)
         {
-            return s => s.UserId == filter.UserId;
-        }        
-        protected override DB.Context.UserSettings UpdateFillFields(Contract.Model.UserSettingsUpdater entity, DB.Context.UserSettings entry)
+            return s => (filter.UserId == null || s.UserId == filter.UserId)
+                     && (filter.ProjectId == null || s.ProjectId == filter.ProjectId);
+        }
+               
+        protected override DB.Context.Schedule UpdateFillFields(Contract.Model.ScheduleUpdater entity, DB.Context.Schedule entry)
         {
-            entry.ScheduleCount = entity.ScheduleCount;
-            entry.DefaultProjectTimespan = entity.DefaultProjectTimespan;
-            entry.LeafOnly = entity.LeafOnly;
-            entry.ScheduleMode = entity.ScheduleMode;
-            entry.ScheduleShift = entity.ScheduleShift;
-            entry.ScheduleTimeSpan = entity.ScheduleTimeSpan;
+            entry.BeginDate = entity.BeginDate;
+            entry.ProjectId = entity.ProjectId;          
             return entry;
         }
 
-        protected override string DefaultSort => "Name";
+        protected override string DefaultSort => "BeginDate";
 
     }
 }

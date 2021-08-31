@@ -11,13 +11,11 @@ using System.Threading.Tasks;
 
 namespace Planning.Controllers
 {
-    public class UserController : Controller
+    public class UserController : CommonControllerBase
     {
-        private IServiceProvider _serviceProvider;
-
-        public UserController(IServiceProvider serviceProvider)
+        
+        public UserController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _serviceProvider = serviceProvider;
         }
 
         // GET: UserController
@@ -28,20 +26,15 @@ namespace Planning.Controllers
         }
 
         [Authorize]
-        public async Task<ActionResult> ListPaged(int page = 0, int size = 10, string sort = null, string name = null)
+        public async Task<IActionResult> ListPaged(int page = 0, int size = 10, string sort = null, string name = null)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new UserFilter(size, page, sort, name), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "ListPaged");
         }
 
         // GET: UserController
@@ -52,84 +45,69 @@ namespace Planning.Controllers
         }
 
         [Authorize]
-        public async Task<ActionResult> HistoryListPaged(int page = 0, int size = 10, string sort = null, string name = null, Guid? id = null)
+        public async Task<IActionResult> HistoryListPaged(int page = 0, int size = 10, string sort = null, string name = null, Guid? id = null)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<UserHistory, UserHistoryFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new UserHistoryFilter(size, page, sort, name, id), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "HistoryListPaged");
         }
 
         // GET: UserController/Details/5
         [Authorize]
-        public async Task<ActionResult> Details(Guid id)
+        public async Task<IActionResult> Details(Guid id)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 var cancellationTokenSource = new CancellationTokenSource(30000);
                 User result = await _dataService.GetAsync(id, cancellationTokenSource.Token);
                 return View(result);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "Details");
         }
 
         // GET: UserController/Create
         [Authorize]
         public async Task<IActionResult> Create()
         {
-            //Fill default fields
-            var _formulaDataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
-            CancellationTokenSource source = new CancellationTokenSource(30000);
-            var defaultFormula = (await _formulaDataService.GetAsync(new FormulaFilter(1, 0, null, null, true), source.Token)).Data.FirstOrDefault();
-            if (defaultFormula == null)
-            {
-                defaultFormula = (await _formulaDataService.GetAsync(new FormulaFilter(1, 0, null, null, null), source.Token)).Data.FirstOrDefault();
-            }
-            var user = new UserCreator()
-            {
-                FormulaId = defaultFormula.Id,
-                Formula = defaultFormula.Name
-            };
-            return View(user);
+            return await ExecuteApi(async () => {
+                var _formulaDataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var defaultFormula = (await _formulaDataService.GetAsync(new FormulaFilter(1, 0, null, null, true), source.Token)).Data.FirstOrDefault();
+                if (defaultFormula == null)
+                {
+                    defaultFormula = (await _formulaDataService.GetAsync(new FormulaFilter(1, 0, null, null, null), source.Token)).Data.FirstOrDefault();
+                }
+                var user = new UserCreator()
+                {
+                    FormulaId = defaultFormula.Id,
+                    Formula = defaultFormula.Name
+                };
+                return View(user);
+            }, "UserController", "Create");
         }
 
         // POST: UserController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Create(UserCreator creator)
+        public async Task<IActionResult> Create(UserCreator creator)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IAddDataService<User, UserCreator>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 User result = await _dataService.AddAsync(creator, source.Token);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "Create");
         }
 
         // GET: UserController/Edit/5
         [Authorize]
         public async Task<IActionResult> Edit(Guid id)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 User result = await _dataService.GetAsync(id, source.Token);
@@ -150,66 +128,47 @@ namespace Planning.Controllers
                     FormulaId = result.FormulaId
                 };
                 return View(updater);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "Edit");
         }
 
         // POST: UserController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Edit(Guid id, UserUpdater updater)
+        public async Task<IActionResult> Edit(Guid id, UserUpdater updater)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<User, UserUpdater>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 User result = await _dataService.UpdateAsync(updater, source.Token);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "Edit");
         }
 
         // GET: UserController/Delete/5
         [Authorize]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 User result = await _dataService.GetAsync(id, source.Token);
                 return View(result);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "Delete");
         }
 
         // POST: UserController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<ActionResult> Delete(Guid id, User model)
+        public async Task<IActionResult> Delete(Guid id, User model)
         {
-            try
-            {
+            return await ExecuteApi(async () => {
                 var _dataService = _serviceProvider.GetRequiredService<IDeleteDataService<User>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 User result = await _dataService.DeleteAsync(id, source.Token);
                 return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index", "Error", new { Message = ex.Message });
-            }
+            }, "UserController", "Delete");
         }
     }
 }
