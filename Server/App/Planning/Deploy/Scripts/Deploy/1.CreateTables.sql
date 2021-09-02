@@ -68,6 +68,8 @@ create table if not exists schedule(
 	, begin_date   timestamptz not null
 	, end_date	   timestamptz not null		
 	, is_running   boolean     not null
+	, is_closed    boolean     not null default false
+	, add_time     int         not null default 0
 	, version_date timestamptz not null
 	, is_deleted   boolean     not null default false
 );
@@ -121,6 +123,8 @@ create table if not exists h_schedule(
 	, begin_date   timestamptz     null
 	, end_date	   timestamptz     null		
 	, is_running   boolean         null
+	, add_time     int             null
+	, is_closed    boolean         null
 	, version_date timestamptz     null
 	, is_deleted   boolean         null
 	, "user_id"    varchar         null

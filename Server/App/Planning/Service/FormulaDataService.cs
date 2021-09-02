@@ -96,8 +96,7 @@ namespace Planning.Service
 
         protected override Expression<Func<DB.Context.Schedule, bool>> GetFilter(Contract.Model.ScheduleFilter filter)
         {
-            return s => (filter.UserId == null || s.UserId == filter.UserId)
-                     && (filter.ProjectId == null || s.ProjectId == filter.ProjectId);
+            return s => s.UserId == filter.UserId && (filter.ProjectId == null || s.ProjectId == filter.ProjectId);
         }
                
         protected override DB.Context.Schedule UpdateFillFields(Contract.Model.ScheduleUpdater entity, DB.Context.Schedule entry)

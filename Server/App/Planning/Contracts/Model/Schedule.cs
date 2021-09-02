@@ -84,16 +84,18 @@ namespace Planning.Contract.Model
     /// </summary>
     public class ScheduleFilter : Filter<Schedule>
     {
-        public ScheduleFilter(int size, int page, string sort, string name) : base(size, page, sort)
+        public ScheduleFilter(int size, int page, string sort, string name, Guid? projectId, Guid userId) : base(size, page, sort)
         {
             Name = name;
+            UserId = userId;
+            ProjectId = projectId;
         }
         /// <summary>
         /// User Name
         /// </summary>
         public string Name { get; }
         public Guid UserId { get; set; }
-        public Guid ProjectId { get; set; }
+        public Guid? ProjectId { get; set; }
     }
 
     public class ScheduleHistoryFilter : Filter<ScheduleHistory>

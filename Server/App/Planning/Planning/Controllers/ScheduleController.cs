@@ -32,9 +32,10 @@ namespace Planning.Controllers
             [FromQuery]string sort = null, [FromQuery]string name = null)
         {
             return await Execute(async () => {
+                var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name), source.Token);
+                var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name, null, userId), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
             }, "ScheduleController", "ListPaged");
@@ -52,9 +53,10 @@ namespace Planning.Controllers
             [FromQuery] string sort = null, [FromQuery] string name = null)
         {
             return await Execute(async () => {
+                var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name), source.Token);
+                var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name, null, userId), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
             }, "ScheduleController", "ListSelectPaged");
@@ -182,6 +184,27 @@ namespace Planning.Controllers
                 var _dataService = _serviceProvider.GetRequiredService<IDeleteDataService<Schedule>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Schedule result = await _dataService.DeleteAsync(id, source.Token);
+                return RedirectToAction(nameof(Index));
+            }, "ScheduleController", "Delete");
+        }
+
+        // POST: UserController/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> MoveNext()
+        {
+            return await Execute(async () => {
+                var userId = Guid.Parse(User.Identity.Name);
+                var selectService = _serviceProvider.GetRequiredService<IProjectSelectService>();
+                var userSettingsRepo = _serviceProvider.GetRequiredService<IRepository<DB.Context.UserSettings>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
+                {
+                    Selector = s => s.UserId == userId
+                }, source.Token)).Data.Single();
+
+               await selectService.MoveNextSchedule(userId, userSettings);                
                 return RedirectToAction(nameof(Index));
             }, "ScheduleController", "Delete");
         }

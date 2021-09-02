@@ -77,6 +77,10 @@ namespace Planning.DB.Context
         public DateTimeOffset EndDate { get; set; }
         [ColumnName("is_running")]
         public bool IsRunning { get; set; }
+        [ColumnName("add_time")]
+        public int? AddTime { get; set; }
+        [ColumnName("is_closed")]
+        public bool IsClosed { get; set; }
 
         [ForeignKey("UserId")]
         [Ignore]

@@ -32,7 +32,7 @@ namespace Planning.Controllers
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name), source.Token);                
+                var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name, null, userId), source.Token);                
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return Ok(result.Data);
             }, "ScheduleApiController", "Get");

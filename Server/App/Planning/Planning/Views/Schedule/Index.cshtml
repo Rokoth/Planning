@@ -6,6 +6,7 @@
 
 <div class="container">
     @Html.ActionLink("Добавить", "Create", "Schedule", null, new { @class = "btn btn-dark" })
+    @Html.ActionLink("Переключиться на следующий проект", "MoveNext", "Schedule", null, new { @class = "btn btn-dark" })
     @Html.ActionLink("История", "History", "Schedule", null, new { @class = "btn btn-dark" })
     <hr>
     Фильтры:
