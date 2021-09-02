@@ -17,31 +17,30 @@ namespace Planning.Service
         private ILogger _logger;
         private bool isRunning = true;
         private CancellationTokenSource _tokenSource;
-        private readonly IErrorNotifyService errorNotifyService;
-
+        
         public BuildScheduleHostedService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _logger = _serviceProvider.GetRequiredService<ILogger<BuildScheduleHostedService>>();
             _tokenSource = new CancellationTokenSource();
-            errorNotifyService = _serviceProvider.GetRequiredService<IErrorNotifyService>();
+            
         }
 
         public async Task Run(CancellationToken _cancellationToken)
         {
-            while (isRunning && !_cancellationToken.IsCancellationRequested)
+            using (var scope = _serviceProvider.CreateScope())
             {
-                try
-                {
-                    using (var scope = _serviceProvider.CreateScope())
-                    {
-                        var now = DateTimeOffset.Now;
-                        var scopeProvider = scope.ServiceProvider;
-                        var userRepo = scopeProvider.GetRequiredService<IRepository<User>>();
-                        var userSettingsRepo = scopeProvider.GetRequiredService<IRepository<UserSettings>>();
-                        var scheduleRepo = scopeProvider.GetRequiredService<IRepository<Schedule>>();
-                        var selectService = scopeProvider.GetRequiredService<IProjectSelectService>();
+                var now = DateTimeOffset.Now;
+                var scopeProvider = scope.ServiceProvider;
+                var userRepo = scopeProvider.GetRequiredService<IRepository<User>>();
+                var userSettingsRepo = scopeProvider.GetRequiredService<IRepository<UserSettings>>();
+                var scheduleRepo = scopeProvider.GetRequiredService<IRepository<Schedule>>();
+                var selectService = scopeProvider.GetRequiredService<IProjectSelectService>();
 
+                while (isRunning && !_cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
                         var users = await userRepo.GetAsync(new Filter<User>()
                         {
                             Selector = s => true
@@ -84,14 +83,16 @@ namespace Planning.Service
                                 default: break;
                             }
                         }
+
                     }
+                    catch (Exception ex)
+                    {
+                        var errorNotifyService = scopeProvider.GetRequiredService<IErrorNotifyService>();
+                        await errorNotifyService.Send($"Error in BuildScheduleHostedService: Run: {ex.Message} {ex.StackTrace}");
+                        _logger.LogError($"Error in BuildScheduleHostedService: Run: {ex.Message} {ex.StackTrace}");
+                    }
+                    await Task.Delay(60000);
                 }
-                catch (Exception ex)
-                {
-                    await errorNotifyService.Send($"Error in BuildScheduleHostedService: Run: {ex.Message} {ex.StackTrace}");
-                    _logger.LogError($"Error in BuildScheduleHostedService: Run: {ex.Message} {ex.StackTrace}");
-                }
-                await Task.Delay(60000);
             }
         }
 

@@ -27,4 +27,26 @@ namespace Planning.Service
                 && (filter.Id == null || s.Id == filter.Id) && s.UserId == filter.UserId;
         }
     }
+
+    public class ScheduleHistoryDataService : DataGetService<DB.Context.ScheduleHistory, Contract.Model.ScheduleHistory,
+       Contract.Model.ScheduleHistoryFilter>
+    {
+        public ScheduleHistoryDataService(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+
+        }
+
+        protected override string DefaultSort => "Name";
+
+        protected override Func<DB.Context.Filter<DB.Context.ScheduleHistory>, CancellationToken,
+            Task<Contract.Model.PagedResult<DB.Context.ScheduleHistory>>> GetListFunc(DB.Repository.IRepository<DB.Context.ScheduleHistory> repo)
+        {
+            return repo.GetAsyncDeleted;
+        }
+
+        protected override Expression<Func<DB.Context.ScheduleHistory, bool>> GetFilter(Contract.Model.ScheduleHistoryFilter filter)
+        {
+            return s =>  (filter.Id == null || s.Id == filter.Id);
+        }
+    }
 }

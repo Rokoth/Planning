@@ -94,31 +94,34 @@ namespace Planning.Service
                 }, cancellationTokenSource.Token)).Data.OrderBy(s => s.BeginDate);
                                 
                 var beginDate = now;
-                
-                foreach (var schedule in currentSchedules)
+                var runningSchedule = currentSchedules.FirstOrDefault(s=>s.IsRunning);
+                if (runningSchedule != null && runningSchedule.EndDate < now)
                 {
-                    var project = await _projectRepo.GetAsync(schedule.ProjectId, cancellationTokenSource.Token);
-                    if (schedule.IsRunning)
+                    foreach (var schedule in currentSchedules)
                     {
-                        schedule.EndDate = now;                        
-                    }
-                    else
-                    {
-                        schedule.BeginDate = beginDate;
-                        if (project.Period.HasValue)
+                        var project = await _projectRepo.GetAsync(schedule.ProjectId, cancellationTokenSource.Token);
+                        if (schedule.IsRunning)
                         {
-                            schedule.EndDate = schedule.BeginDate.AddMinutes(Math.Max(project.Period.Value + project.AddTime, 0));
+                            schedule.EndDate = now;
                         }
                         else
                         {
-                            schedule.EndDate = schedule.BeginDate.AddMinutes(settings.DefaultProjectTimespan);
+                            schedule.BeginDate = beginDate;
+                            if (project.Period.HasValue)
+                            {
+                                schedule.EndDate = schedule.BeginDate.AddMinutes(Math.Max(project.Period.Value + project.AddTime, 0));
+                            }
+                            else
+                            {
+                                schedule.EndDate = schedule.BeginDate.AddMinutes(settings.DefaultProjectTimespan);
+                            }
+                            beginDate = schedule.EndDate;
                         }
-                        beginDate = schedule.EndDate;
+
+                        await _scheduleRepo.UpdateAsync(schedule, false, cancellationTokenSource.Token);
                     }
-                    
-                    await _scheduleRepo.UpdateAsync(schedule, false, cancellationTokenSource.Token);
+                    await _projectRepo.SaveChangesAsync();
                 }
-                await _projectRepo.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -154,8 +157,10 @@ namespace Planning.Service
                         },
                         cancellationTokenSource.Token);
 
-                var lastSchedule = currentSchedules.Last();
-                                
+                Schedule lastSchedule = null;
+                if(currentSchedules.Any())
+                    lastSchedule = currentSchedules.Last();
+
                 if (projectId != null)
                 {
                     project = await _projectRepo.GetAsync(projectId.Value, cancellationTokenSource.Token);
@@ -172,7 +177,7 @@ namespace Planning.Service
                         var fields = JObject.FromObject(item);
                         if (item.LastUsedDate.HasValue)
                         {
-                            var lostHours = ((lastSchedule.EndDate - item.LastUsedDate.Value).TotalHours);
+                            var lostHours = (((lastSchedule?.EndDate ?? now) - item.LastUsedDate.Value).TotalHours);
                             fields.Add("LostHours", lostHours);
                         }
                         var request = new CalcRequestItem()
@@ -199,7 +204,7 @@ namespace Planning.Service
                 {
                     Schedule schedule = new DB.Context.Schedule()
                     {
-                        BeginDate = lastSchedule.EndDate,
+                        BeginDate = lastSchedule?.EndDate ?? now,
                         Id = Guid.NewGuid(),
                         IsRunning = false,
                         IsDeleted = false,
@@ -248,6 +253,7 @@ namespace Planning.Service
                     }
 
                     await _scheduleRepo.AddAsync(schedule, false, cancellationTokenSource.Token);
+                    await _scheduleRepo.SaveChangesAsync();
                     return schedule;
                 }
                 _logger.LogError($"Error in ProjectSelectService::AddProjectToSchedule: no project select in schedule for user: {userId}");

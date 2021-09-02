@@ -149,10 +149,13 @@ namespace Planning.Service
                 Contract.Model.FormulaFilter, Contract.Model.FormulaCreator, Contract.Model.FormulaUpdater>();
             services.AddDataService<ProjectDataService, DB.Context.Project, Contract.Model.Project,
                 Contract.Model.ProjectFilter, Contract.Model.ProjectCreator, Contract.Model.ProjectUpdater>();
+            services.AddDataService<ScheduleDataService, DB.Context.Schedule, Contract.Model.Schedule,
+               Contract.Model.ScheduleFilter, Contract.Model.ScheduleCreator, Contract.Model.ScheduleUpdater>();
 
             services.AddScoped<IGetDataService<Contract.Model.UserHistory, Contract.Model.UserHistoryFilter>, UserHistoryDataService>();
             services.AddScoped<IGetDataService<Contract.Model.FormulaHistory, Contract.Model.FormulaHistoryFilter>, FormulaHistoryDataService>();
             services.AddScoped<IGetDataService<Contract.Model.ProjectHistory, Contract.Model.ProjectHistoryFilter>, ProjectHistoryDataService>();
+            services.AddScoped<IGetDataService<Contract.Model.ScheduleHistory, Contract.Model.ScheduleHistoryFilter>, ScheduleHistoryDataService>();
             services.AddScoped<IAuthService, AuthService>();
 
             return services;
