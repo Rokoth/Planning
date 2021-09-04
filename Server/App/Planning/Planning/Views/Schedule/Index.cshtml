@@ -12,6 +12,10 @@
     Фильтры:
     <div id="filter">
         <span class="col-sm-2">Наименование:</span><input id="filter_name" class="col-sm-4" />
+        <span class="col-sm-2">Только активные:</span><input id="filter_active" type="checkbox" class="col-sm-4" />
+        <span class="col-sm-2">Кол-во предыдущих:</span><input id="filter_before" class="col-sm-4" />
+        <span class="col-sm-2">Дата с:</span><input id="datepicker_from" class="form-control datetimefield" value="@DateTimeOffset.Now.AddHours(-8).ToString("yyyy-MM-ddThh:mm")" />
+        <span class="col-sm-2">Дата по:</span><input id="datepicker_from" class="form-control datetimefield" value="@DateTimeOffset.Now.AddMonths(1).ToString("yyyy-MM-ddThh:mm")" />
         <a href="#" id="refresh_filter_button" class="btn btn-dark col-sm-2 offset-1">Показать</a>
     </div>
     <div id="content"></div>
@@ -34,14 +38,32 @@
 
         function refresh() {
             $('#page').html(page);
-            $.get("Schedule/ListPaged/?page=" + (page - 1) + "&size=" + $('#count_items').val() + "&name=" + $('#filter_name').val(), function (data, textStatus, request) {
-                $('#content').html(data);
-                allPages = request.getResponseHeader('x-pages');
-                $('#all_pages').html(allPages);
+            $.get("Schedule/ListPaged/?page=" + (page - 1) + "&size=" + $('#count_items').val()
+                + "&name=" + $('#filter_name').val() + "&onlyActive=" + $('#filter_active').val()
+                + "&beforeRunCount=" + $('#filter_before').val()
+                + "&fromDate=" + $('#filter_from').val()
+                + "&toDate=" + $('#filter_to').val(),
+                function (data, textStatus, request) {
+                    $('#content').html(data);
+                    allPages = request.getResponseHeader('x-pages');
+                    $('#all_pages').html(allPages);
             });
         }
 
         $(function () {
+
+            $.datetimepicker.setDateFormatter('moment');
+            $(".datetimefield").datetimepicker({
+                changeMonth: true,
+                changeYear: true,
+                changeDay: true,
+                changeHour: true,
+                changeMinute: true,
+                format: 'YYYY-MM-DD hh:mm',
+                formatTime: 'h:mm A',
+                language: "ru"
+            });      
+
             $.ajaxSetup({ cache: false });
             refresh();
             $("#refresh_filter_button").click(function () {

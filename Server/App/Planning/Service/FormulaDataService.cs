@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -96,7 +97,14 @@ namespace Planning.Service
 
         protected override Expression<Func<DB.Context.Schedule, bool>> GetFilter(Contract.Model.ScheduleFilter filter)
         {
-            return s => s.UserId == filter.UserId && (filter.ProjectId == null || s.ProjectId == filter.ProjectId);
+            
+
+            return s => s.UserId == filter.UserId && 
+                (filter.ProjectId == null || s.ProjectId == filter.ProjectId) &&
+                (filter.FromOrder == null || s.Order >= filter.FromOrder) &&
+                (filter.FromDate == null || s.BeginDate >= filter.FromDate) &&
+                (filter.ToDate == null || s.BeginDate >= filter.ToDate) &&
+                (filter.OnlyActive == null || !s.IsClosed);
         }
                
         protected override DB.Context.Schedule UpdateFillFields(Contract.Model.ScheduleUpdater entity, DB.Context.Schedule entry)

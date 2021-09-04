@@ -84,11 +84,17 @@ namespace Planning.Contract.Model
     /// </summary>
     public class ScheduleFilter : Filter<Schedule>
     {
-        public ScheduleFilter(int size, int page, string sort, string name, Guid? projectId, Guid userId) : base(size, page, sort)
+        public ScheduleFilter(int? size, int? page, string sort, string name
+            , Guid? projectId, Guid userId, bool? onlyActive = null, DateTimeOffset? fromDate = null
+            , DateTimeOffset? toDate = null, int? fromOrder = null) : base(size, page, sort)
         {
             Name = name;
             UserId = userId;
             ProjectId = projectId;
+            OnlyActive = onlyActive;
+            FromDate = fromDate;
+            ToDate = toDate;
+            FromOrder = fromOrder;
         }
         /// <summary>
         /// User Name
@@ -96,6 +102,10 @@ namespace Planning.Contract.Model
         public string Name { get; }
         public Guid UserId { get; set; }
         public Guid? ProjectId { get; set; }
+        public bool? OnlyActive { get; set; }
+        public DateTimeOffset? FromDate { get; set; }
+        public DateTimeOffset? ToDate { get; set; }
+        public int? FromOrder { get; set; }
     }
 
     public class ScheduleHistoryFilter : Filter<ScheduleHistory>

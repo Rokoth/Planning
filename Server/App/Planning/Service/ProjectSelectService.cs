@@ -276,7 +276,7 @@ namespace Planning.Service
                         AddTime = project.AddTime
                     };
 
-                    if (project.AddTime > 0)
+                    if (project.AddTime != 0)
                     {
                         project.AddTime = 0;
                         await _projectRepo.UpdateAsync(project, false, cancellationTokenSource.Token);
