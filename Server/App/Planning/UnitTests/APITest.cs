@@ -144,6 +144,28 @@ namespace Planning.UnitTests
             Assert.Equal(testFormula.Id, actual.Id);
         }
 
+        /// <summary>
+        /// FormulaController. Test for Get method (positive scenario)
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task ProjectGetItemTest()
+        {
+            var formula = await AddFormula("default_formula_{0}");
+            var user = await AddUser(formula.Id);
+            var identity = await AuthAndAssert(user);
+
+            var testProject = await AddProject("project_select_{0}", user.Id);
+
+            ProjectApiController controller = new ProjectApiController(_serviceProvider);
+            var res = await controller.GetItem(testProject.Id);
+
+            Assert.True(res is OkObjectResult);
+            var result = res as OkObjectResult;
+            var actual = result.Value as Project;
+            Assert.Equal(testProject.Id, actual.Id);
+        }
+
         private async Task<ClientIdentityResponse> AuthAndAssert(DB.Context.User user)
         {
             var clientController = new AuthController(_serviceProvider);
@@ -191,6 +213,15 @@ namespace Planning.UnitTests
             return formula;
         }
 
+        private async Task<DB.Context.Project> AddProject(string nameMask, Guid userId)
+        {
+            var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
+            var project = CreateProject(nameMask, userId);
+            context.Set<DB.Context.Project>().Add(project);
+            await context.SaveChangesAsync();
+            return project;
+        }
+
         private DB.Context.User CreateUser(Guid formulaId)
         {
             var user_id = Guid.NewGuid();
@@ -217,6 +248,25 @@ namespace Planning.UnitTests
                 IsDeleted = false,
                 IsDefault = true,
                 Text = "Min(SelectCount)",
+                VersionDate = DateTimeOffset.Now
+            };
+        }
+
+        private DB.Context.Project CreateProject(string nameMask, Guid userId)
+        {
+            var project_id = Guid.NewGuid();
+            return new DB.Context.Project()
+            {
+                Name = string.Format(nameMask, project_id),//$"formula_{formula_id}",
+                Id = project_id,
+                IsDeleted = false,
+                AddTime = 0,
+                IsLeaf = false,
+                LastUsedDate = DateTimeOffset.Now,
+                Path = project_id.ToString(),
+                Period = 60,
+                Priority = 5000,
+                UserId = userId,
                 VersionDate = DateTimeOffset.Now
             };
         }

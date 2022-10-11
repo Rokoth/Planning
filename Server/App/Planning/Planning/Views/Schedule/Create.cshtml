@@ -38,7 +38,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="BeginDate" class="control-label"></label>
-                <input id="datepicker" asp-for="BeginDate" class="form-control datetimefield" value="@Model.BeginDate.ToString("yyyy-MM-ddThh:mm")" />
+                <input id="datepicker" asp-for="BeginDate" class="form-control datetimefield" value="@Model.BeginDate.ToString("yyyy-MM-ddTHH:mm")" />
                 <span asp-validation-for="BeginDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -81,8 +81,8 @@
                 changeDay: true,
                 changeHour: true,
                 changeMinute: true,
-                format: 'YYYY-MM-DD hh:mm',
-                formatTime: 'h:mm A',
+                format: 'YYYY-MM-DD HH:mm',
+                formatTime: 'HH:mm',
                 language: "ru"
             });            
 

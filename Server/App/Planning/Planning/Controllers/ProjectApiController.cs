@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ namespace Planning.Controllers
         }
 
         [HttpGet]
+        [Authorize("Token")]
         public async Task<IActionResult> Get(string name = null, string path = null, int size = 10, 
             int page = 0, string sort = null, bool? isLeaf = null, DateTimeOffset? lastUsedDateBegin = null, DateTimeOffset? lastUsedDateEnd = null, Guid? parentId = null)
         {
@@ -36,6 +38,18 @@ namespace Planning.Controllers
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return Ok(result.Data);
             }, "ProjectApiController", "Get");
+        }
+
+        [HttpGet("{id}")]
+        [Authorize("Token")]
+        public async Task<IActionResult> GetItem([FromRoute] Guid id)
+        {
+            return await ExecuteApi(async () => {
+                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var result = await _dataService.GetAsync(id, source.Token);
+                return Ok(result);
+            }, "ProjectApiController", "GetItem");
         }
     }
 }

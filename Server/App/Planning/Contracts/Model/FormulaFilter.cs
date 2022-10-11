@@ -1,7 +1,13 @@
-﻿using System;
+﻿//Copyright 2021 Dmitriy Rokoth
+//Licensed under the Apache License, Version 2.0
+//
+//ref1
 
 namespace Planning.Contract.Model
 {
+    /// <summary>
+    /// filter for formula entity
+    /// </summary>
     public class FormulaFilter : Filter<Formula>
     {
         public FormulaFilter(int size, int page, string sort, string name, bool? isDefault) : base(size, page, sort)
@@ -11,14 +17,5 @@ namespace Planning.Contract.Model
         }
         public string Name { get; }
         public bool? IsDefault { get; }
-    }
-
-    public class UserSettingsFilter : Filter<UserSettings>
-    {
-        public UserSettingsFilter(int size, int page, string sort, Guid userId) : base(size, page, sort)
-        {
-            UserId = userId;           
-        }       
-        public Guid UserId { get; set; }
     }
 }

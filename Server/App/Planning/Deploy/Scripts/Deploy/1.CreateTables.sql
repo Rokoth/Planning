@@ -63,8 +63,7 @@ create table if not exists settings(
 create table if not exists schedule(	 
 	  id		   uuid        not null primary key
 	, project_id   uuid        not null
-	, userid       uuid        not null
-	, "orders"     bigint      not null
+	, userid       uuid        not null	
 	, begin_date   timestamptz not null
 	, end_date	   timestamptz not null		
 	, is_running   boolean     not null
@@ -118,8 +117,7 @@ create table if not exists h_schedule(
       h_id         bigserial       not null primary key
 	, id		   uuid            null
 	, project_id   uuid            null
-	, userid       uuid            null
-	, "orders"     bigint          null
+	, userid       uuid            null	
 	, begin_date   timestamptz     null
 	, end_date	   timestamptz     null		
 	, is_running   boolean         null

@@ -5,18 +5,27 @@
 }
 
 <div class="container">
-    @Html.ActionLink("Добавить", "Create", "Schedule", null, new { @class = "btn btn-dark" })
-    @Html.ActionLink("Переключиться на следующий проект", "MoveNext", "Schedule", null, new { @class = "btn btn-dark" })
+    @Html.ActionLink("Добавить", "Create", "Schedule", null, new { @class = "btn btn-dark" })    
+    <button id="move_next_button" class="btn btn-dark">Переключиться на следующий проект</button>
     @Html.ActionLink("История", "History", "Schedule", null, new { @class = "btn btn-dark" })
     <hr>
     Фильтры:
     <div id="filter">
-        <span class="col-sm-2">Наименование:</span><input id="filter_name" class="col-sm-4" />
-        <span class="col-sm-2">Только активные:</span><input id="filter_active" type="checkbox" class="col-sm-4" />
-        <span class="col-sm-2">Кол-во предыдущих:</span><input id="filter_before" class="col-sm-4" />
-        <span class="col-sm-2">Дата с:</span><input id="datepicker_from" class="form-control datetimefield" value="@DateTimeOffset.Now.AddHours(-8).ToString("yyyy-MM-ddThh:mm")" />
-        <span class="col-sm-2">Дата по:</span><input id="datepicker_from" class="form-control datetimefield" value="@DateTimeOffset.Now.AddMonths(1).ToString("yyyy-MM-ddThh:mm")" />
-        <a href="#" id="refresh_filter_button" class="btn btn-dark col-sm-2 offset-1">Показать</a>
+        <div>
+            <span class="col-sm-2">Наименование:</span><input id="filter_name" class="col-sm-4" />
+        </div>
+        <div>
+            <span class="col-sm-2">Только активные:</span><input id="filter_active" type="checkbox" class="col-sm-4" />
+        </div>        
+        <div>
+            <span class="col-sm-2">Дата с:</span><input id="filter_from" class="form-control datetimefield col-sm-4" value="@DateTimeOffset.Now.AddHours(-8).ToString("yyyy-MM-ddThh:mm")" />
+        </div>
+        <div>
+            <span class="col-sm-2">Дата по:</span><input id="filter_to" class="form-control datetimefield col-sm-4" value="@DateTimeOffset.Now.AddMonths(1).ToString("yyyy-MM-ddThh:mm")" />
+        </div>
+        <div>
+            <button id="refresh_filter_button" class="btn btn-dark col-sm-2 offset-1">Показать</button>
+        </div>
     </div>
     <div id="content"></div>
     <div>
@@ -39,8 +48,7 @@
         function refresh() {
             $('#page').html(page);
             $.get("Schedule/ListPaged/?page=" + (page - 1) + "&size=" + $('#count_items').val()
-                + "&name=" + $('#filter_name').val() + "&onlyActive=" + $('#filter_active').val()
-                + "&beforeRunCount=" + $('#filter_before').val()
+                + "&name=" + $('#filter_name').val() + "&onlyActive=" + $('#filter_active').is(':checked')              
                 + "&fromDate=" + $('#filter_from').val()
                 + "&toDate=" + $('#filter_to').val(),
                 function (data, textStatus, request) {
@@ -66,6 +74,13 @@
 
             $.ajaxSetup({ cache: false });
             refresh();
+
+            $("#move_next_button").click(function () {
+                $.post("Schedule/MoveNext/", {text:'text'}, function (data) {
+                    refresh();
+                });                
+            });
+
             $("#refresh_filter_button").click(function () {
                 refresh();
             });

@@ -35,11 +35,12 @@ namespace Planning.Controllers
         public async Task<IActionResult> IndexChilds(Guid parentId)
         {
             return await Execute(async () => {
-                var userId = Guid.Parse(User.Identity.Name);
+                var userId = Guid.Parse(User.Identity.Name);                            
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
-                CancellationTokenSource source = new CancellationTokenSource(30000);
+                CancellationTokenSource source = new CancellationTokenSource(30000);                
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
-                    null, null, parentId, null), source.Token);
+                    null, null, parentId, null), source.Token);                
+                
                 return PartialView(result.Data);
             }, "ProjectController", "IndexChilds");
         }
@@ -50,10 +51,17 @@ namespace Planning.Controllers
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+                var _userDataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, parentId, null), source.Token);
-                return PartialView(result.Data);
+                var user = await _userDataService.GetAsync(userId, source.Token);
+                var ret = result.Data.ToList();
+                foreach (var item in ret)
+                {
+                    item.CanSelect = item.IsLeaf || !user.LeafOnly;
+                }
+                return PartialView(ret);
             }, "ProjectController", "ListSelectChilds");
         }
 
@@ -241,6 +249,7 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 creator.IsLeaf = true;
+                creator.LastUsedDate = DateTimeOffset.Now;
                 var _dataService = _serviceProvider.GetRequiredService<IAddDataService<Project, ProjectCreator>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Project result = await _dataService.AddAsync(creator, source.Token);

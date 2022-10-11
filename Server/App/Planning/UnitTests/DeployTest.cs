@@ -56,8 +56,7 @@ namespace Planning.UnitTests
                 BeginDate = DateTimeOffset.Now,
                 EndDate = DateTimeOffset.Now,
                 IsDeleted = false,
-                IsRunning = false,
-                Order = 1,
+                IsRunning = false,               
                 ProjectId = project.Id,
                 UserId = user.Id
             };

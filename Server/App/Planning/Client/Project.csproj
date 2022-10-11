@@ -29,7 +29,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>0.0.5.0</ApplicationVersion>
+    <ApplicationVersion>0.0.6.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -242,6 +242,9 @@
     <Compile Include="FormulaWindow.xaml.cs">
       <DependentUpon>FormulaWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ProjectDetailWindow.xaml.cs">
+      <DependentUpon>ProjectDetailWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ProjectAddEditWindow.xaml.cs">
       <DependentUpon>ProjectAddEditWindow.xaml</DependentUpon>
     </Compile>
@@ -278,6 +281,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="ProjectDetailWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="ProjectAddEditWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

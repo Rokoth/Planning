@@ -28,19 +28,19 @@ namespace Planning.Service
 
         public async Task Run(CancellationToken _cancellationToken)
         {
-            using (var scope = _serviceProvider.CreateScope())
+            while (isRunning && !_cancellationToken.IsCancellationRequested)
             {
-                var now = DateTimeOffset.Now;
-                var scopeProvider = scope.ServiceProvider;
-                var userRepo = scopeProvider.GetRequiredService<IRepository<User>>();
-                var userSettingsRepo = scopeProvider.GetRequiredService<IRepository<UserSettings>>();
-                var scheduleRepo = scopeProvider.GetRequiredService<IRepository<Schedule>>();
-                var selectService = scopeProvider.GetRequiredService<IProjectSelectService>();
-
-                while (isRunning && !_cancellationToken.IsCancellationRequested)
-                {
+                using (var scope = _serviceProvider.CreateScope())
+                {                
+                    var scopeProvider = scope.ServiceProvider;
+                    var userRepo = scopeProvider.GetRequiredService<IRepository<User>>();
+                    var userSettingsRepo = scopeProvider.GetRequiredService<IRepository<UserSettings>>();
+                    var scheduleRepo = scopeProvider.GetRequiredService<IRepository<Schedule>>();
+                    var selectService = scopeProvider.GetRequiredService<IProjectSelectService>();
+                
                     try
                     {
+                        var now = DateTimeOffset.Now;
                         var users = await userRepo.GetAsync(new Filter<User>()
                         {
                             Selector = s => true
@@ -57,7 +57,7 @@ namespace Planning.Service
 
                             var currentSchedules = await scheduleRepo.GetAsync(new Filter<Schedule>()
                             {
-                                Selector = s => s.UserId == user.Id && s.EndDate >= now
+                                Selector = s => s.UserId == user.Id && !s.IsClosed
                             }, _cancellationToken);
 
                             switch (settings.ScheduleMode)

@@ -7,8 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Planning.Common;
 using Planning.DB.Context;
 using Planning.DB.Repository;
+using Planning.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +32,7 @@ namespace Migrator
         {
             services.AddControllers();
             services.AddScoped<IRepository<Project>, Repository<Project>>();
+            services.AddScoped<IErrorNotifyService, FailErrorNotifyService>();
             services.AddDbContextPool<DbPgContext>((opt) =>
             {
                 opt.EnableSensitiveDataLogging();
@@ -64,6 +67,14 @@ namespace Migrator
             {
                 endpoints.MapControllers();
             });
+        }
+    }
+
+    public class FailErrorNotifyService : IErrorNotifyService
+    {
+        public async Task Send(string message, MessageLevelEnum level = MessageLevelEnum.Error, string title = null)
+        {
+            await Task.CompletedTask;
         }
     }
 }

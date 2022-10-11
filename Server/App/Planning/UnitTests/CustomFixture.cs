@@ -50,6 +50,7 @@ namespace Planning.UnitTests
             serviceCollection.AddDbContext<DB.Context.DbPgContext>(opt => opt.UseNpgsql(ConnectionString));
             serviceCollection.AddScoped<DB.Repository.IRepository<DB.Context.User>, DB.Repository.Repository<DB.Context.User>>();
             serviceCollection.AddScoped<DB.Repository.IRepository<DB.Context.Formula>, DB.Repository.Repository<DB.Context.Formula>>();
+            serviceCollection.AddScoped<DB.Repository.IRepository<DB.Context.Project>, DB.Repository.Repository<DB.Context.Project>>();
             //serviceCollection.AddScoped<IRepository<Client>, Repository<Client>>();
             //serviceCollection.AddScoped<IRepositoryHistory<UserHistory>, RepositoryHistory<UserHistory>>();
             //serviceCollection.AddScoped<IRepositoryHistory<ClientHistory>, RepositoryHistory<ClientHistory>>();

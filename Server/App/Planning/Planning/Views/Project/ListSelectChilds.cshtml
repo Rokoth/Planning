@@ -8,8 +8,14 @@
             @Html.HiddenFor(m => item.Id)
             @Html.LabelFor(m => item.Name) : @Html.DisplayFor(m => item.Name)
             @Html.LabelFor(m => item.Path) : @Html.DisplayFor(m => item.Path)
-            <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id')" loaded="false">+</button>
-            <button class="btn btn-dark" onclick="setProject('@item.Id', '@item.Name'); $('#modal-action-id').modal('hide');">Выбрать</button>
+            @if (!item.IsLeaf)
+            {
+                <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id')" loaded="false">+</button>
+            }
+            @if (item.CanSelect)
+            {
+                <button class="btn btn-dark" onclick="setProject('@item.Id', '@item.Name'); $('#modal-action-id').modal('hide');">Выбрать</button>
+            }            
         </div>
         <div id="child_@item.Id" style="margin-left:20px"></div>
     </div>

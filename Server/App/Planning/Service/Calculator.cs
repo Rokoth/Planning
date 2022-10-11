@@ -209,6 +209,21 @@ namespace Planning.Service
                     functionArgs.Result = new Random().Next((int)(long)functionArgs.Parameters[0].Evaluate(), (int)(long)functionArgs.Parameters[1].Evaluate());
                 }
             }
+            if (name == "randomInt")
+            {
+                if (functionArgs.Parameters.Count() == 0)
+                {
+                    functionArgs.Result = new Random().Next();
+                }
+                else if (functionArgs.Parameters.Count() == 1)
+                {
+                    functionArgs.Result = new Random().Next((int)functionArgs.Parameters[0].Evaluate());
+                }
+                else
+                {
+                    functionArgs.Result = new Random().Next((int)functionArgs.Parameters[0].Evaluate(), (int)functionArgs.Parameters[1].Evaluate());
+                }
+            }
         }
 
     }

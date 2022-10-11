@@ -146,7 +146,8 @@ namespace PlanningClient
         private void ProjectsButton_Click(object sender, RoutedEventArgs e)
         {
             var win = _serviceProvider.GetRequiredService<ProjectWindow>(); 
-            win.ShowDialog();            
+            win.ShowDialog();
+            FillTable();
         }
 
         private void CloseButtonClick(object sender, RoutedEventArgs e)
@@ -265,6 +266,16 @@ namespace PlanningClient
             var win = _serviceProvider.GetRequiredService<ScheduleAddEditWindow>();
             win.ShowDialog(AddEditMode.Add, null);
             FillTable();
+        }
+
+        private void CountTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
+        }
+
+        private void CountTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+
         }
     }
 }

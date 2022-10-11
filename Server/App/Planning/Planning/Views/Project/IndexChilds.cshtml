@@ -6,18 +6,20 @@
     <div>
         <div style="margin-top:4px;padding:0px;">
             @Html.HiddenFor(m => item.Id)
-            @Html.LabelFor(m => item.Name) : @Html.DisplayFor(m => item.Name)
+            @Html.LabelFor(m => item.Name) : @Html.ActionLink(item.Name, "Details", new { id = item.Id }, new { })
             @Html.LabelFor(m => item.Path) : @Html.DisplayFor(m => item.Path)
-            <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id')" loaded="false">+</button>
-            @Html.ActionLink("Add", "Create",
-                new { parentId = item.Id },
-                new { @class = "btn btn-dark" })
-            @Html.ActionLink("Edit", "Edit",
-                new { id = item.Id },
-                new { @class = "btn btn-dark" })
-            @Html.ActionLink("Delete", "Delete",
-                new { id = item.Id },
-                new { @class = "btn btn-dark" })
+            @if (!item.IsLeaf)
+            {
+                <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id')" loaded="false">+</button>
+            }
+            <span class="dropdown col-sm-1">
+                <button class="btn btn-secondary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">...</button>
+                <span class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    @Html.ActionLink("Add", "Create", new { parentId = item.Id }, new { @class = "btn btn-dark dropdown-item" })
+                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-dark dropdown-item" })
+                    @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-dark dropdown-item" })
+                </span>
+            </span>
         </div>
         <div id="child_@item.Id" style="margin-left:20px"></div>
     </div>

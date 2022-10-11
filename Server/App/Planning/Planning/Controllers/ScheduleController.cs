@@ -30,25 +30,15 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> ListPaged([FromQuery]int page = 0, [FromQuery]int size = 10,
             [FromQuery]string sort = null, [FromQuery]string name = null, [FromQuery] bool? onlyActive = null
-            , [FromQuery] DateTimeOffset? fromDate = null, [FromQuery] DateTimeOffset? toDate = null, [FromQuery] int? beforeRunCount = null)
+            , [FromQuery] DateTimeOffset? fromDate = null, [FromQuery] DateTimeOffset? toDate = null)
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                int? fromOrder = null;
-                if (beforeRunCount.HasValue)
-                {
-                    var runSchedule = (await _dataService.GetAsync(
-                        new ScheduleFilter(null, null, null, null, null, userId, onlyActive: true), source.Token))
-                        .Data.FirstOrDefault(s=>s.IsRunning);
-                    if (runSchedule != null)
-                    {
-                        fromOrder = Math.Max(0, runSchedule.Order - beforeRunCount.Value);
-                    }
-                }
+                                
                 var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name, null, 
-                    userId, onlyActive, fromDate, toDate, fromOrder), source.Token);
+                    userId, onlyActive, fromDate, toDate), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
             }, "ScheduleController", "ListPaged");
@@ -201,9 +191,8 @@ namespace Planning.Controllers
             }, "ScheduleController", "Delete");
         }
 
-        // POST: UserController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        
+        [HttpPost]       
         [Authorize]
         public async Task<IActionResult> MoveNext()
         {
@@ -218,8 +207,8 @@ namespace Planning.Controllers
                 }, source.Token)).Data.Single();
 
                await selectService.MoveNextSchedule(userId, userSettings);                
-                return RedirectToAction(nameof(Index));
-            }, "ScheduleController", "Delete");
+                return Ok();
+            }, "ScheduleController", "MoveNext");
         }
     }
 }

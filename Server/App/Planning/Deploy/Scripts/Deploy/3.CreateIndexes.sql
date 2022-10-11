@@ -32,8 +32,6 @@ create index idx_project_is_deleted
 
 
 --schedule
-create unique index uidx_schedule_userid_order 
-	on schedule(userid, orders) where not is_deleted;
 
 create index idx_schedule_project_id
     on schedule(project_id);
@@ -47,8 +45,6 @@ create index idx_schedule_end_date
 create index idx_schedule_userid
     on schedule(userid);
 
-create index idx_schedule_order
-    on schedule(orders);
 
 --formula
 create unique index uidx_formula_name 

@@ -13,6 +13,11 @@ namespace Planning.Contract.Model
     /// </summary>
     public class Project : Entity
     {
+        public Project()
+        {
+            CanSelect = IsLeaf;
+        }
+
         /// <summary>
         /// Наименование
         /// </summary>
@@ -63,6 +68,7 @@ namespace Planning.Contract.Model
         [Display(Name = "Родитель")]
         public string Parent { get; set; }
 
+        public bool CanSelect { get; set; }
         public Guid UserId { get; set; }
     }
 }

@@ -68,9 +68,7 @@ namespace Planning.DB.Context
         [ColumnName("project_id")]       
         public Guid ProjectId { get; set; }
         [ColumnName("userid")]       
-        public Guid UserId { get; set; }
-        [ColumnName("orders")]
-        public int Order { get; set; }
+        public Guid UserId { get; set; }       
         [ColumnName("begin_date")]
         public DateTimeOffset BeginDate { get; set; }
         [ColumnName("end_date")]
@@ -96,9 +94,7 @@ namespace Planning.DB.Context
         [ColumnName("project_id")]
         public Guid ProjectId { get; set; }
         [ColumnName("userid")]
-        public Guid UserId { get; set; }
-        [ColumnName("orders")]
-        public int Order { get; set; }
+        public Guid UserId { get; set; }       
         [ColumnName("begin_date")]
         public DateTimeOffset BeginDate { get; set; }
         [ColumnName("end_date")]

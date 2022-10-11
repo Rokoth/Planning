@@ -39,13 +39,14 @@ namespace Planning.Service
             {
                 await LockUserId(userId);
 
-                var now = DateTimeOffset.Now;
-                await ShiftSchedule(userId, settings, now, true);
-
                 CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(30000);
+                var now = DateTimeOffset.Now;
                 var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Schedule>>();
                 var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
                 var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<UserSettings>>();
+                              
+
+                await ShiftSchedule(userId, settings, now, true, true);                
 
                 var currentSchedules = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
                 {
@@ -57,6 +58,7 @@ namespace Planning.Service
                     Selector = s => s.UserId == userId
                 }, cancellationTokenSource.Token)).Data.FirstOrDefault();
 
+                Schedule nextSchedule = currentSchedules.OrderBy(s=>s.BeginDate).FirstOrDefault();
                 var runningSchedule = currentSchedules.FirstOrDefault(s => s.IsRunning);
                 if (runningSchedule != null)
                 {
@@ -65,34 +67,38 @@ namespace Planning.Service
                     
 
                     var currentProject = await _projectRepo.GetAsync(runningSchedule.ProjectId, cancellationTokenSource.Token);
-                    currentProject.LastUsedDate = now;
-
-                    if (currentProject.Period.HasValue)
-                    {
-                        var toUpSchedule = currentSchedules
-                                .Where(s => s.ProjectId == currentProject.Id && s.Id != runningSchedule.Id)
-                                .OrderBy(s => s.BeginDate).FirstOrDefault();
-                        var addTime = (currentProject.Period.Value - (int)((runningSchedule.EndDate - runningSchedule.BeginDate).TotalMinutes));
-                        if (toUpSchedule!=null)
+                    if (currentProject != null)
+                    {                       
+                        if (currentProject.Period.HasValue)
                         {
-                            toUpSchedule.AddTime += addTime;
-                            await _scheduleRepo.UpdateAsync(toUpSchedule, false, cancellationTokenSource.Token);
+                            var addTime = GetAddTime(settings, currentProject, runningSchedule);
+                            var toUpSchedule = currentSchedules
+                                    .Where(s => s.ProjectId == currentProject.Id && s.Id != runningSchedule.Id)
+                                    .OrderBy(s => s.BeginDate).FirstOrDefault();
+                            
+                            if (toUpSchedule != null)
+                            {
+                                toUpSchedule.AddTime = (toUpSchedule.AddTime??0) + addTime;
+                                await _scheduleRepo.UpdateAsync(toUpSchedule, false, cancellationTokenSource.Token);
+                            }
+                            else
+                            {
+                                currentProject.AddTime = addTime;
+                            }
+                            runningSchedule.AddTime = 0;
                         }
-                        else
-                        {
-                            currentProject.AddTime += addTime;
-                        }
-                        runningSchedule.AddTime = 0;
+                        currentProject.LastUsedDate = now;
+                        await _projectRepo.UpdateAsync(currentProject, false, cancellationTokenSource.Token);
                     }
-                    await _projectRepo.UpdateAsync(currentProject, false, cancellationTokenSource.Token);
                     await _scheduleRepo.UpdateAsync(runningSchedule, false, cancellationTokenSource.Token);
+                    nextSchedule = currentSchedules
+                        .Where(s => s.Id!= runningSchedule.Id && s.BeginDate > runningSchedule.BeginDate)
+                        .OrderBy(s => s.BeginDate).FirstOrDefault();
                 }
-
-                var nextSchedule = currentSchedules.Where(s => s.EndDate > now).OrderBy(s => s.BeginDate).FirstOrDefault();
+                
                 if (nextSchedule == null) nextSchedule = await AddProjectToSchedule(userId, userSettings, isLocked: true);
                 nextSchedule.IsRunning = true;
                 await _scheduleRepo.UpdateAsync(nextSchedule, false, cancellationTokenSource.Token);
-
                 await _projectRepo.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -139,7 +145,7 @@ namespace Planning.Service
             }
         }
 
-        public async Task ShiftSchedule(Guid userId, UserSettings settings, DateTimeOffset now, bool isLocked = false)
+        public async Task ShiftSchedule(Guid userId, UserSettings settings, DateTimeOffset now, bool isForce = false, bool isLocked = false)
         {
             try
             {
@@ -155,7 +161,7 @@ namespace Planning.Service
 
                 var beginDate = now;
                 var runningSchedule = currentSchedules.FirstOrDefault(s => s.IsRunning);
-                if (runningSchedule != null && runningSchedule.EndDate < now)
+                if (runningSchedule != null && (isForce || runningSchedule.EndDate < now))
                 {
                     foreach (var schedule in currentSchedules.Where(s => s.IsRunning || s.BeginDate > runningSchedule.BeginDate))
                     {
@@ -165,7 +171,7 @@ namespace Planning.Service
                             schedule.EndDate = now;
                         }
                         else
-                        {
+                        {                            
                             schedule.BeginDate = beginDate;
                             SetEndDate(settings, project, schedule);
 
@@ -204,10 +210,12 @@ namespace Planning.Service
                 var _userRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.User>>();
                 var _formulaRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Formula>>();
 
-                var currentSchedules = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
+                var allSchedules = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
                 {
-                    Selector = s => s.UserId == userId && !s.IsClosed
+                    Selector = s => s.UserId == userId
                 }, cancellationTokenSource.Token)).Data.OrderBy(s => s.BeginDate);
+
+                var currentSchedules = allSchedules.Where(s=>!s.IsClosed);                
 
                 var allProjects = await _projectRepo.GetAsync(
                         new DB.Context.Filter<DB.Context.Project>()
@@ -230,16 +238,23 @@ namespace Planning.Service
                     var user = await _userRepo.GetAsync(userId, cancellationTokenSource.Token);
                     var formula = await _formulaRepo.GetAsync(user.FormulaId, cancellationTokenSource.Token);
                     List<CalcRequestItem> items = new List<CalcRequestItem>();
-                    
 
+                    var nowDate = lastSchedule?.EndDate ?? now;
+                    if (setBeginDate) nowDate = beginDate.Value;
                     foreach (var item in allProjects.Data)
                     {
                         var fields = JObject.FromObject(item);
-                        if (item.LastUsedDate.HasValue)
+                        var lostHours = 0;
+                        var prevSched = currentSchedules.Where(s => s.ProjectId == item.Id && s.BeginDate < nowDate).OrderBy(s => s.BeginDate).LastOrDefault();
+                        if (prevSched != null)
                         {
-                            var lostHours = (((lastSchedule?.EndDate ?? now) - item.LastUsedDate.Value).TotalHours);
-                            fields.Add("LostHours", lostHours);
+                            lostHours = (int)(nowDate - prevSched.EndDate).TotalHours;
                         }
+                        else if (item.LastUsedDate.HasValue)
+                        {
+                            lostHours = (int)(nowDate - item.LastUsedDate.Value).TotalHours;                            
+                        }
+                        fields.Add("LostHours", lostHours);
                         var request = new CalcRequestItem()
                         {
                             Id = item.Id,
@@ -267,8 +282,7 @@ namespace Planning.Service
                         BeginDate = lastSchedule?.EndDate ?? now,
                         Id = Guid.NewGuid(),
                         IsRunning = false,
-                        IsDeleted = false,
-                        Order = lastSchedule?.Order + 1 ?? 1,
+                        IsDeleted = false,                        
                         ProjectId = project.Id,
                         UserId = userId,
                         VersionDate = DateTimeOffset.Now,
@@ -293,39 +307,28 @@ namespace Planning.Service
                             if ((bDate - currShed.BeginDate).TotalMinutes < 1)
                                 bDate = currShed.BeginDate.AddMinutes(1);
                         }
-                        schedule.BeginDate = bDate;
+                        schedule.BeginDate = bDate;                        
                         SetEndDate(settings, project, schedule);
                         
                         if (toUpdate.Any())
                         {
                             var currShed = toUpdate[0];
-                            currShed.EndDate = bDate;
-                            schedule.Order = currShed.Order + 1;
-                            int order = schedule.Order + 1;                                                 
+                            currShed.EndDate = bDate;                                                                       
                             await _scheduleRepo.UpdateAsync(currShed, false, cancellationTokenSource.Token);                           
                             var nextBDate = schedule.EndDate;
                             for (int i = 1; i < toUpdate.Count; i++)
                             {
                                 var shed = toUpdate[i];
                                 shed.BeginDate = nextBDate;                                
-                                var proj = allProjects.Data.FirstOrDefault(s => s.Id == shed.ProjectId);
-                                SetEndDate(settings, proj, shed);
-                                shed.Order++;
+                                var proj = allProjects.Data.FirstOrDefault(s => s.Id == shed.ProjectId);                               
+                                SetEndDate(settings, proj, shed);                               
                                 await _scheduleRepo.UpdateAsync(shed, false, cancellationTokenSource.Token);
                                 nextBDate = shed.EndDate;
                             }
-                        }
-                        else
-                        {
-                            if (lastSchedule != null)
-                            {
-                                schedule.Order = lastSchedule.Order + 1;
-                            }
-                            else schedule.Order = 1;
-                        }
+                        }                        
                     }
                     else
-                    {
+                    {                        
                         SetEndDate(settings, project, schedule);
                     }
 
@@ -350,16 +353,30 @@ namespace Planning.Service
 
         private void SetEndDate(UserSettings settings, Project project, Schedule schedule)
         {
-            var minutes = settings.DefaultProjectTimespan;
+            int minutes = GetPeriod(settings, project);
+            schedule.EndDate = schedule.BeginDate.AddMinutes(minutes);
+        }
 
+        private int GetPeriod(UserSettings settings, Project project)
+        {
+            var minutes = settings.DefaultProjectTimespan;
+            if (project == null) minutes = 1;
+            else if (project.Period.HasValue) minutes = project.Period.Value;
+            return minutes;
+        }
+
+        private int GetAddTime(UserSettings settings, Project project, Schedule schedule)
+        {
             if (project.Period.HasValue)
             {
-                var period = (int)(project.Period.Value *
-                    ((schedule.BeginDate - project.LastUsedDate).Value.TotalHours / (10000 - project.Priority)));
-                minutes = Math.Max(period + (schedule.AddTime ?? 0), 1);
+                var standartPeriod = GetPeriod(settings, project);
+                var lastUsedDate = project.LastUsedDate;                
+                var totalHours = (schedule.EndDate - lastUsedDate).Value.TotalHours;
+                var periodHours = 10001 - project.Priority;
+                var period = (int)(standartPeriod * (totalHours / periodHours));
+                return (schedule.AddTime ?? 0) + period - (int)(schedule.EndDate - schedule.BeginDate).TotalMinutes;                
             }
-
-            schedule.EndDate = schedule.BeginDate.AddMinutes(minutes);            
+            return 0;
         }
     }
 
