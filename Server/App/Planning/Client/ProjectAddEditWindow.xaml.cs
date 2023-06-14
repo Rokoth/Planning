@@ -3,18 +3,7 @@ using Microsoft.Extensions.Logging;
 using Planning.Client.ClientHttpClient;
 using Planning.Contract.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace PlanningClient
 {
@@ -55,10 +44,13 @@ namespace PlanningClient
                 case AddEditMode.Edit:
                     _id = id;
                     this.Title = "Редактирование проекта";
-                    //var tree = await _dataService.GetTree(_id.Value);
-                    //NameTextBox.Text = tree.Name;
-                    //DescriptionTextBox.Text = tree.Description;
-                    //SetFormula(tree.FormulaId);
+                    var project = await _dataService.GetProject(_id.Value);
+                    NameTextBox.Text = project.Name;
+                    PathTextBox.Text = project.Path;
+                    if(project.ParentId.HasValue)
+                        SetParent(project.ParentId.Value);
+                    PeriodTextBox.Text = project.Period.ToString();
+                    PriorityTextBox.Text = project.Priority.ToString();
                     break;               
             }
             
@@ -77,88 +69,117 @@ namespace PlanningClient
 
         private async void Save()
         {
+            uint priority = 0;
+            uint period = 0;
+
+            if (!ValidateFields(out priority, out period)) return;
+
             switch (_mode)
             {
                 case AddEditMode.Add:
-                    if (string.IsNullOrEmpty(NameTextBox.Text))
+                    try
                     {
-                        MessageBox.Show("Не задано наименование");
-                    }      
-                    else if (string.IsNullOrEmpty(PriorityTextBox.Text))
-                    {
-                        MessageBox.Show("Не задан приоритет");
-                    }
-                    else
-                    {
-                        try
+                        var result = await _dataService.AddProject(new ProjectCreator()
                         {
-                            var result = await _dataService.AddProject(new ProjectCreator()
-                            {
-                                ParentId = parentId,
-                                Path = PathTextBox.Text,
-                                Name = NameTextBox.Text,
-                                Period = int.Parse(PeriodTextBox.Text),
-                                Priority = int.Parse(PriorityTextBox.Text)
-                            });
-                            if (result == null)
-                                MessageBox.Show("Неизвестная ошибка при сохранении проекта");
-                            else
-                            {
-                                if (OnProjectChanged != null)
-                                    OnProjectChanged(this, new ChangeProjectArgs()
-                                    {
-                                        Id = result.Id
-                                    });
-                                Close();
-                            }
-                        }
-                        catch (Exception ex)
+                            ParentId = parentId,
+                            Path = PathTextBox.Text,
+                            Name = NameTextBox.Text,
+                            Period = (int)period,
+                            Priority = (int)priority
+                        });
+                        if (result == null)
+                            MessageBox.Show("Неизвестная ошибка при сохранении проекта");
+                        else
                         {
-                            _logger.LogError($"Ошибка при сохранении проекта: {ex.Message} {ex.StackTrace}");
-                            MessageBox.Show($"Ошибка при сохранении проекта: {ex.Message}");
+                            if (OnProjectChanged != null)
+                                OnProjectChanged(this, new ChangeProjectArgs()
+                                {
+                                    Id = result.Id
+                                });
+                            Close();
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Ошибка при сохранении проекта: {ex.Message} {ex.StackTrace}");
+                        MessageBox.Show($"Ошибка при сохранении проекта: {ex.Message}");
+                    }
+
                     break;
-                case AddEditMode.Edit:
-                    //if (string.IsNullOrEmpty(NameTextBox.Text))
-                    //{
-                    //    MessageBox.Show("Не задано наименование");
-                    //}
-                    //else if (formulaId == null)
-                    //{
-                    //    MessageBox.Show("Не задана формула");
-                    //}
-                    //else
-                    //{
-                    //    try
-                    //    {
-                    //        var result = await _dataService.UpdateTree(new TreeUpdater()
-                    //        {
-                    //            Description = DescriptionTextBox.Text,
-                    //            FormulaId = formulaId.Value,
-                    //            Name = NameTextBox.Text,
-                    //            Id = _id.Value
-                    //        });
-                    //        if (result == null)
-                    //            MessageBox.Show("Неизвестная ошибка при сохранении дерева");
-                    //        else
-                    //        {
-                    //            if (OnTreeAdded != null)
-                    //                OnTreeAdded(this, new ChangeTreeArgs()
-                    //                {
-                    //                    Id = result.Id
-                    //                });
-                    //            Close();
-                    //        }
-                    //    }
-                    //    catch (Exception ex)
-                    //    {
-                    //        _logger.LogError($"Ошибка при сохранении дерева: {ex.Message} {ex.StackTrace}");
-                    //        MessageBox.Show($"Ошибка при сохранении дерева: {ex.Message}");
-                    //    }
-                    //}
+                case AddEditMode.Edit:                    
+                    try
+                    {
+                        var result = await _dataService.UpdateProject(new ProjectUpdater()
+                        {             
+                            Id = _id.Value,
+                            ParentId = parentId,
+                            Path = PathTextBox.Text,
+                            Name = NameTextBox.Text,
+                            Period = (int)period,
+                            Priority = (int)priority
+                        });
+                        if (result == null)
+                            MessageBox.Show("Неизвестная ошибка при сохранении проекта");
+                        else
+                        {
+                            if (OnProjectChanged != null)
+                                OnProjectChanged(this, new ChangeProjectArgs()
+                                {
+                                    Id = result.Id
+                                });
+                            Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Ошибка при сохранении проекта: {ex.Message} {ex.StackTrace}");
+                        MessageBox.Show($"Ошибка при сохранении проекта: {ex.Message}");
+                    }
                     break;               
             }
+        }
+
+        private bool ValidateFields(out uint priority, out uint period)
+        {
+            priority = 0;
+            period = 0;
+            if (string.IsNullOrEmpty(NameTextBox.Text))
+            {
+                MessageBox.Show("Не задано наименование");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(PathTextBox.Text))
+            {
+                MessageBox.Show("Не задан путь");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(PriorityTextBox.Text))
+            {
+                MessageBox.Show("Не задан приоритет");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(PeriodTextBox.Text))
+            {
+                MessageBox.Show("Не задан период");
+                return false;
+            }
+
+            if (!uint.TryParse(PriorityTextBox.Text, out priority) || priority > 10000)
+            {
+                MessageBox.Show("Приоритет должен быть задан целым положительным числом не более 10000");
+                return false;
+            }
+
+            if (!uint.TryParse(PeriodTextBox.Text, out period))
+            {
+                MessageBox.Show("Период должен быть задан целым положительным числом");
+                return false;
+            }
+
+            return true;
         }
 
         private void ParentButton_Click(object sender, RoutedEventArgs e)

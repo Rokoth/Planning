@@ -8,6 +8,7 @@ using Planning.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace Planning.Controllers
             int page = 0, string sort = null, bool? isLeaf = null, DateTimeOffset? lastUsedDateBegin = null, DateTimeOffset? lastUsedDateEnd = null, Guid? parentId = null)
         {
             return await ExecuteApi(async () => {
+                var cur = ClaimsPrincipal.Current;
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);

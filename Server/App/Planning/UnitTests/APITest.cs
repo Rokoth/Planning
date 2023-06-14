@@ -145,7 +145,7 @@ namespace Planning.UnitTests
         }
 
         /// <summary>
-        /// FormulaController. Test for Get method (positive scenario)
+        /// ProjectController. Test for GetItem method (positive scenario)
         /// </summary>
         /// <returns></returns>
         [Fact]
@@ -164,6 +164,33 @@ namespace Planning.UnitTests
             var result = res as OkObjectResult;
             var actual = result.Value as Project;
             Assert.Equal(testProject.Id, actual.Id);
+        }
+
+        /// <summary>
+        /// ProjectController. Test for Get method (positive scenario)
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task ProjectGetTest()
+        {
+            var formula = await AddFormula("default_formula_{0}");
+            var user = await AddUser(formula.Id);
+            var identity = await AuthAndAssert(user);
+
+            await AddProjects("project_select_{0}", user.Id, 10);
+            await AddProjects("project_not_select_{0}", user.Id, 10);
+            ProjectApiController controller = new ProjectApiController(_serviceProvider);
+            
+            var res = await controller.Get("project_select", size: 10, page: 0);
+            Assert.True(res is OkObjectResult);
+            var result = res as OkObjectResult;
+            var actuals = JArray.FromObject(result.Value);
+            Assert.Equal(10, actuals.Count);
+            foreach (var assert in actuals)
+            {
+                var actual = assert.ToObject<Contract.Model.Project>();
+                Assert.Contains("project_select", actual.Name);
+            }
         }
 
         private async Task<ClientIdentityResponse> AuthAndAssert(DB.Context.User user)
@@ -194,12 +221,26 @@ namespace Planning.UnitTests
         {
             List<DB.Context.Formula> result = new List<DB.Context.Formula>();
             var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < count; i++)
             {
                 var formula = CreateFormula(nameMask);
                 context.Set<DB.Context.Formula>().Add(formula);
                 await context.SaveChangesAsync();
                 result.Add(formula);
+            }
+            return result;
+        }
+
+        private async Task<IEnumerable<DB.Context.Project>> AddProjects(string nameMask, Guid userId, int count)
+        {
+            List<DB.Context.Project> result = new List<DB.Context.Project>();
+            var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
+            for (int i = 0; i < count; i++)
+            {
+                var project = CreateProject(nameMask, userId);
+                context.Set<DB.Context.Project>().Add(project);
+                await context.SaveChangesAsync();
+                result.Add(project);
             }
             return result;
         }

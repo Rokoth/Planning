@@ -317,6 +317,7 @@ namespace Planning.Client.ClientHttpClient
         Task<Project> GetProject(Guid id);
         Task<ListResult<Contract.Model.Project>> GetProjects(string name, int? page, int? size, string sort);
         Task<ListResult<Schedule>> GetSchedules(string name, int? page, int? size, string sort);
+        Task<Project> UpdateProject(ProjectUpdater projectUpdater);
     }
 
     public class DataService : IDataService
@@ -342,6 +343,11 @@ namespace Planning.Client.ClientHttpClient
         }
 
         public Task<ListResult<Schedule>> GetSchedules(string name, int? page, int? size, string sort)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Project> UpdateProject(ProjectUpdater projectUpdater)
         {
             throw new NotImplementedException();
         }

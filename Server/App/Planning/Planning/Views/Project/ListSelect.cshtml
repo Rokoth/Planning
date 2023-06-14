@@ -13,8 +13,16 @@
                 @Html.HiddenFor(m => item.Id)
                 @Html.LabelFor(m => item.Name) : @Html.DisplayFor(m => item.Name)
                 @Html.LabelFor(m => item.Path) : @Html.DisplayFor(m => item.Path)
-                <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id')" loaded="false">+</button>
+                <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id', '@item.CanSelectAll')" loaded="false">+</button>
                 <button class="btn btn-dark" onclick="setProject('@item.Id', '@item.Name'); $('#modal-action-id').modal('hide');">Выбрать</button>
+                @if (!item.IsLeaf)
+                {
+                    <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id', '@item.CanSelectAll')" loaded="false">+</button>
+                }
+                @if (item.CanSelect)
+                {
+                    <button class="btn btn-dark" onclick="setProject('@item.Id', '@item.Name'); $('#modal-action-id').modal('hide');">Выбрать</button>
+                }
             </div>
             <div id="child_@item.Id" style="margin-left:20px"></div>
         </div>
@@ -22,7 +30,7 @@
 </div>
 
 <script type="text/javascript">
-    function LoadChilds(parent_id) {
+    function LoadChilds(parent_id, canSelectAll) {
         var loaded = $('#btn_' + parent_id).attr("loaded");
         if (loaded == "true") {
             $('#btn_' + parent_id).attr("loaded", "false");
@@ -32,7 +40,7 @@
         else {
             $('#btn_' + parent_id).attr("loaded", "true");
             $('#btn_' + parent_id).attr("class", "btn btn-light btn-expand");
-            $.get("/Project/ListSelectChilds/?parentId=" + parent_id, function (data, textStatus, request) {
+            $.get("/Project/ListSelectChilds/?parentId=" + parent_id + '&canSelectAll=' + canSelectAll, function (data, textStatus, request) {
                 $('#child_' + parent_id).html(data);
             });
         }

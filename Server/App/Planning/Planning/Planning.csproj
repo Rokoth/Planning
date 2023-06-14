@@ -2,13 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>0.0.15</Version>
+    <Version>0.0.16</Version>
     <Copyright>2021 Dmitriy Rokoth</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Rokoth/Planning</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <Description>Хост приложения</Description>
+    <AssemblyName>Planning.App</AssemblyName>
+    <PackageId>Planning.App</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

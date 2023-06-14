@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -84,6 +86,13 @@ namespace Planning.Service
             entry.Period = entity.Period;
             entry.Priority = entity.Priority;
             return entry;
+        }
+
+        protected override DB.Context.Project MapToEntityAdd(Contract.Model.ProjectCreator creator)
+        {
+            var entity = base.MapToEntityAdd(creator);
+            entity.LastUsedDate = DateTimeOffset.Now;
+            return entity;
         }
 
         protected override string DefaultSort => "Name";

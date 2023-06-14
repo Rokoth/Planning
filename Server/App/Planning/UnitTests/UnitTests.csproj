@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <Version>0.0.6</Version>
+    <Version>0.0.7</Version>
 
     <Description>Unit test project</Description>
 
@@ -20,6 +20,8 @@
     <RepositoryType>git</RepositoryType>
 
     <RootNamespace>Planning.UnitTests</RootNamespace>
+
+    <PackageId>Planning.UnitTests</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

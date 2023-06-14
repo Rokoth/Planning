@@ -60,7 +60,7 @@
                 <input type="submit" value="Добавить" class="btn btn-dark" />
                 <a asp-action="Details" class="btn btn-dark">Вернуться</a>
                 @Html.ActionLink("Выбрать родителя", "ListSelect", "Project",
-                    new { id = Model.ParentId },
+                    new { id = Model.ParentId, canSelectAll = true },
                     new { @class = "btn btn-dark", @id = "parent_select" })
             </div>
         </form>

@@ -69,6 +69,9 @@ namespace Planning.Contract.Model
         public string Parent { get; set; }
 
         public bool CanSelect { get; set; }
+
+        public bool CanSelectAll { get; set; }
+
         public Guid UserId { get; set; }
     }
 }

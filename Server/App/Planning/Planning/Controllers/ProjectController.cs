@@ -46,7 +46,7 @@ namespace Planning.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> ListSelectChilds(Guid parentId)
+        public async Task<IActionResult> ListSelectChilds(Guid parentId, bool canSelectAll = false)
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
@@ -60,6 +60,7 @@ namespace Planning.Controllers
                 foreach (var item in ret)
                 {
                     item.CanSelect = item.IsLeaf || !user.LeafOnly;
+                    item.CanSelectAll = canSelectAll;
                 }
                 return PartialView(ret);
             }, "ProjectController", "ListSelectChilds");
@@ -143,15 +144,23 @@ namespace Planning.Controllers
 
         [Authorize]
 
-        public async Task<IActionResult> ListSelect()
+        public async Task<IActionResult> ListSelect(bool canSelectAll = false)
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
                 var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+                var _userDataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
-                    null, null, null, null), source.Token);               
-                return PartialView(result.Data);
+                    null, null, null, null), source.Token);
+                var ret = result.Data.ToList();
+                var user = await _userDataService.GetAsync(userId, source.Token);
+                foreach (var item in ret)
+                {
+                    item.CanSelect = item.IsLeaf || !user.LeafOnly || canSelectAll;
+                    item.CanSelectAll = canSelectAll;
+                }
+                return PartialView(ret);
             }, "ProjectController", "ListSelect");
         }               
 

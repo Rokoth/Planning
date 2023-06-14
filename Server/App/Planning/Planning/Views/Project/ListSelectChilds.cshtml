@@ -10,7 +10,7 @@
             @Html.LabelFor(m => item.Path) : @Html.DisplayFor(m => item.Path)
             @if (!item.IsLeaf)
             {
-                <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id')" loaded="false">+</button>
+                <button id="btn_@item.Id" class="btn btn-dark btn-expand" onclick="LoadChilds('@item.Id', '@item.CanSelectAll')" loaded="false">+</button>
             }
             @if (item.CanSelect)
             {
