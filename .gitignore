@@ -5,7 +5,7 @@
 /Client/App/Project/Project/bin/Debug
 /Client/App/Project/.vs/Project/v16
 /Client/App/Project/Project/obj/Debug
-/Server/App/Planning/.vs/Planning
+/Server/App/Planning/.vs
 /Server/App/Planning/Contract/obj
 /Server/App/Planning/DB/bin/Debug/netcoreapp3.1
 /Client/App/Project/Project/Properties
@@ -30,14 +30,12 @@
 /Server/App/Planning/Contracts/bin/Debug/netstandard2.0
 /Server/App/Planning/Contracts/obj/Debug/netstandard2.0
 /Server/App/Planning/Contracts/obj
-/Docs/TechTask/0.0.1/~$chTask 0.0.7.docx
 /Server/App/Planning/ClientHttpClient/obj/Debug/netstandard2.0
 /Server/App/Planning/ClientHttpClient/obj
 /Server/App/Planning/ClientHttpClient/bin/Debug/netstandard2.0
 /Server/App/Planning/UnitTests/bin/Debug/netcoreapp3.1
 /Server/App/Planning/UnitTests/obj
 /Docs/Architect/Planning 0.0.2.ldb
-/Docs/TechTask/0.0.1/~$chTask 0.0.11.docx
 /Server/App/Planning/Migrator/bin/Debug/netcoreapp3.1
 /Server/App/Planning/Migrator/obj
 /Server/App/Planning/Migrator/Migrator.csproj.user

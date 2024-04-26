@@ -73,8 +73,7 @@ namespace PlanningClient
             {
                 if (needRefresh)
                 {
-                    Dispatcher.Invoke(() => FillTable());
-                    //FillTable();
+                    Dispatcher.Invoke(() => FillTable());                   
                     needRefresh = false;
                 }
                 await Task.Delay(1000);

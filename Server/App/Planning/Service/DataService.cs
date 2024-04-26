@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Runtime.Serialization;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
