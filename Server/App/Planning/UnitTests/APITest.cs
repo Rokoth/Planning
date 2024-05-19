@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -6,6 +7,7 @@ using Planning.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -173,14 +175,25 @@ namespace Planning.UnitTests
         [Fact]
         public async Task ProjectGetTest()
         {
+
+
+
+            ProjectApiController controller = new ProjectApiController(_serviceProvider);
             var formula = await AddFormula("default_formula_{0}");
             var user = await AddUser(formula.Id);
             var identity = await AuthAndAssert(user);
 
             await AddProjects("project_select_{0}", user.Id, 10);
             await AddProjects("project_not_select_{0}", user.Id, 10);
-            ProjectApiController controller = new ProjectApiController(_serviceProvider);
-            
+
+            var claims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
+                                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                                        new Claim(ClaimTypes.Name, user.Id.ToString())
+                                   }, "TestAuthentication"));
+
+            controller.ControllerContext = new ControllerContext();
+            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = claims };
+
             var res = await controller.Get("project_select", size: 10, page: 0);
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;

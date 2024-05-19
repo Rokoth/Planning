@@ -39,3 +39,17 @@
 /Server/App/Planning/Migrator/bin/Debug/netcoreapp3.1
 /Server/App/Planning/Migrator/obj
 /Server/App/Planning/Migrator/Migrator.csproj.user
+/Server/App/Planning/Planning/bin/Debug/net8.0
+/Server/App/Planning/UnitTests/bin/Debug/net8.0
+/Server/App/Planning/Client/bin/Release
+/Server/App/Planning/Client/obj/Release
+/Server/App/Planning/ClientHttpClient/bin/Release/netstandard2.0
+/Server/App/Planning/Common/bin/Release/netstandard2.0
+/Server/App/Planning/Contracts/bin/Release/netstandard2.0
+/Server/App/Planning/DB/bin
+/Server/App/Planning/DbClient/bin/Release/netstandard2.0
+/Server/App/Planning/Deploy/bin/Release/netcoreapp3.1
+/Server/App/Planning/Migrator/bin
+/Server/App/Planning/Planning/bin
+/Server/App/Planning/Service/bin
+/Server/App/Planning/UnitTests/bin/Release/net8.0

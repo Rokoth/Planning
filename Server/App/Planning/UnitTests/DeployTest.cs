@@ -58,16 +58,20 @@ namespace Planning.UnitTests
                 IsDeleted = false,
                 IsRunning = false,               
                 ProjectId = project.Id,
-                UserId = user.Id
+                UserId = user.Id,
+                AddTime = 0,
             };
 
             context.Settings.Add(new Settings() { Id = 100, ParamName = "test", ParamValue = "test" });
             context.Formulas.Add(formula);
+            await context.SaveChangesAsync();
             context.Users.Add(user);
+            await context.SaveChangesAsync();
             context.UserSettings.Add(settings);
+            await context.SaveChangesAsync();
             context.Projects.Add(project);
+            await context.SaveChangesAsync();
             context.Schedules.Add(schedule);
-
             await context.SaveChangesAsync();
 
             Assert.NotNull(context.Settings.FirstOrDefault());

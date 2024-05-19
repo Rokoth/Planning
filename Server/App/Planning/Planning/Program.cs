@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Deploy;
 using Microsoft.AspNetCore;
@@ -11,9 +9,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Configuration;
+
+using Planning.Common;
 using Planning.DB.Context;
 using Serilog;
 using Topshelf;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Planning
 {
@@ -116,16 +118,29 @@ namespace Planning
                         config.AddCommandLine(args);
                     }
                 })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    Log.Logger = new LoggerConfiguration()
-                        .ReadFrom.Configuration(hostingContext.Configuration)
-                        .CreateLogger();
-                    logging.AddSerilog(Log.Logger);
-                })
+                .ConfigureLogging((hostingContext, logging) => CreateLogger(hostingContext, logging))
                 .UseKestrel();
 
             return builder;
+        }
+
+        /// <summary>
+        /// Create Logger method
+        /// </summary>
+        /// <param name="hostingContext"></param>
+        /// <param name="logging"></param>
+        private static void CreateLogger(WebHostBuilderContext hostingContext, Microsoft.Extensions.Logging.ILoggingBuilder logging)
+        {
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(hostingContext.Configuration)
+                .CreateLogger();
+            logging.AddSerilog(Log.Logger);
+            logging.AddErrorNotifyLogger(config =>
+            {
+                config.Options = hostingContext.Configuration
+                    .GetSection("ErrorNotifyOptions")
+                    .Get<ErrorNotifyOptions>();
+            });
         }
     }
 
@@ -153,6 +168,30 @@ namespace Planning
             var mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
             return services;
+        }
+
+        public static Microsoft.Extensions.Logging.ILoggingBuilder AddErrorNotifyLogger(
+        this Microsoft.Extensions.Logging.ILoggingBuilder builder)
+        {
+            builder.AddConfiguration();
+
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<Microsoft.Extensions.Logging.ILoggerProvider, ErrorNotifyLoggerProvider>());
+
+            LoggerProviderOptions.RegisterProviderOptions
+                <ErrorNotifyLoggerConfiguration, ErrorNotifyLoggerProvider>(builder.Services);
+
+            return builder;
+        }
+
+        public static Microsoft.Extensions.Logging.ILoggingBuilder AddErrorNotifyLogger(
+            this Microsoft.Extensions.Logging.ILoggingBuilder builder,
+            Action<ErrorNotifyLoggerConfiguration> configure)
+        {
+            builder.Services.Configure(configure);
+            builder.AddErrorNotifyLogger();
+
+            return builder;
         }
     }
 

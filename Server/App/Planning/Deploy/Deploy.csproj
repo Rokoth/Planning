@@ -8,13 +8,14 @@
     <RepositoryUrl>https://github.com/Rokoth/Planning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>Deploy lib's wrapper</Description>
-    <Version>0.0.9</Version>
+    <Version>0.0.10</Version>
+    <AssemblyName>Planning.Deploy</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Deployer" Version="0.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.14" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.14" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+    <PackageReference Include="Rokoth.Modules.Deployer" Version="0.0.1" />
   </ItemGroup>
 
   <ItemGroup>

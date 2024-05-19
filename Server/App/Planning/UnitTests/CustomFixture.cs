@@ -37,7 +37,9 @@ namespace Planning.UnitTests
             builder.AddJsonFile("appsettings.json");
             var config = builder.Build();
 
-            DatabaseName = $"planning_test_{DateTimeOffset.Now:yyyyMMdd_hhmmss}";
+            var rand = new Random();
+
+            DatabaseName = $"planning_test_{DateTimeOffset.Now:yyyyMMdd_hhmmss_fffff}_{rand.Next(10000)}";
             ConnectionString = Regex.Replace(config.GetConnectionString("MainConnection"), "Database=.*?;", $"Database={DatabaseName};");
             RootConnectionString = Regex.Replace(config.GetConnectionString("MainConnection"), "Database=.*?;", $"Database=postgres;");
             serviceCollection.Configure<CommonOptions>(config);
@@ -93,7 +95,7 @@ namespace Planning.UnitTests
                 Id = id,
                 IsDefault = true,
                 IsDeleted = false,
-                Name = "TestFormula",
+                Name = $"TestFormula_{id}",
                 Text = "Min(SelectCount)",
                 VersionDate = DateTimeOffset.Now
             };

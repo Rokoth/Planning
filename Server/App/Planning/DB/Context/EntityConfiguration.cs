@@ -65,7 +65,7 @@ namespace Planning.DB.Context
 
         private void SetPrimaryKey(EntityTypeBuilder<T> builder, PropertyInfo prop)
         {
-            var pkAttr = prop.GetCustomAttribute<PrimaryKeyAttribute>();
+            var pkAttr = prop.GetCustomAttribute<Attributes.PrimaryKeyAttribute>();
             if (pkAttr != null)
             {
                 builder.HasKey(prop.Name);

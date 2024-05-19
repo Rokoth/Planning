@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
 
-    <Version>0.0.7</Version>
+    <Version>0.0.8</Version>
 
     <Description>Unit test project</Description>
 
@@ -22,6 +22,8 @@
     <RootNamespace>Planning.UnitTests</RootNamespace>
 
     <PackageId>Planning.UnitTests</PackageId>
+
+    <Title>Planning.UnitTests</Title>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Reflection;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Planning.DB.Context
 {
@@ -44,6 +45,23 @@ namespace Planning.DB.Context
                         .MakeGenericMethod(type).Invoke(this, new object[] { modelBuilder, config });
                 }
             }
+        }
+
+        public class DateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
+        {
+            public DateTimeOffsetConverter()
+                : base(
+                    d => d.ToUniversalTime(),
+                    d => d.ToUniversalTime())
+            {
+            }
+        }        
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder
+                .Properties<DateTimeOffset>()
+                .HaveConversion<DateTimeOffsetConverter>();
         }
 
         private void ApplyConf<T>(ModelBuilder modelBuilder, EntityConfiguration<T> config) where T : class, IEntity
