@@ -96,7 +96,7 @@ namespace Planning.Service
                         .OrderBy(s => s.BeginDate).FirstOrDefault();
                 }
                 
-                if (nextSchedule == null) nextSchedule = await AddProjectToSchedule(userId, userSettings, isLocked: true);
+                if (nextSchedule == null) nextSchedule = await AddProjectToScheduleInternal(userId, userSettings, isLocked: true);
                 nextSchedule.IsRunning = true;
                 await _scheduleRepo.UpdateAsync(nextSchedule, false, cancellationTokenSource.Token);
                 await _projectRepo.SaveChangesAsync();
@@ -195,7 +195,27 @@ namespace Planning.Service
             }
         }
 
-        public async Task<Schedule> AddProjectToSchedule(Guid userId, UserSettings settings, Guid? projectId = null, 
+        public async Task<Contract.Model.Schedule> AddProjectToSchedule(Guid userId, UserSettings settings, Guid? projectId = null,
+            DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
+        {
+            var schedule = await AddProjectToScheduleInternal(userId, settings, projectId, beginDate, setBeginDate, isLocked);
+            var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
+            var project = await _projectRepo.GetAsync(schedule.ProjectId, new CancellationTokenSource(30000).Token);
+            return new Contract.Model.Schedule()
+            {
+                Id = schedule.Id,
+                VersionDate = schedule.VersionDate,
+                UserId = schedule.UserId,
+                BeginDate = schedule.BeginDate,
+                EndDate = schedule.EndDate,
+                IsRunning = schedule.IsRunning,
+                Project = project.Name,
+                ProjectId = schedule.ProjectId,
+                ProjectPath = project.Name
+            };
+        }
+
+        public async Task<Schedule> AddProjectToScheduleInternal(Guid userId, UserSettings settings, Guid? projectId = null, 
             DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
         {
             try

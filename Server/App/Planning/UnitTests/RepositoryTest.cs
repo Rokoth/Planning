@@ -24,51 +24,62 @@ namespace Planning.UnitTests
             _fixture = fixture;            
         }
 
-        ///// <summary>
-        ///// Тест получения списка сущностей по фильтру
-        ///// </summary>
-        ///// <returns></returns>
-        //[Fact]
-        //public async Task GetTest()
-        //{
-        //    var context = _serviceProvider.GetRequiredService<DbPgContext>();
-        //    AddUsers(context, "user_select_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}", 10);
-        //    AddUsers(context, "user_not_select_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}", 10);
-        //    await context.SaveChangesAsync();
+        /// <summary>
+        /// Тест получения списка сущностей по фильтру
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task GetTest()
+        {
+            var context = _serviceProvider.GetRequiredService<DbPgContext>();
+           
+            var formulaRepo = _serviceProvider.GetRequiredService<IRepository<Formula>>();
+            var formula = _fixture.CreateFormula();
+            await formulaRepo.AddAsync(formula, true, CancellationToken.None);
 
-        //    var repo = _serviceProvider.GetRequiredService<IRepository<User>>();
-        //    var data = await repo.GetAsync(new Filter<User>()
-        //    {
-        //        Page = 0,
-        //        Size = 10,
-        //        Selector = s => s.Name.Contains("user_select")
-        //    }, CancellationToken.None);
+            AddUsers(context, "user_select_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}", 10, formula.Id);
+            AddUsers(context, "user_not_select_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}", 10, formula.Id);
+            await context.SaveChangesAsync();
 
-        //    Assert.Equal(10, data.Data.Count());
-        //    foreach (var item in data.Data)
-        //    {
-        //        Assert.Contains("user_select", item.Name);
-        //    }
-        //}
+            var repo = _serviceProvider.GetRequiredService<IRepository<User>>();
+            var data = await repo.GetAsync(new Filter<User>()
+            {
+                Page = 0,
+                Size = 10,
+                Selector = s => s.Name.Contains("user_select")
+            }, CancellationToken.None);
 
-        ///// <summary>
-        ///// Тест получения сущности по id
-        ///// </summary>
-        ///// <returns></returns>
-        //[Fact]
-        //public async Task GetItemTest()
-        //{
-        //    var context = _serviceProvider.GetRequiredService<DbPgContext>();
-        //    var user = CreateUser("user_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}");
-        //    context.Users.Add(user);
-        //    await context.SaveChangesAsync();
+            Assert.Equal(10, data.Data.Count());
+            foreach (var item in data.Data)
+            {
+                Assert.Contains("user_select", item.Name);
+            }
+        }
 
-        //    var repo = _serviceProvider.GetRequiredService<IRepository<User>>();
-        //    var data = await repo.GetAsync(user.Id, CancellationToken.None);
+        /// <summary>
+        /// Тест получения сущности по id
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task GetItemTest()
+        {
+            var context = _serviceProvider.GetRequiredService<DbPgContext>();
+            var repo = _serviceProvider.GetRequiredService<IRepository<User>>();
 
-        //    Assert.NotNull(data);
-        //    Assert.Equal(user.Id, data.Id);
-        //}
+            var formulaRepo = _serviceProvider.GetRequiredService<IRepository<Formula>>();
+            var formula = _fixture.CreateFormula();
+            await formulaRepo.AddAsync(formula, true, CancellationToken.None);
+
+            var user = _fixture.CreateUser("user_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}", formula.Id);
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+                        
+            var data = await repo.GetAsync(user.Id, CancellationToken.None);
+
+            Assert.NotNull(data);
+            Assert.Equal(user.Id, data.Id);
+        }
 
         /// <summary>
         /// Тест добавления сущности
@@ -127,31 +138,36 @@ namespace Planning.UnitTests
             }
         }
 
-        ///// <summary>
-        ///// Тест удаления сущности
-        ///// </summary>
-        ///// <returns></returns>
-        //[Fact]
-        //public async Task DeleteTest()
-        //{
-        //    var context = _serviceProvider.GetRequiredService<DbPgContext>();
-        //    var repo = _serviceProvider.GetRequiredService<IRepository<User>>();
-        //    var user = CreateUser("user_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}");
+        /// <summary>
+        /// Тест удаления сущности
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task DeleteTest()
+        {
+            var context = _serviceProvider.GetRequiredService<DbPgContext>();
+            var repo = _serviceProvider.GetRequiredService<IRepository<User>>();
 
-        //    context.Users.Add(user);
-        //    await context.SaveChangesAsync();
+            var formulaRepo = _serviceProvider.GetRequiredService<IRepository<Formula>>();
+            var formula = _fixture.CreateFormula();
+            await formulaRepo.AddAsync(formula, true, CancellationToken.None);
 
-        //    var data = await repo.DeleteAsync(user, true, CancellationToken.None);
+            var user = _fixture.CreateUser("user_{0}", "user_description_{0}", "user_login_{0}", "user_password_{0}", formula.Id);
 
-        //    Assert.NotNull(data);
-        //    Assert.Equal(user.Id, data.Id);
-        //    Assert.True(data.IsDeleted);
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
 
-        //    var test = context.Users.FirstOrDefault(s => s.Id == user.Id);
-        //    Assert.NotNull(test);
-        //    Assert.Equal(user.Id, test.Id);
-        //    Assert.True(test.IsDeleted);
-        //}
+            var data = await repo.DeleteAsync(user, true, CancellationToken.None);
+
+            Assert.NotNull(data);
+            Assert.Equal(user.Id, data.Id);
+            Assert.True(data.IsDeleted);
+
+            var test = context.Users.FirstOrDefault(s => s.Id == user.Id);
+            Assert.NotNull(test);
+            Assert.Equal(user.Id, test.Id);
+            Assert.True(test.IsDeleted);
+        }
 
 
 

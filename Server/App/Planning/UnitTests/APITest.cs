@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Planning.Contract.Model;
@@ -159,13 +160,56 @@ namespace Planning.UnitTests
 
             var testProject = await AddProject("project_select_{0}", user.Id);
 
-            ProjectApiController controller = new ProjectApiController(_serviceProvider);
+            ProjectApiController controller = new(_serviceProvider);
             var res = await controller.GetItem(testProject.Id);
 
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;
             var actual = result.Value as Project;
             Assert.Equal(testProject.Id, actual.Id);
+        }
+
+        /// <summary>
+        /// ScheduleController. Test for Add method (positive scenario)
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task ScheduleAddTest()
+        {
+            var formula = await AddFormula("default_formula_{0}");
+            var user = await AddUser(formula.Id);
+            var identity = await AuthAndAssert(user);
+
+            var testProject = await AddProject("project_select_{0}", user.Id);
+
+            ScheduleApiController controller = new(_serviceProvider);
+
+            var claims = new ClaimsPrincipal(new ClaimsIdentity([
+                                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                                        new Claim(ClaimTypes.Name, user.Id.ToString())
+                                   ], "TestAuthentication"));
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claims }
+            };
+
+            var res = await controller.Create(new ScheduleCreator()
+            {
+                BeginDate = DateTime.Now,
+                ProjectId = testProject.Id,
+                SetBeginDate = true,
+                UserId = user.Id,
+            });
+
+            Assert.True(res is OkObjectResult);
+            var result = res as OkObjectResult;
+            var actual = result.Value as Schedule;
+            Assert.NotNull(actual);
+
+            var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
+            var dbEntry = await context.Set<DB.Context.Schedule>().FirstOrDefaultAsync(s => s.Id == actual.Id);
+            Assert.NotNull(dbEntry);
         }
 
         /// <summary>
@@ -227,6 +271,22 @@ namespace Planning.UnitTests
             var user = CreateUser(formulaId);
             context.Set<DB.Context.User>().Add(user);
             await context.SaveChangesAsync();
+            var settings = new DB.Context.UserSettings()
+            {
+                DefaultProjectTimespan = 3,
+                IsDeleted = false,
+                Id = Guid.NewGuid(),
+                LeafOnly = true,
+                ScheduleCount = 10,
+                ScheduleMode = ScheduleMode.ByCount,
+                ScheduleShift = 3,
+                ScheduleTimeSpan = 3,
+                UserId = user.Id,
+                VersionDate = DateTimeOffset.Now
+            };
+            context.Set<DB.Context.UserSettings>().Add(settings);
+            await context.SaveChangesAsync();
+
             return user;
         }
 
