@@ -107,9 +107,7 @@ namespace Planning.Service
                 entity = await repo.DeleteAsync(entity, false, token);
                 await ActionAfterDelete(repo, entity, token);
                 await repo.SaveChangesAsync();
-                var prepare = _mapper.Map<Tdto>(entity);
-                prepare = await Enrich(prepare, token);
-                return prepare;
+                return _mapper.Map<Tdto>(entity);                
             });
         }
     }
