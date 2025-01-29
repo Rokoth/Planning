@@ -93,15 +93,19 @@ namespace Deploy
             }
             catch (DeployException ex)
             {
-                await errorNotifyService.Send($"Error while Deploy: {ex.Message} {ex.StackTrace}");
+                if(errorNotifyService!=null && ex != null)
+                {
+                    await errorNotifyService?.Send($"Error while Deploy: {ex.Message} {ex.StackTrace}");
+                }                
                 throw;
             }
             catch (Exception ex)
             {
-                await errorNotifyService.Send($"Error while Deploy DB.\r\n" +
-                    $"Message: {ex.Message}\r\n" +
-                    $"StackTrace: {ex.StackTrace}\r\n" +
-                    $"DeployLog: {deployLog}");
+                if (errorNotifyService != null && ex != null)
+                    await errorNotifyService?.Send($"Error while Deploy DB.\r\n" +
+                        $"Message: {ex.Message}\r\n" +
+                        $"StackTrace: {ex.StackTrace}\r\n" +
+                        $"DeployLog: {deployLog}");
                 throw new DeployException(
                     $"Error while Deploy DB.\r\n" +
                     $"Message: {ex.Message}\r\n" +
