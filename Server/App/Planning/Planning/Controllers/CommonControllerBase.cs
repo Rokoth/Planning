@@ -13,6 +13,12 @@ namespace Planning.Controllers
         protected readonly IErrorNotifyService errorNotifyService;
         protected IServiceProvider _serviceProvider;
 
+        protected const int CancellationTokenSourceDelay = 30000;
+        protected const string IndexMethodName = "Index";
+        protected const string ErrorControllerName = "Error";
+        protected const string HomeControllerName = "Home";
+
+
         public CommonControllerBase(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
