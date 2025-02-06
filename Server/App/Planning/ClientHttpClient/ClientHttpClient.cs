@@ -98,6 +98,12 @@ namespace ClientHttpClient
                 client.GetAsync($"{GetApi<T>(apiType)}/{param}"), "Get", s => s.ParseResponseArray<T>());
         }
 
+        public async Task<T> Put<T>(string param, T content, Type apiType = null) where T : class
+        {
+            return await Execute(client =>
+                client.PutAsync($"{GetApi<T>(apiType)}/{param}", content.SerializeRequest()), "Put", s => s.ParseResponse<T>());
+        }
+
         private async Task<T> Execute<T>(
             Func<HttpClient, Task<HttpResponseMessage>> action,
             string method,
