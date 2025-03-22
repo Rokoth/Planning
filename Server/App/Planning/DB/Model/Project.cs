@@ -62,44 +62,99 @@ namespace Planning.DB.Context
         public int AddTime { get; set; }
     }
 
-    [TableName("schedule")]
-    public class Schedule : Entity
+    [TableName("direction_category")]
+    public class DirectionCategory : Entity
     {
-        [ColumnName("project_id")]       
-        public Guid ProjectId { get; set; }
-        [ColumnName("userid")]       
-        public Guid UserId { get; set; }       
-        [ColumnName("begin_date")]
-        public DateTimeOffset BeginDate { get; set; }
-        [ColumnName("end_date")]
-        public DateTimeOffset EndDate { get; set; }
-        [ColumnName("is_running")]
-        public bool IsRunning { get; set; }
-        [ColumnName("add_time")]
-        public int? AddTime { get; set; }
-        [ColumnName("is_closed")]
-        public bool IsClosed { get; set; }
+        [ColumnName("name")]
+        public string Name { get; set; }
 
-        [ForeignKey("UserId")]
-        [Ignore]
-        public User User { get; set; }
-        [ForeignKey("ProjectId")]
-        [Ignore]
-        public Project Project { get; set; }
+        [ColumnName("description")]
+        public string Description { get; set; }
+
+        [ColumnName("userid")]
+        public Guid UserId { get; set; }
+
+        [ColumnName("priority")]
+        public int Priority { get; set; }               
     }
 
-    [TableName("h_schedule")]
-    public class ScheduleHistory : EntityHistory
+    [TableName("h_direction_category")]
+    public class DirectionCategoryHistory : EntityHistory
     {
+        [ColumnName("name")]
+        public string Name { get; set; }
+
+        [ColumnName("description")]
+        public string Description { get; set; }
+
+        [ColumnName("userid")]
+        public Guid UserId { get; set; }
+
+        [ColumnName("priority")]
+        public int Priority { get; set; }
+    }
+
+    [TableName("direction")]
+    public class Direction : Entity
+    {
+        [ColumnName("name")]
+        public string Name { get; set; }
+
+        [ColumnName("description")]
+        public string Description { get; set; }
+
+        [ColumnName("direction_category_id")]
+        public Guid DirectionCategoryId { get; set; }
+
+        [ColumnName("userid")]
+        public Guid UserId { get; set; }
+
+        [ColumnName("priority")]
+        public int Priority { get; set; }
+
+        [ColumnName("begin_date")]
+        public DateTime? BeginDate { get; set; }
+    }
+
+    [TableName("h_direction")]
+    public class DirectionHistory : EntityHistory
+    {
+        [ColumnName("name")]
+        public string Name { get; set; }
+
+        [ColumnName("description")]
+        public string Description { get; set; }
+
+        [ColumnName("direction_category_id")]
+        public Guid DirectionCategoryId { get; set; }
+
+        [ColumnName("userid")]
+        public Guid UserId { get; set; }
+
+        [ColumnName("priority")]
+        public int Priority { get; set; }
+
+        [ColumnName("begin_date")]
+        public DateTime? BeginDate { get; set; }
+    }
+
+    [TableName("direction_project")]
+    public class DirectionProject : Entity
+    {       
+        [ColumnName("direction_id")]
+        public Guid DirectionId { get; set; }
+
         [ColumnName("project_id")]
         public Guid ProjectId { get; set; }
-        [ColumnName("userid")]
-        public Guid UserId { get; set; }       
-        [ColumnName("begin_date")]
-        public DateTimeOffset BeginDate { get; set; }
-        [ColumnName("end_date")]
-        public DateTimeOffset EndDate { get; set; }
-        [ColumnName("is_running")]
-        public bool IsRunning { get; set; }
+    }
+
+    [TableName("h_direction_project")]
+    public class DirectionProjectHistory : EntityHistory
+    {
+        [ColumnName("direction_id")]
+        public Guid DirectionId { get; set; }
+
+        [ColumnName("project_id")]
+        public Guid ProjectId { get; set; }
     }
 }

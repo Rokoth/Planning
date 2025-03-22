@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Planning.Contract.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -154,5 +155,68 @@ namespace Planning.Service
 
         protected override string DefaultSort => "Name";
         
+    }
+
+    public class DirectionCategoryDataService : DataService<DB.Context.DirectionCategory, Contract.Model.DirectionCategory,
+        Contract.Model.DirectionCategoryFilter, Contract.Model.DirectionCategoryCreator, Contract.Model.DirectionCategoryUpdater>
+    {
+        public DirectionCategoryDataService(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+
+        }
+               
+        protected override string DefaultSort => "Name";
+
+        protected override Expression<Func<DB.Context.DirectionCategory, bool>> GetFilter(DirectionCategoryFilter filter)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override DB.Context.DirectionCategory UpdateFillFields(DirectionCategoryUpdater entity, DB.Context.DirectionCategory entry)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class DirectionDataService : DataService<DB.Context.Direction, Contract.Model.Direction,
+        Contract.Model.DirectionFilter, Contract.Model.DirectionCreator, Contract.Model.DirectionUpdater>
+    {
+        public DirectionDataService(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+
+        }
+
+        protected override string DefaultSort => "Name";
+
+        protected override Expression<Func<DB.Context.Direction, bool>> GetFilter(DirectionFilter filter)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override DB.Context.Direction UpdateFillFields(DirectionUpdater entity, DB.Context.Direction entry)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class DirectionProjectDataService : DataService<DB.Context.DirectionProject, Contract.Model.DirectionProject,
+        Contract.Model.DirectionProjectFilter, Contract.Model.DirectionProjectCreator, Contract.Model.DirectionProjectUpdater>
+    {
+        public DirectionProjectDataService(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+
+        }
+
+        protected override string DefaultSort => "Id";
+
+        protected override Expression<Func<DB.Context.DirectionProject, bool>> GetFilter(DirectionProjectFilter filter)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override DB.Context.DirectionProject UpdateFillFields(DirectionProjectUpdater entity, DB.Context.DirectionProject entry)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

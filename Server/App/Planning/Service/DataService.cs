@@ -148,10 +148,21 @@ namespace Planning.Service
             services.AddDataService<ScheduleDataService, DB.Context.Schedule, Contract.Model.Schedule,
                Contract.Model.ScheduleFilter, Contract.Model.ScheduleCreator, Contract.Model.ScheduleUpdater>();
 
+            services.AddDataService<DirectionCategoryDataService, DB.Context.DirectionCategory, Contract.Model.DirectionCategory,
+               Contract.Model.DirectionCategoryFilter, Contract.Model.DirectionCategoryCreator, Contract.Model.DirectionCategoryUpdater>();
+            services.AddDataService<DirectionDataService, DB.Context.Direction, Contract.Model.Direction,
+               Contract.Model.DirectionFilter, Contract.Model.DirectionCreator, Contract.Model.DirectionUpdater>();
+            services.AddDataService<DirectionProjectDataService, DB.Context.DirectionProject, Contract.Model.DirectionProject,
+               Contract.Model.DirectionProjectFilter, Contract.Model.DirectionProjectCreator, Contract.Model.DirectionProjectUpdater>();
+
             services.AddScoped<IGetDataService<Contract.Model.UserHistory, Contract.Model.UserHistoryFilter>, UserHistoryDataService>();
             services.AddScoped<IGetDataService<Contract.Model.FormulaHistory, Contract.Model.FormulaHistoryFilter>, FormulaHistoryDataService>();
             services.AddScoped<IGetDataService<Contract.Model.ProjectHistory, Contract.Model.ProjectHistoryFilter>, ProjectHistoryDataService>();
             services.AddScoped<IGetDataService<Contract.Model.ScheduleHistory, Contract.Model.ScheduleHistoryFilter>, ScheduleHistoryDataService>();
+
+            services.AddScoped<IGetDataService<Contract.Model.DirectionCategoryHistory, Contract.Model.DirectionCategoryHistoryFilter>, DirectionCategoryHistoryDataService>();
+            services.AddScoped<IGetDataService<Contract.Model.DirectionHistory, Contract.Model.DirectionHistoryFilter>, DirectionHistoryDataService>();
+            services.AddScoped<IGetDataService<Contract.Model.DirectionProjectHistory, Contract.Model.DirectionProjectHistoryFilter>, DirectionProjectHistoryDataService>();
             services.AddScoped<IAuthService, AuthService>();
 
             return services;

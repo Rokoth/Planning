@@ -49,11 +49,19 @@ namespace Planning
             services.AddScoped<DB.Repository.IRepository<Project>, DB.Repository.Repository<Project>>();
             services.AddScoped<DB.Repository.IRepository<Schedule>, DB.Repository.Repository<Schedule>>();
 
+            services.AddScoped<DB.Repository.IRepository<DirectionCategory>, DB.Repository.Repository<DirectionCategory>>();
+            services.AddScoped<DB.Repository.IRepository<Direction>, DB.Repository.Repository<Direction>>();
+            services.AddScoped<DB.Repository.IRepository<DirectionProject>, DB.Repository.Repository<DirectionProject>>();
+
             services.AddScoped<DB.Repository.IRepository<UserHistory>, DB.Repository.Repository<UserHistory>>();
             services.AddScoped<DB.Repository.IRepository<FormulaHistory>, DB.Repository.Repository<FormulaHistory>>();
             services.AddScoped<DB.Repository.IRepository<UserSettingsHistory>, DB.Repository.Repository<UserSettingsHistory>>();
             services.AddScoped<DB.Repository.IRepository<ProjectHistory>, DB.Repository.Repository<ProjectHistory>>();
             services.AddScoped<DB.Repository.IRepository<ScheduleHistory>, DB.Repository.Repository<ScheduleHistory>>();
+
+            services.AddScoped<DB.Repository.IRepository<DirectionCategoryHistory>, DB.Repository.Repository<DirectionCategoryHistory>>();
+            services.AddScoped<DB.Repository.IRepository<DirectionHistory>, DB.Repository.Repository<DirectionHistory>>();
+            services.AddScoped<DB.Repository.IRepository<DirectionProjectHistory>, DB.Repository.Repository<DirectionProjectHistory>>();
 
             services.AddScoped<IDeployService, DeployService>();
             services.AddScoped<IProjectSelectService, ProjectSelectService>();

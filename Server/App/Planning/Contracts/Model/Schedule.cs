@@ -115,4 +115,151 @@ namespace Planning.Contract.Model
         public string Name { get; }
         public Guid? Id { get; }
     }
+
+   
+    public class DirectionCategory : Entity
+    {
+        [Display(Name = "Наименование категории направлений")]
+        public string Name { get; set; }
+        [Display(Name = "Описание категории направлений")]
+        public string Description { get; set; }
+        [Display(Name = "ИД пользователя")]
+        public Guid UserId { get; set; }
+        [Display(Name = "Приоритет категории направлений")]
+        public int Priority { get; set; }
+    }
+
+    public class DirectionCategoryCreator
+    {
+        [Display(Name = "Наименование категории направлений")]
+        public string Name { get; set; }
+        [Display(Name = "Описание категории направлений")]
+        public string Description { get; set; }
+        [Display(Name = "Приоритет категории направлений")]
+        public int Priority { get; set; }
+    }
+
+    public class DirectionCategoryUpdater : IEntity
+    {
+        [Display(Name = "ИД")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        public Guid Id { get; set; }
+        [Display(Name = "Наименование категории направлений")]
+        public string Name { get; set; }
+        [Display(Name = "Описание категории направлений")]
+        public string Description { get; set; }
+        [Display(Name = "Приоритет категории направлений")]
+        public int Priority { get; set; }
+        
+    }
+
+
+    public class DirectionCategoryHistory : EntityHistory
+    {
+        [Display(Name = "Наименование категории направлений")]
+        public string Name { get; set; }
+        [Display(Name = "Описание категории направлений")]
+        public string Description { get; set; }
+
+        [Display(Name = "ИД пользователя")]
+        public Guid UserId { get; set; }
+        [Display(Name = "Приоритет категории направлений")]
+        public int Priority { get; set; }
+    }
+
+     public class Direction : Entity
+    {
+        [Display(Name = "Наименование направления")]
+        public string Name { get; set; }
+        [Display(Name = "Описание направления")]
+        public string Description { get; set; }
+        [Display(Name = "Категория направлений")]
+        public Guid DirectionCategoryId { get; set; }
+
+        [Display(Name = "ИД пользователя")]
+        public Guid UserId { get; set; }
+        [Display(Name = "Приоритет направления")]
+        public int Priority { get; set; }
+        [Display(Name = "Дата начала направления")]
+        public DateTime? BeginDate { get; set; }
+    }
+
+    public class DirectionCreator
+    {
+        [Display(Name = "Наименование направления")]
+        public string Name { get; set; }
+        [Display(Name = "Описание направления")]
+        public string Description { get; set; }
+        [Display(Name = "Категория направлений")]
+        public Guid DirectionCategoryId { get; set; }
+        [Display(Name = "Приоритет направления")]
+        public int Priority { get; set; }       
+    }
+
+    public class DirectionUpdater : IEntity
+    {
+        [Display(Name = "ИД")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        public Guid Id { get; set; }
+        [Display(Name = "Наименование направления")]
+        public string Name { get; set; }
+        [Display(Name = "Описание направления")]
+        public string Description { get; set; }
+        [Display(Name = "Категория направлений")]
+        public Guid DirectionCategoryId { get; set; }
+        [Display(Name = "Приоритет направления")]
+        public int Priority { get; set; }
+    }
+
+    public class DirectionHistory : EntityHistory
+    {
+        [Display(Name = "Наименование направления")]
+        public string Name { get; set; }
+        [Display(Name = "Описание направления")]
+        public string Description { get; set; }
+        [Display(Name = "Категория направлений")]
+        public Guid DirectionCategoryId { get; set; }
+
+        [Display(Name = "ИД пользователя")]
+        public Guid UserId { get; set; }
+        [Display(Name = "Приоритет направления")]
+        public int Priority { get; set; }
+        [Display(Name = "Дата начала направления")]
+        public DateTime? BeginDate { get; set; }
+    }
+
+     public class DirectionProject : Entity
+    {
+        [Display(Name = "Направление")]
+        public Guid DirectionId { get; set; }
+        [Display(Name = "Проект")]
+        public Guid ProjectId { get; set; }
+    }
+
+    public class DirectionProjectCreator
+    {
+        [Display(Name = "Направление")]
+        public Guid DirectionId { get; set; }
+        [Display(Name = "Проект")]
+        public Guid ProjectId { get; set; }
+    }
+
+    public class DirectionProjectUpdater : IEntity
+    {
+        [Display(Name = "ИД")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        public Guid Id { get; set; }
+        [Display(Name = "Направление")]
+        public Guid DirectionId { get; set; }
+        [Display(Name = "Проект")]
+        public Guid ProjectId { get; set; }
+    }
+
+    public class DirectionProjectHistory : EntityHistory
+    {
+        [Display(Name = "Направление")]
+        public Guid DirectionId { get; set; }
+        [Display(Name = "Проект")]
+        public Guid ProjectId { get; set; }
+    }
 }
