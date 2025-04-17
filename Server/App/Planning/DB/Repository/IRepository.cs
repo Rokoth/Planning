@@ -19,7 +19,7 @@ namespace Planning.DB.Repository
         /// <param name="filter">filter</param>
         /// <param name="token">token</param>
         /// <returns>PagedResult<T></returns>
-        Task<Contract.Model.PagedResult<T>> GetAsync(Filter<T> filter, CancellationToken token);
+        Task<Contracts.Model.Common.PagedResult<T>> GetAsync(Filter<T> filter, CancellationToken token);
 
         /// <summary>
         /// Get model list with paging with deleted
@@ -27,7 +27,7 @@ namespace Planning.DB.Repository
         /// <param name="filter">filter</param>
         /// <param name="token">token</param>
         /// <returns>PagedResult<T></returns>
-        Task<Contract.Model.PagedResult<T>> GetAsyncDeleted(Filter<T> filter, CancellationToken token);
+        Task<Contracts.Model.Common.PagedResult<T>> GetAsyncDeleted(Filter<T> filter, CancellationToken token);
 
         /// <summary>
         /// Get item of model by id

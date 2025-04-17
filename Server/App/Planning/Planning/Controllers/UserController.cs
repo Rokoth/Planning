@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Contracts.Model.Formula;
+using Contracts.Model.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Planning.Contract.Model;
 using Planning.Service;
 using System;
 using System.Collections.Generic;

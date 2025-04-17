@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Contracts.Model.Formula;
+using Contracts.Model.Schedule;
+using Contracts.Model.User;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,22 +11,22 @@ using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public class FormulaDataService : DataService<DB.Context.Formula, Contract.Model.Formula,
-       Contract.Model.FormulaFilter, Contract.Model.FormulaCreator, Contract.Model.FormulaUpdater>
+    public class FormulaDataService : DataService<DB.Context.Formula, Formula,
+       FormulaFilter, FormulaCreator, FormulaUpdater>
     {
         public FormulaDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
 
         }
 
-        protected override Expression<Func<DB.Context.Formula, bool>> GetFilter(Contract.Model.FormulaFilter filter)
+        protected override Expression<Func<DB.Context.Formula, bool>> GetFilter(FormulaFilter filter)
         {
             return s => (filter.Name == null || s.Name.Contains(filter.Name)) 
                      && (filter.IsDefault == null || s.IsDefault == filter.IsDefault);
         }
 
         protected override async Task PrepareBeforeAdd(DB.Repository.IRepository<DB.Context.Formula> repository, 
-            Contract.Model.FormulaCreator creator, CancellationToken token)
+            FormulaCreator creator, CancellationToken token)
         {
             if (creator.IsDefault)
             {
@@ -42,7 +45,7 @@ namespace Planning.Service
         }
 
         protected override async Task PrepareBeforeUpdate(DB.Repository.IRepository<DB.Context.Formula> repository, 
-            Contract.Model.FormulaUpdater entity, CancellationToken token)
+            FormulaUpdater entity, CancellationToken token)
         {
             if (entity.IsDefault)
             {
@@ -76,7 +79,7 @@ namespace Planning.Service
             }
         }
 
-        protected override DB.Context.Formula UpdateFillFields(Contract.Model.FormulaUpdater entity, DB.Context.Formula entry)
+        protected override DB.Context.Formula UpdateFillFields(FormulaUpdater entity, DB.Context.Formula entry)
         {
             entry.Text = entity.Text;
             entry.Name = entity.Name;
@@ -88,15 +91,15 @@ namespace Planning.Service
 
     }
 
-    public class ScheduleDataService : DataService<DB.Context.Schedule, Contract.Model.Schedule,
-       Contract.Model.ScheduleFilter, Contract.Model.ScheduleCreator, Contract.Model.ScheduleUpdater>
+    public class ScheduleDataService : DataService<DB.Context.Schedule, Schedule,
+       ScheduleFilter, ScheduleCreator, ScheduleUpdater>
     {
         public ScheduleDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
 
         }
 
-        protected override Expression<Func<DB.Context.Schedule, bool>> GetFilter(Contract.Model.ScheduleFilter filter)
+        protected override Expression<Func<DB.Context.Schedule, bool>> GetFilter(ScheduleFilter filter)
         {
             
 
@@ -107,14 +110,14 @@ namespace Planning.Service
                 (filter.OnlyActive == null || !filter.OnlyActive.Value || !s.IsClosed);
         }
                
-        protected override DB.Context.Schedule UpdateFillFields(Contract.Model.ScheduleUpdater entity, DB.Context.Schedule entry)
+        protected override DB.Context.Schedule UpdateFillFields(ScheduleUpdater entity, DB.Context.Schedule entry)
         {
             entry.BeginDate = entity.BeginDate;
             entry.ProjectId = entity.ProjectId;          
             return entry;
         }
 
-        protected override async Task<Contract.Model.Schedule> Enrich(Contract.Model.Schedule entity, CancellationToken token)
+        protected override async Task<Schedule> Enrich(Schedule entity, CancellationToken token)
         {
             var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
             var fullProj = await GetFullProjectName(_projectRepo, entity.ProjectId);
@@ -151,9 +154,9 @@ namespace Planning.Service
         /// <summary>
         /// function for enrichment data item
         /// </summary>
-        protected override async Task<IEnumerable<Contract.Model.Schedule>> Enrich(IEnumerable<Contract.Model.Schedule> entities, CancellationToken token)
+        protected override async Task<IEnumerable<Schedule>> Enrich(IEnumerable<Schedule> entities, CancellationToken token)
         {
-            List<Contract.Model.Schedule> result = new List<Contract.Model.Schedule>();
+            List<Schedule> result = new List<Schedule>();
             if (entities.Any())
             {
                 var userId = entities.First().UserId;

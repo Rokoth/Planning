@@ -3,11 +3,11 @@
 //
 //ref1
 
+using Contracts.Model.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Planning.Common;
-using Planning.Contract.Model;
 using Planning.Service;
 using System;
 using System.IdentityModel.Tokens.Jwt;

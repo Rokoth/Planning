@@ -1,4 +1,4 @@
-﻿using Planning.Contract.Model;
+﻿using Contracts.Model.User;
 using System;
 using System.IO;
 using System.Threading.Tasks;

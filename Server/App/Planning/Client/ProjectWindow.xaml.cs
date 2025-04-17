@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Contracts.Model.Project;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Planning.Client.ClientHttpClient;
 using System;
@@ -135,7 +136,7 @@ namespace PlanningClient
                 var row = DataGridMain.SelectedItem;
                 if (row != null)
                 {
-                    if (await _dataService.DeleteProject(((Planning.Contract.Model.Project)row).Id))
+                    if (await _dataService.DeleteProject(((Project)row).Id))
                     {
                         FillTable();
                     }                    
@@ -208,7 +209,7 @@ namespace PlanningClient
             var row = DataGridMain.SelectedItem;
             if (row != null)
             {
-                addTreeWindow.ShowDialog(AddEditMode.Edit, ((Planning.Contract.Model.Project)row).Id);
+                addTreeWindow.ShowDialog(AddEditMode.Edit, ((Project)row).Id);
             }
 
             FillTable();

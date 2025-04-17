@@ -1,4 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Contracts.Model.Common;
+using Contracts.Model.Direction;
+using Contracts.Model.Formula;
+using Contracts.Model.Project;
+using Contracts.Model.Schedule;
+using Contracts.Model.User;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -9,9 +15,9 @@ namespace Planning.Service
     public abstract class DataService<TEntity, Tdto, TFilter, TCreator, TUpdater> :
         DataGetService<TEntity, Tdto, TFilter>, IAddDataService<Tdto, TCreator>, IUpdateDataService<Tdto, TUpdater>, IDeleteDataService<Tdto>
           where TEntity : DB.Context.IEntity
-          where TUpdater : Contract.Model.IEntity
-          where Tdto : Contract.Model.Entity
-          where TFilter : Contract.Model.Filter<Tdto>
+          where TUpdater : IEntity
+          where Tdto : Entity
+          where TFilter : Filter<Tdto>
     {
 
         public DataService(IServiceProvider serviceProvider) : base(serviceProvider)
@@ -113,24 +119,24 @@ namespace Planning.Service
     }
 
     public interface IGetDataService<Tdto, TFilter>
-        where Tdto : Contract.Model.Entity
-        where TFilter : Contract.Model.Filter<Tdto>
+        where Tdto : Entity
+        where TFilter : Filter<Tdto>
     {
         Task<Tdto> GetAsync(Guid id, CancellationToken token);
-        Task<Contract.Model.PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token);
+        Task<PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token);
     }
 
-    public interface IAddDataService<Tdto, TCreator> where Tdto : Contract.Model.Entity
+    public interface IAddDataService<Tdto, TCreator> where Tdto : Entity
     {
         Task<Tdto> AddAsync(TCreator entity, CancellationToken token);
     }
 
-    public interface IUpdateDataService<Tdto, TUpdater> where Tdto : Contract.Model.Entity
+    public interface IUpdateDataService<Tdto, TUpdater> where Tdto : Entity
     {
         Task<Tdto> UpdateAsync(TUpdater entity, CancellationToken token);
     }
 
-    public interface IDeleteDataService<Tdto> where Tdto : Contract.Model.Entity
+    public interface IDeleteDataService<Tdto> where Tdto : Entity
     {
         Task<Tdto> DeleteAsync(Guid id, CancellationToken token);
     }
@@ -139,30 +145,30 @@ namespace Planning.Service
     {
         public static IServiceCollection AddDataServices(this IServiceCollection services)
         {
-            services.AddDataService<UserDataService, DB.Context.User, Contract.Model.User,
-                Contract.Model.UserFilter, Contract.Model.UserCreator, Contract.Model.UserUpdater>();
-            services.AddDataService<FormulaDataService, DB.Context.Formula, Contract.Model.Formula,
-                Contract.Model.FormulaFilter, Contract.Model.FormulaCreator, Contract.Model.FormulaUpdater>();
-            services.AddDataService<ProjectDataService, DB.Context.Project, Contract.Model.Project,
-                Contract.Model.ProjectFilter, Contract.Model.ProjectCreator, Contract.Model.ProjectUpdater>();
-            services.AddDataService<ScheduleDataService, DB.Context.Schedule, Contract.Model.Schedule,
-               Contract.Model.ScheduleFilter, Contract.Model.ScheduleCreator, Contract.Model.ScheduleUpdater>();
+            services.AddDataService<UserDataService, DB.Context.User, User,
+                UserFilter, UserCreator, UserUpdater>();
+            services.AddDataService<FormulaDataService, DB.Context.Formula, Formula,
+                FormulaFilter, FormulaCreator, FormulaUpdater>();
+            services.AddDataService<ProjectDataService, DB.Context.Project, Project,
+                ProjectFilter, ProjectCreator, ProjectUpdater>();
+            services.AddDataService<ScheduleDataService, DB.Context.Schedule, Schedule,
+               ScheduleFilter, ScheduleCreator, ScheduleUpdater>();
 
-            services.AddDataService<DirectionCategoryDataService, DB.Context.DirectionCategory, Contract.Model.DirectionCategory,
-               Contract.Model.DirectionCategoryFilter, Contract.Model.DirectionCategoryCreator, Contract.Model.DirectionCategoryUpdater>();
-            services.AddDataService<DirectionDataService, DB.Context.Direction, Contract.Model.Direction,
-               Contract.Model.DirectionFilter, Contract.Model.DirectionCreator, Contract.Model.DirectionUpdater>();
-            services.AddDataService<DirectionProjectDataService, DB.Context.DirectionProject, Contract.Model.DirectionProject,
-               Contract.Model.DirectionProjectFilter, Contract.Model.DirectionProjectCreator, Contract.Model.DirectionProjectUpdater>();
+            services.AddDataService<DirectionCategoryDataService, DB.Context.DirectionCategory, DirectionCategory,
+               DirectionCategoryFilter, DirectionCategoryCreator, DirectionCategoryUpdater>();
+            services.AddDataService<DirectionDataService, DB.Context.Direction, Direction,
+               DirectionFilter, DirectionCreator, DirectionUpdater>();
+            services.AddDataService<DirectionProjectDataService, DB.Context.DirectionProject, DirectionProject,
+               DirectionProjectFilter, DirectionProjectCreator, DirectionProjectUpdater>();
 
-            services.AddScoped<IGetDataService<Contract.Model.UserHistory, Contract.Model.UserHistoryFilter>, UserHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.FormulaHistory, Contract.Model.FormulaHistoryFilter>, FormulaHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.ProjectHistory, Contract.Model.ProjectHistoryFilter>, ProjectHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.ScheduleHistory, Contract.Model.ScheduleHistoryFilter>, ScheduleHistoryDataService>();
+            services.AddScoped<IGetDataService<UserHistory, UserHistoryFilter>, UserHistoryDataService>();
+            services.AddScoped<IGetDataService<FormulaHistory, FormulaHistoryFilter>, FormulaHistoryDataService>();
+            services.AddScoped<IGetDataService<ProjectHistory, ProjectHistoryFilter>, ProjectHistoryDataService>();
+            services.AddScoped<IGetDataService<ScheduleHistory, ScheduleHistoryFilter>, ScheduleHistoryDataService>();
 
-            services.AddScoped<IGetDataService<Contract.Model.DirectionCategoryHistory, Contract.Model.DirectionCategoryHistoryFilter>, DirectionCategoryHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.DirectionHistory, Contract.Model.DirectionHistoryFilter>, DirectionHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.DirectionProjectHistory, Contract.Model.DirectionProjectHistoryFilter>, DirectionProjectHistoryDataService>();
+            services.AddScoped<IGetDataService<DirectionCategoryHistory, DirectionCategoryHistoryFilter>, DirectionCategoryHistoryDataService>();
+            services.AddScoped<IGetDataService<DirectionHistory, DirectionHistoryFilter>, DirectionHistoryDataService>();
+            services.AddScoped<IGetDataService<DirectionProjectHistory, DirectionProjectHistoryFilter>, DirectionProjectHistoryDataService>();
             services.AddScoped<IAuthService, AuthService>();
 
             return services;
@@ -170,10 +176,10 @@ namespace Planning.Service
 
         private static IServiceCollection AddDataService<TService, TEntity, Tdto, TFilter, TCreator, TUpdater>(this IServiceCollection services)
             where TEntity : DB.Context.Entity
-            where TUpdater : Contract.Model.IEntity
+            where TUpdater : IEntity
             where TService : DataService<TEntity, Tdto, TFilter, TCreator, TUpdater>
-            where Tdto : Contract.Model.Entity
-            where TFilter : Contract.Model.Filter<Tdto>
+            where Tdto : Entity
+            where TFilter : Filter<Tdto>
         {
             services.AddScoped<IGetDataService<Tdto, TFilter>, TService>();
             services.AddScoped<IAddDataService<Tdto, TCreator>, TService>();

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Contracts.Model.Project;
+using Contracts.Model.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,6 +10,7 @@ using Planning.DB.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core.Tokenizer;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,90 +23,127 @@ namespace Planning.Service
         private IServiceProvider _serviceProvider;
         private ILogger _logger;
         private IMapper _mapper;
-        private readonly IErrorNotifyService errorNotifyService;
+        private readonly IErrorNotifyService _errorNotifyService;
         private static Dictionary<Guid,object> _lockObjects = new Dictionary<Guid, object>();
         private static object _lockObject = new object();
         private static Dictionary<Guid, bool> _editEnables = new Dictionary<Guid, bool>();
+        private readonly DB.Repository.IRepository<DB.Context.Schedule> _scheduleRepo;
+        private readonly DB.Repository.IRepository<DB.Context.Project> _projectRepo;
+        private readonly DB.Repository.IRepository<UserSettings> _userSettingsRepo;
 
-        public ProjectSelectService(IServiceProvider serviceProvider)
+        private readonly DB.Repository.IRepository<DB.Context.Direction> _directionRepo;
+        private readonly DB.Repository.IRepository<DB.Context.DirectionCategory> _directionCategoryRepo;
+        private readonly DB.Repository.IRepository<DB.Context.DirectionProject> _directionProjectRepo;
+
+        public ProjectSelectService(IServiceProvider serviceProvider,
+            DB.Repository.IRepository<DB.Context.Schedule> scheduleRepo, 
+            DB.Repository.IRepository<DB.Context.Project> projectRepo, 
+            DB.Repository.IRepository<UserSettings> userSettingsRepo,
+            DB.Repository.IRepository<DB.Context.Direction> directionRepo,
+            DB.Repository.IRepository<DB.Context.DirectionCategory> directionCategoryRepo,
+            DB.Repository.IRepository<DB.Context.DirectionProject> directionProjectRepo,
+            IErrorNotifyService errorNotifyService,
+            IMapper mapper, ILogger<ProjectSelectService> logger)
         {
             _serviceProvider = serviceProvider;
-            _logger = serviceProvider.GetRequiredService<ILogger<ProjectSelectService>>();
-            _mapper = serviceProvider.GetRequiredService<IMapper>();
-            errorNotifyService = _serviceProvider.GetRequiredService<IErrorNotifyService>();
+            _logger = logger;
+            _mapper = mapper;
+            _errorNotifyService = errorNotifyService;           
+            _scheduleRepo = scheduleRepo;
+            _projectRepo = projectRepo;
+            _userSettingsRepo = userSettingsRepo;
+            _directionRepo = directionRepo;
+            _directionCategoryRepo = directionCategoryRepo;
+            _directionProjectRepo = directionProjectRepo;
         }
 
-        public async Task MoveNextSchedule(Guid userId, UserSettings settings)
+        public async Task<Contracts.Model.Schedule.Schedule> AddProjectToSchedule(Guid userId, Guid? projectId = null, Guid? directionId = null,
+            DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
         {
             try
             {
                 await LockUserId(userId);
 
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(30000);
+                CancellationTokenSource cancellationTokenSource = new(30000);
                 var now = DateTimeOffset.Now;
-                var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Schedule>>();
-                var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
-                var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<UserSettings>>();
-                              
+                var token = cancellationTokenSource.Token;
 
-                await ShiftSchedule(userId, settings, now, true, true);                
 
-                var currentSchedules = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
+                var runningSchedule = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
                 {
-                    Selector = s => s.UserId == userId && !s.IsClosed
-                }, cancellationTokenSource.Token)).Data;
+                    Selector = s => s.UserId == userId && s.IsRunning
+                }, token)).Data.FirstOrDefault();                
 
-                var userSettings = (await userSettingsRepo.GetAsync(new Filter<UserSettings>()
+                runningSchedule.IsRunning = false;
+                runningSchedule.IsClosed = true;
+                runningSchedule.EndDate = now;
+                await _scheduleRepo.UpdateAsync(runningSchedule, false, token);
+
+                var schPeriod = (runningSchedule.EndDate - runningSchedule.BeginDate).TotalMinutes;
+
+                var allCategories = (await _directionCategoryRepo.GetAsync(new Filter<DirectionCategory>() { Selector = s => !s.IsDeleted && s.UserId == userId }, token)).Data;
+                var allDirections = (await _directionRepo.GetAsync(new Filter<Direction>() { Selector = s => !s.IsDeleted && s.UserId == userId }, token)).Data;
+                var runningDirection = allDirections.FirstOrDefault(s => s.Id == runningSchedule.DirectionId);
+                runningDirection.Priority -= (int)Math.Ceiling(schPeriod);
+                foreach(var direct in allDirections)
                 {
-                    Selector = s => s.UserId == userId
-                }, cancellationTokenSource.Token)).Data.FirstOrDefault();
-
-                Schedule nextSchedule = currentSchedules.OrderBy(s=>s.BeginDate).FirstOrDefault();
-                var runningSchedule = currentSchedules.FirstOrDefault(s => s.IsRunning);
-                if (runningSchedule != null)
-                {
-                    runningSchedule.IsRunning = false;
-                    runningSchedule.IsClosed = true;
-                    
-
-                    var currentProject = await _projectRepo.GetAsync(runningSchedule.ProjectId, cancellationTokenSource.Token);
-                    if (currentProject != null)
-                    {                       
-                        if (currentProject.Period.HasValue)
-                        {
-                            var addTime = GetAddTime(settings, currentProject, runningSchedule);
-                            var toUpSchedule = currentSchedules
-                                    .Where(s => s.ProjectId == currentProject.Id && s.Id != runningSchedule.Id)
-                                    .OrderBy(s => s.BeginDate).FirstOrDefault();
-                            
-                            if (toUpSchedule != null)
-                            {
-                                toUpSchedule.AddTime = (toUpSchedule.AddTime??0) + addTime;
-                                await _scheduleRepo.UpdateAsync(toUpSchedule, false, cancellationTokenSource.Token);
-                            }
-                            else
-                            {
-                                currentProject.AddTime = addTime;
-                            }
-                            runningSchedule.AddTime = 0;
-                        }
-                        currentProject.LastUsedDate = now;
-                        await _projectRepo.UpdateAsync(currentProject, false, cancellationTokenSource.Token);
-                    }
-                    await _scheduleRepo.UpdateAsync(runningSchedule, false, cancellationTokenSource.Token);
-                    nextSchedule = currentSchedules
-                        .Where(s => s.Id!= runningSchedule.Id && s.BeginDate > runningSchedule.BeginDate)
-                        .OrderBy(s => s.BeginDate).FirstOrDefault();
+                    var category = allCategories.FirstOrDefault(s => s.Id == direct.DirectionCategoryId);
+                    direct.Priority += (decimal)(category.Priority * (schPeriod / 60));
+                    await _directionRepo.UpdateAsync(direct, false, token);
                 }
+
+                var allProjects = (await _projectRepo.GetAsync(new Filter<DB.Context.Project>()
+                {
+                    Selector = s => !s.IsDeleted
+                    && s.UserId == userId
+                    && s.IsLeaf
+                }, token)).Data;
+
+                var currentProject = allProjects.FirstOrDefault(s => s.Id == runningSchedule.ProjectId);
+                var allSchedules = await _scheduleRepo.GetAsync(new Filter<DB.Context.Schedule>() { 
+                    Selector = s => s.ProjectId == runningSchedule.ProjectId && s.IsRunning == false
+                }, token);
+                var avgPeriod = Math.Ceiling((decimal)(allSchedules.Data.Sum(s => (s.EndDate - s.BeginDate).TotalMinutes) + schPeriod) /
+                    (decimal)(allSchedules.Data.Count() + 1)) + 1;
+
+                currentProject.Period = (int)avgPeriod;
+                currentProject.Priority -= (int)Math.Ceiling(schPeriod * (currentProject.Priority / 5000));
+                currentProject.LastUsedDate = now;
+                await _projectRepo.UpdateAsync(currentProject, false, token);
                 
-                if (nextSchedule == null) nextSchedule = await AddProjectToScheduleInternal(userId, userSettings, isLocked: true);
+                var delta = allProjects.Average(s => s.Priority) - 5000;
+
+                if (Math.Abs(delta / allProjects.Count()) > 1)
+                {
+                    foreach(var proj in allProjects)
+                    {
+                        proj.Priority += (int)(delta / allProjects.Count());
+                        await _projectRepo.UpdateAsync(proj, false, token);
+                    }
+                }
+
+                var nextSchedule = await GetNextProjectSchedule(userId, allDirections, allProjects, projectId, directionId);
                 nextSchedule.IsRunning = true;
-                await _scheduleRepo.UpdateAsync(nextSchedule, false, cancellationTokenSource.Token);
+                await _scheduleRepo.UpdateAsync(nextSchedule, false, token);
                 await _projectRepo.SaveChangesAsync();
+
+                var project = await _projectRepo.GetAsync(nextSchedule.ProjectId, token);
+                return new Contracts.Model.Schedule.Schedule()
+                {
+                    Id = nextSchedule.Id,
+                    VersionDate = nextSchedule.VersionDate,
+                    UserId = nextSchedule.UserId,
+                    BeginDate = nextSchedule.BeginDate,
+                    EndDate = nextSchedule.EndDate,
+                    IsRunning = nextSchedule.IsRunning,
+                    Project = project.Name,
+                    ProjectId = nextSchedule.ProjectId,
+                    ProjectPath = project.Name
+                };
             }
             catch (Exception ex)
             {
-                await errorNotifyService.Send($"Error in ProjectSelectService:: MoveNextSchedule: {ex.Message} {ex.StackTrace}");
+                await _errorNotifyService.Send($"Error in ProjectSelectService:: MoveNextSchedule: {ex.Message} {ex.StackTrace}");
                 _logger.LogError($"Error in ProjectSelectService:: MoveNextSchedule: {ex.Message} {ex.StackTrace}");
                 throw;
             }
@@ -145,85 +185,25 @@ namespace Planning.Service
             }
         }
 
-        public async Task ShiftSchedule(Guid userId, UserSettings settings, DateTimeOffset now, bool isForce = false, bool isLocked = false)
+        private async Task<DB.Context.Schedule> GetNextProjectSchedule(Guid userId, 
+            IEnumerable<Direction> directions,
+            IEnumerable<DB.Context.Project> projects,
+            Guid? projectId,
+            Guid? directionId)
         {
             try
-            {
-                if (!isLocked) await LockUserId(userId);
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(30000);
-                var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Schedule>>();
-                var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
-                var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<UserSettings>>();
-                var currentSchedules = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
+            {               
+                CancellationTokenSource cancellationTokenSource = new(30000);
+                var token = cancellationTokenSource.Token;
+                
+                var userSettings = (await _userSettingsRepo.GetAsync(new Filter<UserSettings>()
                 {
-                    Selector = s => s.UserId == userId && !s.IsClosed
-                }, cancellationTokenSource.Token)).Data.OrderBy(s => s.BeginDate);
+                    Selector = s => s.UserId == userId
+                }, token)).Data.FirstOrDefault();
 
-                var beginDate = now;
-                var runningSchedule = currentSchedules.FirstOrDefault(s => s.IsRunning);
-                if (runningSchedule != null && (isForce || runningSchedule.EndDate < now))
-                {
-                    foreach (var schedule in currentSchedules.Where(s => s.IsRunning || s.BeginDate > runningSchedule.BeginDate))
-                    {
-                        var project = await _projectRepo.GetAsync(schedule.ProjectId, cancellationTokenSource.Token);
-                        if (schedule.IsRunning)
-                        {
-                            schedule.EndDate = now;
-                        }
-                        else
-                        {                            
-                            schedule.BeginDate = beginDate;
-                            SetEndDate(settings, project, schedule);
-
-                            beginDate = schedule.EndDate;
-                        }
-
-                        await _scheduleRepo.UpdateAsync(schedule, false, cancellationTokenSource.Token);
-                    }
-                    await _projectRepo.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                await errorNotifyService.Send($"Error in ProjectSelectService:: ShiftSchedule: {ex.Message} {ex.StackTrace}");
-                _logger.LogError($"Error in ProjectSelectService::ShiftSchedule: {ex.Message} {ex.StackTrace}");
-                throw;
-            }
-            finally
-            {
-                if (!isLocked) UnlockUserId(userId);
-            }
-        }
-
-        public async Task<Contract.Model.Schedule> AddProjectToSchedule(Guid userId, UserSettings settings, Guid? projectId = null,
-            DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
-        {
-            var schedule = await AddProjectToScheduleInternal(userId, settings, projectId, beginDate, setBeginDate, isLocked);
-            var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
-            var project = await _projectRepo.GetAsync(schedule.ProjectId, new CancellationTokenSource(30000).Token);
-            return new Contract.Model.Schedule()
-            {
-                Id = schedule.Id,
-                VersionDate = schedule.VersionDate,
-                UserId = schedule.UserId,
-                BeginDate = schedule.BeginDate,
-                EndDate = schedule.EndDate,
-                IsRunning = schedule.IsRunning,
-                Project = project.Name,
-                ProjectId = schedule.ProjectId,
-                ProjectPath = project.Name
-            };
-        }
-
-        public async Task<Schedule> AddProjectToScheduleInternal(Guid userId, UserSettings settings, Guid? projectId = null, 
-            DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
-        {
-            try
-            {
-                if (!isLocked) await LockUserId(userId);
                 DB.Context.Project project = null;
                 var now = DateTimeOffset.Now;
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(30000);
+                
                 var _calculator = _serviceProvider.GetRequiredService<ICalculator>();
                 var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
                 var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Schedule>>();
@@ -245,7 +225,7 @@ namespace Planning.Service
                         },
                         cancellationTokenSource.Token);
 
-                Schedule lastSchedule = null;
+                DB.Context.Schedule lastSchedule = null;
                 if(currentSchedules.Any())
                     lastSchedule = currentSchedules.Last();
 
@@ -297,7 +277,7 @@ namespace Planning.Service
                 }
                 if (project != null)
                 {
-                    Schedule schedule = new DB.Context.Schedule()
+                    var schedule = new DB.Context.Schedule()
                     {
                         BeginDate = lastSchedule?.EndDate ?? now,
                         Id = Guid.NewGuid(),
@@ -361,43 +341,12 @@ namespace Planning.Service
             }
             catch (Exception ex)
             {
-                await errorNotifyService.Send($"Error in ProjectSelectService:: AddProjectToSchedule: {ex.Message} {ex.StackTrace}");
+                await _errorNotifyService.Send($"Error in ProjectSelectService:: AddProjectToSchedule: {ex.Message} {ex.StackTrace}");
                 _logger.LogError($"Error in ProjectSelectService::AddProjectToSchedule: {ex.Message} {ex.StackTrace}");
                 throw;
-            }
-            finally
-            {
-                if (!isLocked) UnlockUserId(userId);
-            }
+            }            
         }
-
-        private void SetEndDate(UserSettings settings, Project project, Schedule schedule)
-        {
-            int minutes = GetPeriod(settings, project);
-            schedule.EndDate = schedule.BeginDate.AddMinutes(minutes);
-        }
-
-        private int GetPeriod(UserSettings settings, Project project)
-        {
-            var minutes = settings.DefaultProjectTimespan;
-            if (project == null) minutes = 1;
-            else if (project.Period.HasValue) minutes = project.Period.Value;
-            return minutes;
-        }
-
-        private int GetAddTime(UserSettings settings, Project project, Schedule schedule)
-        {
-            if (project.Period.HasValue)
-            {
-                var standartPeriod = GetPeriod(settings, project);
-                var lastUsedDate = project.LastUsedDate;                
-                var totalHours = (schedule.EndDate - lastUsedDate).Value.TotalHours;
-                var periodHours = 10001 - project.Priority;
-                var period = (int)(standartPeriod * (totalHours / periodHours));
-                return (schedule.AddTime ?? 0) + period - (int)(schedule.EndDate - schedule.BeginDate).TotalMinutes;                
-            }
-            return 0;
-        }
+   
     }
 
 

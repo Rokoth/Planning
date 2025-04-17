@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Contracts.Model.Schedule;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Planning.Common;
@@ -62,7 +63,7 @@ namespace Planning.Service
 
                             switch (settings.ScheduleMode)
                             {
-                                case Contract.Model.ScheduleMode.ByCount:
+                                case ScheduleMode.ByCount:
                                     if (settings.ScheduleCount.Value > currentSchedules.Data.Count())
                                     {
                                         for (int i = 0; i < settings.ScheduleCount.Value - currentSchedules.Data.Count(); i++)
@@ -72,7 +73,7 @@ namespace Planning.Service
                                     }
 
                                     break;
-                                case Contract.Model.ScheduleMode.ByTimeSpan:
+                                case ScheduleMode.ByTimeSpan:
                                     var lastSchedule = currentSchedules.Data.OrderByDescending(s => s.EndDate).FirstOrDefault().EndDate;
                                     var lastTime = now.AddHours(settings.ScheduleTimeSpan.Value);
                                     while (lastSchedule < lastTime)

@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Planning.Contract.Model;
+﻿using Contracts.Model.Direction;
+using Contracts.Model.User;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,8 @@ using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public class UserDataService : DataService<DB.Context.User, Contract.Model.User,
-        Contract.Model.UserFilter, Contract.Model.UserCreator, Contract.Model.UserUpdater>
+    public class UserDataService : DataService<DB.Context.User, User,
+        UserFilter, UserCreator, UserUpdater>
     {
         public UserDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
@@ -22,7 +23,7 @@ namespace Planning.Service
         /// <summary>
         /// function for enrichment data item
         /// </summary>
-        protected override async Task<Contract.Model.User> Enrich(Contract.Model.User entity, CancellationToken token)
+        protected override async Task<User> Enrich(User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var formulaRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Formula>>();
@@ -47,9 +48,9 @@ namespace Planning.Service
         /// <summary>
         /// function for enrichment data item
         /// </summary>
-        protected override async Task<IEnumerable<Contract.Model.User>> Enrich(IEnumerable<Contract.Model.User> entities, CancellationToken token)
+        protected override async Task<IEnumerable<User>> Enrich(IEnumerable<User> entities, CancellationToken token)
         {
-            var result = new List<Contract.Model.User>();
+            var result = new List<User>();
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var formulaRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Formula>>();
             var userIds = entities.Select(s => s.Id).ToList();
@@ -80,13 +81,13 @@ namespace Planning.Service
             return result;
         }
 
-        protected override Expression<Func<DB.Context.User, bool>> GetFilter(Contract.Model.UserFilter filter)
+        protected override Expression<Func<DB.Context.User, bool>> GetFilter(UserFilter filter)
         {
             return s => filter.Name == null || s.Name.Contains(filter.Name);
         }
 
         protected override async Task ActionAfterAdd(DB.Repository.IRepository<DB.Context.User> repository,
-            Contract.Model.UserCreator creator, DB.Context.User entity, CancellationToken token)
+            UserCreator creator, DB.Context.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             await userSettingsRepo.AddAsync(new DB.Context.UserSettings() { 
@@ -104,7 +105,7 @@ namespace Planning.Service
         }
 
         protected override async Task ActionAfterUpdate(DB.Repository.IRepository<DB.Context.User> repository,
-            Contract.Model.UserUpdater updater, DB.Context.User entity, CancellationToken token)
+            UserUpdater updater, DB.Context.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
@@ -134,14 +135,14 @@ namespace Planning.Service
             await userSettingsRepo.DeleteAsync(userSettings, false, token);
         }
 
-        protected override DB.Context.User MapToEntityAdd(Contract.Model.UserCreator creator)
+        protected override DB.Context.User MapToEntityAdd(UserCreator creator)
         {
             var entity = base.MapToEntityAdd(creator);
             entity.Password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(creator.Password));
             return entity;
         }
 
-        protected override DB.Context.User UpdateFillFields(Contract.Model.UserUpdater entity, DB.Context.User entry)
+        protected override DB.Context.User UpdateFillFields(UserUpdater entity, DB.Context.User entry)
         {
             entry.Description = entity.Description;
             entry.Login = entity.Login;
@@ -157,8 +158,8 @@ namespace Planning.Service
         
     }
 
-    public class DirectionCategoryDataService : DataService<DB.Context.DirectionCategory, Contract.Model.DirectionCategory,
-        Contract.Model.DirectionCategoryFilter, Contract.Model.DirectionCategoryCreator, Contract.Model.DirectionCategoryUpdater>
+    public class DirectionCategoryDataService : DataService<DB.Context.DirectionCategory, DirectionCategory,
+        DirectionCategoryFilter, DirectionCategoryCreator, DirectionCategoryUpdater>
     {
         public DirectionCategoryDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
@@ -178,8 +179,8 @@ namespace Planning.Service
         }
     }
 
-    public class DirectionDataService : DataService<DB.Context.Direction, Contract.Model.Direction,
-        Contract.Model.DirectionFilter, Contract.Model.DirectionCreator, Contract.Model.DirectionUpdater>
+    public class DirectionDataService : DataService<DB.Context.Direction, Direction,
+        DirectionFilter, DirectionCreator, DirectionUpdater>
     {
         public DirectionDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
@@ -199,8 +200,8 @@ namespace Planning.Service
         }
     }
 
-    public class DirectionProjectDataService : DataService<DB.Context.DirectionProject, Contract.Model.DirectionProject,
-        Contract.Model.DirectionProjectFilter, Contract.Model.DirectionProjectCreator, Contract.Model.DirectionProjectUpdater>
+    public class DirectionProjectDataService : DataService<DB.Context.DirectionProject, DirectionProject,
+        DirectionProjectFilter, DirectionProjectCreator, DirectionProjectUpdater>
     {
         public DirectionProjectDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {

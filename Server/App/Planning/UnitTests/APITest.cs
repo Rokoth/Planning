@@ -1,3 +1,6 @@
+using Contracts.Model.Project;
+using Contracts.Model.Schedule;
+using Contracts.Model.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -245,7 +248,7 @@ namespace Planning.UnitTests
             Assert.Equal(10, actuals.Count);
             foreach (var assert in actuals)
             {
-                var actual = assert.ToObject<Contract.Model.Project>();
+                var actual = assert.ToObject<Project>();
                 Assert.Contains("project_select", actual.Name);
             }
         }

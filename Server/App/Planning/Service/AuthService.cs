@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Contracts.Model.Common;
+using Contracts.Model.User;
+using Microsoft.Extensions.DependencyInjection;
 using Planning.Common;
 using System;
 using System.Collections.Generic;
@@ -34,9 +36,9 @@ namespace Planning.Service
         /// <param name="login"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<ClaimsIdentity> AuthApi(Contract.Model.UserIdentity login, CancellationToken token)
+        public async Task<ClaimsIdentity> AuthApi(UserIdentity login, CancellationToken token)
         {
-            return await AuthInternal<DB.Context.User, Contract.Model.UserIdentity>(login, CLIENT_ROLE_TYPE, TOKEN_AUTH_TYPE, token);
+            return await AuthInternal<DB.Context.User, UserIdentity>(login, CLIENT_ROLE_TYPE, TOKEN_AUTH_TYPE, token);
         }
 
         /// <summary>
@@ -45,14 +47,14 @@ namespace Planning.Service
         /// <param name="login"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<ClaimsIdentity> Auth(Contract.Model.UserIdentity login, CancellationToken token)
+        public async Task<ClaimsIdentity> Auth(UserIdentity login, CancellationToken token)
         {
-            return await AuthInternal<DB.Context.User, Contract.Model.UserIdentity>(login, USER_ROLE_TYPE, COOKIES_AUTH_TYPE, token);
+            return await AuthInternal<DB.Context.User, UserIdentity>(login, USER_ROLE_TYPE, COOKIES_AUTH_TYPE, token);
         }
 
         private async Task<ClaimsIdentity> AuthInternal<T, I>(I login, string roleType, string authType, CancellationToken token)
             where T : DB.Context.Entity, DB.Context.IIdentity
-            where I : Contract.Model.IIdentity
+            where I : IIdentity
         {
             var repo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<T>>();
             var password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(login.Password));

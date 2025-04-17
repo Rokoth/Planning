@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Deploy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -17,9 +15,6 @@ using Planning.Common;
 using Planning.DB.Context;
 using Planning.Service;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Planning
 {
@@ -153,73 +148,6 @@ namespace Planning
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-        }
-    }
-
-    public class AddRequiredHeaderParameter : IOperationFilter
-    {
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        {
-            if (operation.Parameters == null)
-                operation.Parameters = new List<OpenApiParameter>();
-
-            operation.Parameters.Add(new OpenApiParameter
-            {
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Description = "access token",
-                Required = true,
-                Schema = new OpenApiSchema
-                {
-                    Type = "string",
-                    Default = new OpenApiString("Bearer ")
-                }
-            });
-        }
-    }
-
-    public class MappingProfile : Profile
-    {
-        public MappingProfile()
-        {
-            CreateMap<User, Contract.Model.User>();
-
-            CreateMap<Contract.Model.UserCreator, User>()
-                 .ForMember(s => s.Password, s => s.Ignore())
-                 .ForMember(s => s.Formula, s => s.Ignore());
-
-            CreateMap<UserHistory, Contract.Model.UserHistory>();
-
-            CreateMap<Contract.Model.UserUpdater, User>()
-                .ForMember(s => s.Password, s => s.Ignore())
-                .ForMember(s => s.Formula, s => s.Ignore());
-
-            CreateMap<Formula, Contract.Model.Formula>();
-
-            CreateMap<Contract.Model.FormulaCreator, Formula>();
-
-            CreateMap<FormulaHistory, Contract.Model.FormulaHistory>();
-
-            CreateMap<Contract.Model.FormulaUpdater, Formula>();
-
-
-            CreateMap<Project, Contract.Model.Project>();
-
-            CreateMap<Contract.Model.ProjectCreator, Project>();
-
-            CreateMap<ProjectHistory, Contract.Model.ProjectHistory>();
-
-            CreateMap<Contract.Model.ProjectUpdater, Project>();
-
-
-            CreateMap<Schedule, Contract.Model.Schedule>();
-
-            CreateMap<Contract.Model.ScheduleCreator, Schedule>();
-
-            CreateMap<ScheduleHistory, Contract.Model.ScheduleHistory>();
-
-            CreateMap<Contract.Model.ScheduleUpdater, Schedule>();
-
         }
     }
 }

@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 using System.IO;
-using Planning.Contract.Model;
 using System.Net;
 using Planning.Common;
+using Contracts.Model.User;
+using Contracts.Model.Project;
+using Contracts.Model.Schedule;
 
 namespace Planning.Client.ClientHttpClient
 {
@@ -315,7 +317,7 @@ namespace Planning.Client.ClientHttpClient
         Task<Project> AddProject(ProjectCreator projectCreator);
         Task<bool> DeleteProject(Guid id);
         Task<Project> GetProject(Guid id);
-        Task<ListResult<Contract.Model.Project>> GetProjects(string name, int? page, int? size, string sort);
+        Task<ListResult<Project>> GetProjects(string name, int? page, int? size, string sort);
         Task<ListResult<Schedule>> GetSchedules(string name, int? page, int? size, string sort);
         Task<Project> UpdateProject(ProjectUpdater projectUpdater);
     }
@@ -337,7 +339,7 @@ namespace Planning.Client.ClientHttpClient
             throw new NotImplementedException();
         }
 
-        public Task<ListResult<Contract.Model.Project>> GetProjects(string name, int? page, int? size, string sort)
+        public Task<ListResult<Project>> GetProjects(string name, int? page, int? size, string sort)
         {
             throw new NotImplementedException();
         }

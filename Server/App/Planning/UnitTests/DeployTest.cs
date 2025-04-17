@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Contracts.Model.Schedule;
+using Microsoft.Extensions.DependencyInjection;
 using Planning.DB.Context;
 using System;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace Planning.UnitTests
                 Id = Guid.NewGuid(),
                 IsDeleted = false,
                 LeafOnly = true,
-                ScheduleMode = Contract.Model.ScheduleMode.Manual,
+                ScheduleMode = ScheduleMode.Manual,
                 ScheduleShift = 1,
                 UserId = user.Id,
                 VersionDate = DateTimeOffset.Now

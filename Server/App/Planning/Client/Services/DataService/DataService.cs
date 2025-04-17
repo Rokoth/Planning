@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Contracts.Model.Common;
+using Contracts.Model.User;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Planning.Client.ClientHttpClient;
-using Planning.Contract.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
