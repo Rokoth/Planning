@@ -221,7 +221,7 @@ namespace Planning.Service
                         new DB.Context.Filter<DB.Context.Project>()
                         {
                             Selector = s => s.UserId == userId
-                                && (!settings.LeafOnly || s.IsLeaf)
+                                && (!userSettings.LeafOnly || s.IsLeaf)
                         },
                         cancellationTokenSource.Token);
 

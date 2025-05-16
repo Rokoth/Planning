@@ -26,5 +26,6 @@ namespace Planning.DB.Context
         [Ignore]
         [ForeignKey("UserId")]
         public User User { get; set; }
+        public int DefaultPriority { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Contracts.Model.Project;
+using Microsoft.Extensions.DependencyInjection;
+using Planning.DB.Repository;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -29,7 +31,20 @@ namespace Planning.Service
 
         protected override async Task PrepareBeforeAdd(DB.Repository.IRepository<DB.Context.Project> repository,
             ProjectCreator creator, CancellationToken token)
-        {           
+        {
+            var settingsRepo = _serviceProvider.GetRequiredService<IRepository<DB.Context.UserSettings>>();
+            var settings = (await settingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
+            {
+                Page = 0,
+                Size = 10,
+                Selector = s => s.UserId == creator.UserId
+            }, token)).Data?.FirstOrDefault();
+
+            if(settings!=null)
+            {
+                creator.Priority = settings.DefaultPriority;
+            }
+
             var parent = await repository.GetAsync(new DB.Context.Filter<DB.Context.Project>()
             {
                 Page = 0,
