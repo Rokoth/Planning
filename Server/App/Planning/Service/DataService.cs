@@ -1,18 +1,11 @@
 ﻿using Contracts.Model.Common;
-using Contracts.Model.Direction;
-using Contracts.Model.Formula;
-using Contracts.Model.Project;
-using Contracts.Model.Schedule;
-using Contracts.Model.User;
-using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public abstract class DataService<TEntity, Tdto, TFilter, TCreator, TUpdater> :
+    public abstract class OldDataService<TEntity, Tdto, TFilter, TCreator, TUpdater> :
         DataGetService<TEntity, Tdto, TFilter>, IAddDataService<Tdto, TCreator>, IUpdateDataService<Tdto, TUpdater>, IDeleteDataService<Tdto>
           where TEntity : DB.Context.IEntity
           where TUpdater : IEntity
@@ -20,7 +13,7 @@ namespace Planning.Service
           where TFilter : Filter<Tdto>
     {
 
-        public DataService(IServiceProvider serviceProvider) : base(serviceProvider)
+        public OldDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
 
         }
@@ -115,97 +108,6 @@ namespace Planning.Service
                 await repo.SaveChangesAsync();
                 return _mapper.Map<Tdto>(entity);                
             });
-        }
-    }
-
-    public interface IGetDataService<Tdto, TFilter>
-        where Tdto : Entity
-        where TFilter : Filter<Tdto>
-    {
-        Task<Tdto> GetAsync(Guid id, CancellationToken token);
-        Task<PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token);
-    }
-
-    public interface IAddDataService<Tdto, TCreator> where Tdto : Entity
-    {
-        Task<Tdto> AddAsync(TCreator entity, CancellationToken token);
-    }
-
-    public interface IUpdateDataService<Tdto, TUpdater> where Tdto : Entity
-    {
-        Task<Tdto> UpdateAsync(TUpdater entity, CancellationToken token);
-    }
-
-    public interface IDeleteDataService<Tdto> where Tdto : Entity
-    {
-        Task<Tdto> DeleteAsync(Guid id, CancellationToken token);
-    }
-
-    public static class DataServiceExtension
-    {
-        public static IServiceCollection AddDataServices(this IServiceCollection services)
-        {
-            services.AddDataService<UserDataService, DB.Context.User, User,
-                UserFilter, UserCreator, UserUpdater>();
-            services.AddDataService<FormulaDataService, DB.Context.Formula, Formula,
-                FormulaFilter, FormulaCreator, FormulaUpdater>();
-            services.AddDataService<ProjectDataService, DB.Context.Project, Project,
-                ProjectFilter, ProjectCreator, ProjectUpdater>();
-            services.AddDataService<ScheduleDataService, DB.Context.Schedule, Schedule,
-               ScheduleFilter, ScheduleCreator, ScheduleUpdater>();
-
-            services.AddDataService<DirectionCategoryDataService, DB.Context.DirectionCategory, DirectionCategory,
-               DirectionCategoryFilter, DirectionCategoryCreator, DirectionCategoryUpdater>();
-            services.AddDataService<DirectionDataService, DB.Context.Direction, Direction,
-               DirectionFilter, DirectionCreator, DirectionUpdater>();
-            services.AddDataService<DirectionProjectDataService, DB.Context.DirectionProject, DirectionProject,
-               DirectionProjectFilter, DirectionProjectCreator, DirectionProjectUpdater>();
-
-            services.AddScoped<IGetDataService<UserHistory, UserHistoryFilter>, UserHistoryDataService>();
-            services.AddScoped<IGetDataService<FormulaHistory, FormulaHistoryFilter>, FormulaHistoryDataService>();
-            services.AddScoped<IGetDataService<ProjectHistory, ProjectHistoryFilter>, ProjectHistoryDataService>();
-            services.AddScoped<IGetDataService<ScheduleHistory, ScheduleHistoryFilter>, ScheduleHistoryDataService>();
-
-            services.AddScoped<IGetDataService<DirectionCategoryHistory, DirectionCategoryHistoryFilter>, DirectionCategoryHistoryDataService>();
-            services.AddScoped<IGetDataService<DirectionHistory, DirectionHistoryFilter>, DirectionHistoryDataService>();
-            services.AddScoped<IGetDataService<DirectionProjectHistory, DirectionProjectHistoryFilter>, DirectionProjectHistoryDataService>();
-            services.AddScoped<IAuthService, AuthService>();
-
-            return services;
-        }
-
-        private static IServiceCollection AddDataService<TService, TEntity, Tdto, TFilter, TCreator, TUpdater>(this IServiceCollection services)
-            where TEntity : DB.Context.Entity
-            where TUpdater : IEntity
-            where TService : DataService<TEntity, Tdto, TFilter, TCreator, TUpdater>
-            where Tdto : Entity
-            where TFilter : Filter<Tdto>
-        {
-            services.AddScoped<IGetDataService<Tdto, TFilter>, TService>();
-            services.AddScoped<IAddDataService<Tdto, TCreator>, TService>();
-            services.AddScoped<IUpdateDataService<Tdto, TUpdater>, TService>();
-            services.AddScoped<IDeleteDataService<Tdto>, TService>();
-            return services;
-        }
-    }
-
-    [Serializable]
-    internal class DataServiceException : Exception
-    {
-        public DataServiceException()
-        {
-        }
-
-        public DataServiceException(string message) : base(message)
-        {
-        }
-
-        public DataServiceException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected DataServiceException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
         }
     }
 }

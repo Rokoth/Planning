@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public abstract class DataGetService<TEntity, Tdto, TFilter> :
+    
+    public abstract class OldDataGetService<TEntity, Tdto, TFilter> :
         IGetDataService<Tdto, TFilter>
         where TEntity : DB.Context.IEntity
         where Tdto : Entity
@@ -54,7 +55,7 @@ namespace Planning.Service
         /// ctor
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public DataGetService(IServiceProvider serviceProvider)
+        public OldDataGetService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _mapper = _serviceProvider.GetRequiredService<IMapper>();
@@ -68,6 +69,11 @@ namespace Planning.Service
         /// <param name="token"></param>
         /// <returns></returns>
         public async Task<PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token)
+        {
+            return await GetAsyncInternal(filter, token);
+        }
+
+        protected virtual async Task<PagedResult<Tdto>> GetAsyncInternal(TFilter filter, CancellationToken token)
         {
             return await ExecuteAsync(async (repo) =>
             {
@@ -86,7 +92,7 @@ namespace Planning.Service
                 }, token);
                 var prepare = result.Data.Select(s => _mapper.Map<Tdto>(s));
                 prepare = await Enrich(prepare, token);
-                return new Contract.Model.PagedResult<Tdto>(prepare, result.PageCount);
+                return new PagedResult<Tdto>(prepare, result.PageCount);
             });
         }
 

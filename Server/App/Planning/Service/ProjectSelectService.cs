@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+﻿using Antlr4.Runtime;
+using AutoMapper;
 using Contracts.Model.Project;
 using Contracts.Model.Schedule;
+using Contracts.Model.User;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -185,6 +187,42 @@ namespace Planning.Service
             }
         }
 
+        public async Task<IEnumerable<Contracts.Model.Schedule.Schedule>> GetNextShedules(
+            Guid userId,                   
+            int count,
+            DateTime? beginDate,
+            CancellationToken token)
+        {
+            var directions = (await _directionRepo.GetAsync(new Filter<Direction>() 
+            { 
+                Selector = s => !s.IsDeleted && s.UserId == userId 
+            }, token)).Data;
+            var projects = (await _projectRepo.GetAsync(new Filter<DB.Context.Project>()
+            {
+                Selector = s => !s.IsDeleted
+                && s.UserId == userId
+                && s.IsLeaf
+            }, token)).Data;
+
+            List<Contracts.Model.Schedule.Schedule> result = new();
+            var intBeginDate = beginDate ?? DateTime.Now;
+            for (int i = 0; i< count; i++)
+            {
+                result.Add(await GetNextShedule(directions, projects, null, null, intBeginDate));
+            }
+            return result;
+        }
+
+        private async Task<Contracts.Model.Schedule.Schedule> GetNextShedule(
+            IEnumerable<Direction> directions,
+            IEnumerable<DB.Context.Project> projects,
+            Guid? projectId,
+            Guid? directionId,
+            DateTime beginDate)
+        {
+            //todo
+        }
+
         private async Task<DB.Context.Schedule> GetNextProjectSchedule(Guid userId, 
             IEnumerable<Direction> directions,
             IEnumerable<DB.Context.Project> projects,
@@ -203,8 +241,7 @@ namespace Planning.Service
 
                 DB.Context.Project project = null;
                 var now = DateTimeOffset.Now;
-                
-                var _calculator = _serviceProvider.GetRequiredService<ICalculator>();
+                               
                 var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
                 var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Schedule>>();
                 var _userRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.User>>();
@@ -346,7 +383,8 @@ namespace Planning.Service
                 throw;
             }            
         }
-   
+
+        
     }
 
 
