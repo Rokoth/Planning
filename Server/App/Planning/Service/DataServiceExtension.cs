@@ -14,6 +14,7 @@ namespace Planning.Service
         {
             services.AddScoped<IScheduleDataService, ScheduleDataService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<INotifyDataService, NotifyDataService>();
 
             services.AddDataService<UserDataService, DB.Context.User, User,
                 UserFilter, UserCreator, UserUpdater>();

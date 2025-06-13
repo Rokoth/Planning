@@ -8,7 +8,7 @@ namespace Planning.Service
 {
     public interface IProjectSelectService
     {
-        Task<Schedule> AddProjectToSchedule(Guid userId, 
+        Task<Schedule> MoveToNextSchedule(Guid userId, 
             Guid? projectId = null, 
             Guid? directionIdId = null, 
             DateTimeOffset? beginDate = null, 

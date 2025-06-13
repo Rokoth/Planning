@@ -59,7 +59,7 @@ namespace Planning.Service
             _directionProjectRepo = directionProjectRepo;
         }
 
-        public async Task<Contracts.Model.Schedule.Schedule> AddProjectToSchedule(Guid userId, Guid? projectId = null, Guid? directionId = null,
+        public async Task<Contracts.Model.Schedule.Schedule> MoveToNextSchedule(Guid userId, Guid? projectId = null, Guid? directionId = null,
             DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
         {
             try

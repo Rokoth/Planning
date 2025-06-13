@@ -12,17 +12,17 @@ using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public class BuildScheduleHostedService : IHostedService
+    public class ScheduleHostedService : IHostedService
     {
         private IServiceProvider _serviceProvider;
         private ILogger _logger;
         private bool isRunning = true;
         private CancellationTokenSource _tokenSource;
         
-        public BuildScheduleHostedService(IServiceProvider serviceProvider)
+        public ScheduleHostedService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _logger = _serviceProvider.GetRequiredService<ILogger<BuildScheduleHostedService>>();
+            _logger = _serviceProvider.GetRequiredService<ILogger<ScheduleHostedService>>();
             _tokenSource = new CancellationTokenSource();
             
         }
@@ -36,9 +36,10 @@ namespace Planning.Service
                     var scopeProvider = scope.ServiceProvider;
                     var userRepo = scopeProvider.GetRequiredService<IRepository<User>>();
                     var userSettingsRepo = scopeProvider.GetRequiredService<IRepository<UserSettings>>();
-                    var scheduleRepo = scopeProvider.GetRequiredService<IRepository<Schedule>>();
+                    var scheduleRepo = scopeProvider.GetRequiredService<IRepository<DB.Context.Schedule>>();
                     var selectService = scopeProvider.GetRequiredService<IProjectSelectService>();
-                
+                    var notifyService = scopeProvider.GetRequiredService<INotifyDataService>();
+                    
                     try
                     {
                         var now = DateTimeOffset.Now;
@@ -54,34 +55,26 @@ namespace Planning.Service
                         foreach (var user in users.Data)
                         {
                             var settings = userSettings.Data.FirstOrDefault(s => s.UserId == user.Id);
-                            await selectService.ShiftSchedule(user.Id, settings, now.AddMinutes(settings.ScheduleShift));
-
-                            var currentSchedules = await scheduleRepo.GetAsync(new Filter<Schedule>()
+                            
+                            var currentSchedule = (await scheduleRepo.GetAsync(new Filter<DB.Context.Schedule>()
                             {
-                                Selector = s => s.UserId == user.Id && !s.IsClosed
-                            }, _cancellationToken);
+                                Selector = s => s.UserId == user.Id && !s.IsClosed && s.IsRunning
+                            }, _cancellationToken)).Data.FirstOrDefault();
 
-                            switch (settings.ScheduleMode)
+                            if(currentSchedule == null)
                             {
-                                case ScheduleMode.ByCount:
-                                    if (settings.ScheduleCount.Value > currentSchedules.Data.Count())
-                                    {
-                                        for (int i = 0; i < settings.ScheduleCount.Value - currentSchedules.Data.Count(); i++)
-                                        {
-                                            await selectService.AddProjectToSchedule(user.Id, settings);
-                                        }
-                                    }
+                                _logger.LogError($"Error in BuildScheduleHostedService: currentSchedule not found for user {user.Id} : {user.Name}");
+                                return;
+                            }
 
-                                    break;
-                                case ScheduleMode.ByTimeSpan:
-                                    var lastSchedule = currentSchedules.Data.OrderByDescending(s => s.EndDate).FirstOrDefault().EndDate;
-                                    var lastTime = now.AddHours(settings.ScheduleTimeSpan.Value);
-                                    while (lastSchedule < lastTime)
-                                    {
-                                        lastSchedule = (await selectService.AddProjectToSchedule(user.Id, settings)).EndDate;
-                                    }
-                                    break;
-                                default: break;
+                            if(currentSchedule.EndDate <= now)
+                            {
+                                var next = await selectService.MoveToNextSchedule(user.Id);
+                                await notifyService.AddNotify(user.Id, $"Переход на следующий элемент расписания: {next.Project}");
+                            }
+                            else if((currentSchedule.EndDate - now).TotalMinutes < 5)
+                            {                                
+                                await notifyService.AddNotify(user.Id, $"Через {(currentSchedule.EndDate - now).TotalMinutes} минут будет переход на следующий элемент расписания");
                             }
                         }
 

@@ -74,5 +74,5 @@ namespace Contracts.Model.Project
         public bool CanSelectAll { get; set; }
 
         public Guid UserId { get; set; }
-    }    
+    }
 }
