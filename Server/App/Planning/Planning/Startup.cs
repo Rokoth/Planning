@@ -48,6 +48,7 @@ namespace Planning
             services.AddScoped<DB.Repository.IRepository<UserSettings>, DB.Repository.Repository<UserSettings>>();
             services.AddScoped<DB.Repository.IRepository<Project>, DB.Repository.Repository<Project>>();
             services.AddScoped<DB.Repository.IRepository<Schedule>, DB.Repository.Repository<Schedule>>();
+            services.AddScoped<DB.Repository.IRepository<AdditionalTask>, DB.Repository.Repository<AdditionalTask>>();
 
             services.AddScoped<DB.Repository.IRepository<UserHistory>, DB.Repository.Repository<UserHistory>>();
             services.AddScoped<DB.Repository.IRepository<FormulaHistory>, DB.Repository.Repository<FormulaHistory>>();
