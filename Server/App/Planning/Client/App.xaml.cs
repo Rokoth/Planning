@@ -14,7 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Project
+namespace PlanningClient
 {
     /// <summary>
     /// Логика взаимодействия для App.xaml
@@ -53,11 +53,7 @@ namespace Project
             services.AddLogging(loggingBuilder =>
                 loggingBuilder.AddSerilog(Log.Logger, dispose: true)
             );
-            //services.AddScoped<IRepository<Tree>, Repository<Tree>>();
-            //services.AddScoped<IRepository<TreeItem>, Repository<TreeItem>>();
-            //services.AddScoped<IRepository<Formula>, Repository<Formula>>();
-            //services.AddScoped<IRepository<SyncConflict>, Repository<SyncConflict>>();
-
+          
             //services.AddScoped<IBSHttpClient<DataHttpClientSettings>, BSHttpClient<DataHttpClientSettings>>(
             //    s => new BSHttpClient<DataHttpClientSettings>(new DataHttpClientSettings(
             //        config.GetValue<string>("DataServerAddress"),
@@ -72,13 +68,15 @@ namespace Project
             //        config.GetValue<string>("ReportServerPassword")), s)
             //);
 
-            //services.AddScoped<IDbService, DbService>();
-            //services.AddScoped<IDataService, DataService>();
-            //services.AddSingleton<ISyncService, SyncService>();
-            //services.AddScoped<IFileService, FileService>();
 
             services.AddSingleton<MainWindow>();
-            
+            services.AddScoped<FormulaWindow>();
+            services.AddScoped<AboutWindow>();
+            services.AddScoped<ProjectAddEditWindow>();
+            services.AddScoped<ProjectSelectWindow>();
+            services.AddScoped<ProjectWindow>();
+            services.AddScoped<ScheduleAddEditWindow>();
+
             services.ConfigureAutoMapper();
         }
 

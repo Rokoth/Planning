@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Обновление БД сервера";
+}
+
+<div class="text-center">
+    <div><img src="~/logo.png" alt="Logo" height="300" width="300"></div>
+    <div class="align-content-center btn-group-justified">
+        Выполнить подготовленные скрипты: 
+        <div class="col-sm-6 btn-group mt-1 mb-1">
+            <div class="btn btn-dark" onclick="deploy()" id="Deploy">Запустить</a>
+        </div>
+        <div id="result"></div>
+    </div>
+</div>
+
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+
+        <script type="text/javascript">
+
+            function deploy() {
+                $.post("api/v1/common/deploy", function (data, textStatus, request) {
+                    $('#result').html(data);
+                });
+            }
+        </script>
+    }

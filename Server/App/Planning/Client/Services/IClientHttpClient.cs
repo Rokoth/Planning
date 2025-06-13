@@ -1,0 +1,22 @@
+﻿using Planning.Contract.Model;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+namespace Planning.Client.ClientHttpClient
+{
+    public interface IClientHttpClient
+    {
+        bool IsConnected { get; }
+
+        event EventHandler OnConnect;
+
+        Task<bool> Auth(UserIdentity identity);
+        void ConnectToServer(string server, Action<bool, bool, string> onResult);
+        void Dispose();
+
+        Task<ListResult<T>> Get<T>(string param, Type apiType = null) where T : class;
+        Task<T> GetItem<T>(Guid id, Type apiType = null) where T : class;
+        Task<bool> SendErrorMessage(string message);
+    }
+}

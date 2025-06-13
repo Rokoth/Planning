@@ -1,18 +1,25 @@
-﻿using System;
-
+﻿//Copyright 2021 Dmitriy Rokoth
+//Licensed under the Apache License, Version 2.0
+//
+//ref 1
 namespace Planning.Common
 {
-    public enum ClientMode
-    {
-        ThickPriority = 1,
-        ThinPriority = 2,
-        ThickOnly = 3,
-        ThinOnly = 4
-    }
-
+    /// <summary>
+    /// Options
+    /// </summary>
     public class CommonOptions
     {
+        /// <summary>
+        /// ConnectionString
+        /// </summary>
         public string ConnectionString { get; set; }
+        /// <summary>
+        /// client's working mode
+        /// </summary>
         public ClientMode ClientMode { get; set; }
+        /// <summary>
+        /// options for error' notify lib
+        /// </summary>
+        public ErrorNotifyOptions ErrorNotifyOptions { get; set; }
     }
 }

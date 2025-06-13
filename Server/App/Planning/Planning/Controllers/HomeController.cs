@@ -2,20 +2,23 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Planning.Common;
+using Planning.Contract.Model;
 using Planning.Models;
+using Planning.Service;
 
 namespace Planning.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController :  CommonControllerBase
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
+        public HomeController(IServiceProvider serviceProvider) : base(serviceProvider)
+        {            
         }
 
         public IActionResult Index()
@@ -26,6 +29,34 @@ namespace Planning.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public IActionResult About()
+        {
+            return View();
+        }
+
+        [Authorize]
+        public IActionResult Deploy()
+        {
+            return View();
+        }
+
+        [Authorize]
+        public IActionResult SendReport()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> SendReport(ErrorNotifyMessage errMessage)
+        {
+            return await Execute(async () => {
+                await errorNotifyService.Send(errMessage.Message, errMessage.MessageLevel, errMessage.Title);               
+                return RedirectToAction(nameof(Index));
+            }, "ProjectController", "Create");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

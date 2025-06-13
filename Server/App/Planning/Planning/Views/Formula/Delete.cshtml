@@ -1,0 +1,32 @@
+﻿@model Planning.Contract.Model.Formula
+
+<h3>Вы действительно хотите удалить формулу?</h3>
+<div>
+    <h4>Удаление пользователя</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Text)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Text)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IsDefault)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IsDefault)
+        </dd>        
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="submit" value="Удалить" class="btn btn-danger" />
+        @Html.ActionLink("Вернуться", "Details", "Formula", new { id = Model.Id }, new { @class = "btn btn-dark" })
+    </form>
+</div>

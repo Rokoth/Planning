@@ -1,0 +1,29 @@
+﻿@model IEnumerable<Planning.Contract.Model.Formula>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(s => s.Name)</th>
+            <th>@Html.DisplayNameFor(s => s.Text)</th>
+            <th>@Html.DisplayNameFor(s => s.IsDefault)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Text</td>
+                <td>@item.IsDefault</td>
+                <td> <button class="btn btn-dark select_item" onclick="setFormula('@item.Id', '@item.Name'); $('#modal-action-id').modal('hide');">Выбрать</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+
+    
+
+</script>

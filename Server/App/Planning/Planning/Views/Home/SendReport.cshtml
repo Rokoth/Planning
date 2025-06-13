@@ -1,0 +1,35 @@
+﻿@model Planning.Common.ErrorNotifyMessage
+@{
+    ViewData["Title"] = "Отправить сообщение об ошибке";
+}
+<h1>@ViewData["Title"]</h1>
+
+<hr />
+
+<div class="text-center">
+    <div><img src="~/logo.png" alt="Logo" height="300" width="300"></div>
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="SendReport">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>               
+                <div class="form-group">
+                    <label asp-for="Message" class="control-label"></label>
+                    <input asp-for="Message" class="form-control" />
+                    <span asp-validation-for="Message" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Title" class="control-label"></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="MessageLevel" class="control-label"></label>
+                    <select asp-for="MessageLevel" asp-items="Html.GetEnumSelectList<Planning.Common.MessageLevelEnum>()">
+                        <option selected="selected" value="">Please select</option>
+                    </select>
+                    <span asp-validation-for="MessageLevel" class="text-danger"></span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

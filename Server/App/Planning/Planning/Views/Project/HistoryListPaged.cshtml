@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Planning.Contract.Model.ProjectHistory>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(s => s.HId)</th>
+            <th>@Html.DisplayNameFor(s => s.Id)</th>
+            <th>@Html.DisplayNameFor(s => s.Name)</th>
+            <th>@Html.DisplayNameFor(s => s.Path)</th>
+            <th>@Html.DisplayNameFor(s => s.Period)</th>
+            <th>@Html.DisplayNameFor(s => s.ParentId)</th>
+            <th>@Html.DisplayNameFor(s => s.Priority)</th>
+            <th>@Html.DisplayNameFor(s => s.AddTime)</th>
+            <th>@Html.DisplayNameFor(s => s.LastUsedDate)</th>
+            <th>@Html.DisplayNameFor(s => s.IsLeaf)</th>
+            <th>@Html.DisplayNameFor(s => s.ChangeDate)</th>
+            <th>@Html.DisplayNameFor(s => s.IsDeleted)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>@item.HId</td>
+            <td>@item.Id</td>
+            <td>@item.Name</td>
+            <td>@item.Path</td>
+            <td>@item.Period</td>
+            <td>@item.ParentId</td>
+            <td>@item.Priority</td>
+            <td>@item.AddTime</td>
+            <td>@item.LastUsedDate</td>
+            <td>@item.IsLeaf</td>
+            <td>@item.ChangeDate</td>
+            <td>@item.IsDeleted</td>
+        </tr>
+        }
+    </tbody>
+</table>

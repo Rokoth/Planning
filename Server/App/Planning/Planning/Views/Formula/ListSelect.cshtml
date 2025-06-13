@@ -1,0 +1,75 @@
+﻿@model IEnumerable<Planning.Contract.Model.Formula>
+
+@{
+    ViewData["Title"] = "Формулы";
+}
+
+<div class="container">
+    <hr>
+    Фильтры:
+    <div id="filter_formula">
+        <span class="col-sm-2">Наименование:</span><input id="filter_name_formula" class="col-sm-4" />
+        <a href="#" id="refresh_filter_button_formula" class="btn btn-dark col-sm-2 offset-1">Показать</a>
+    </div>
+    <div id="content_formula"></div>
+    <div>
+        <a href="#" id="begin_formula"><<</a>
+        <a href="#" id="back_formula"><</a>
+        Страница <span id="page_formula">0</span> из <span id="all_pages">0</span>
+        <a href="#" id="forward_formula">></a>
+        <a href="#" id="end_formula">>></a>
+        Показывать по <input id="count_items_formula" value="10" /> элементов на странице
+    </div>
+</div>
+
+<script type="text/javascript">
+    var page_formula = 1;
+    var name_formula = "";
+    var allPages_formula = 1;
+
+    function refresh_formula() {
+        $('#page_formula').html(page_formula);
+        $.get("/Formula/ListSelectPaged/?page=" + (page_formula - 1) + "&size=" + $('#count_items_formula').val() + "&name=" + $('#filter_name_formula').val(), function (data, textStatus, request) {
+            $('#content_formula').html(data);
+            allPages_formula = request.getResponseHeader('x-pages');
+            $('#all_pages_formula').html(allPages_formula);
+        });
+    }
+
+    $(function () {
+        $.ajaxSetup({ cache: false });
+        refresh_formula();
+        $("#refresh_filter_button_formula").click(function () {
+            refresh_formula();
+        });
+        $('#count_items_formula').change(function () {
+            refresh_formula();
+        });
+        $("#begin_formula").click(function () {
+            if (page_formula > 1) {
+                page_formula = 1;
+                refresh_formula();
+            }
+        });
+        $("#back_formula").click(function () {
+            if (page_formula > 1) {
+                page_formula = page_formula - 1;
+                refresh_formula();
+            }
+        });
+        $("#forward_formula").click(function () {
+            if (page_formula < allPages_formula) {
+                page_formula = page_formula + 1;
+                refresh_formula();
+            }
+        });
+        $("#end_formula").click(function () {
+            if (page_formula < allPages_formula) {
+                page_formula = allPages_formula;
+                refresh_formula();
+            }
+        });
+    })
+</script>
+
+
