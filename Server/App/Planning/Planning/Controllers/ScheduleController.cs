@@ -210,5 +210,22 @@ namespace Planning.Controllers
                 return Ok();
             }, "ScheduleController", "MoveNext");
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentNotify()
+        {
+            return await Execute(async () => {
+                var userId = Guid.Parse(User.Identity.Name);
+                var notifyService = _serviceProvider.GetRequiredService<INotifyDataService>();
+
+                var nextNotify = (await notifyService.GetNotifiesAsync(userId)).OrderBy(s => s.VersionDate).FirstOrDefault();
+                if(nextNotify != null)
+                {
+                    await notifyService.SetNotifySend(nextNotify.Id);
+                }
+                return Ok(nextNotify?.Text);
+            }, "ScheduleController", "GetCurrentNotify");
+        }
     }
 }

@@ -39,6 +39,21 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal-action-id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Выбор родителя</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dialogContent">
+            </div>
+        </div>
+    </div>
+</div>
+
 @section scripts
 {
     <script type="text/javascript">
@@ -59,9 +74,41 @@
             });
         }
 
+        function getNotify(){
+
+            $('#modal-action-id').modal('hide');
+            $('#dialogContent').html('');
+
+            $.post("Schedule/ListPaged/", {text:'text'}, function (data) {
+                 if(data){
+                     $('#modal-action-id').modal('show');
+                     $('#dialogContent').html(data);
+
+                     const audio = new Audio("/ring.m4a");
+                     audio.play();
+                 }
+            });
+        }
+
         $(function () {
 
             $.datetimepicker.setDateFormatter('moment');
+
+            setInterval(function() {
+               getNotify();
+            }, 1000);
+
+            $('#modal-container').on('show.bs.modal', function (event) {
+                                
+            });
+
+            $('#modal-container').on('hidden.bs.modal', function () {
+
+                $(this).removeData('bs.modal');         
+                $('#modal-container .modal-content').empty();
+
+            });
+
             $(".datetimefield").datetimepicker({
                 changeMonth: true,
                 changeYear: true,
