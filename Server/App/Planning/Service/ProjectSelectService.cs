@@ -31,7 +31,7 @@ namespace Planning.Service
         private static Dictionary<Guid, bool> _editEnables = new Dictionary<Guid, bool>();
         private readonly DB.Repository.IRepository<DB.Context.Schedule> _scheduleRepo;
         private readonly DB.Repository.IRepository<DB.Context.Project> _projectRepo;
-        private readonly DB.Repository.IRepository<UserSettings> _userSettingsRepo;
+        private readonly DB.Repository.IRepository<DB.Context.UserSettings> _userSettingsRepo;
 
         private readonly DB.Repository.IRepository<DB.Context.Direction> _directionRepo;
         private readonly DB.Repository.IRepository<DB.Context.DirectionCategory> _directionCategoryRepo;
@@ -40,7 +40,7 @@ namespace Planning.Service
         public ProjectSelectService(IServiceProvider serviceProvider,
             DB.Repository.IRepository<DB.Context.Schedule> scheduleRepo, 
             DB.Repository.IRepository<DB.Context.Project> projectRepo, 
-            DB.Repository.IRepository<UserSettings> userSettingsRepo,
+            DB.Repository.IRepository<DB.Context.UserSettings> userSettingsRepo,
             DB.Repository.IRepository<DB.Context.Direction> directionRepo,
             DB.Repository.IRepository<DB.Context.DirectionCategory> directionCategoryRepo,
             DB.Repository.IRepository<DB.Context.DirectionProject> directionProjectRepo,
@@ -190,7 +190,7 @@ namespace Planning.Service
         public async Task<IEnumerable<Contracts.Model.Schedule.Schedule>> GetNextShedules(
             Guid userId,                   
             int count,
-            DateTime? beginDate,
+            DateTimeOffset? beginDate,
             CancellationToken token)
         {
             var directions = (await _directionRepo.GetAsync(new Filter<Direction>() 
@@ -205,10 +205,12 @@ namespace Planning.Service
             }, token)).Data;
 
             List<Contracts.Model.Schedule.Schedule> result = new();
-            var intBeginDate = beginDate ?? DateTime.Now;
+            var intBeginDate = beginDate ?? DateTimeOffset.Now;
             for (int i = 0; i< count; i++)
             {
-                result.Add(await GetNextShedule(directions, projects, null, null, intBeginDate));
+                var next = await GetNextShedule(directions, projects, null, null, intBeginDate);
+                intBeginDate = next.EndDate;
+                result.Add();
             }
             return result;
         }
@@ -218,7 +220,7 @@ namespace Planning.Service
             IEnumerable<DB.Context.Project> projects,
             Guid? projectId,
             Guid? directionId,
-            DateTime beginDate)
+            DateTimeOffset beginDate)
         {
             //todo
         }
@@ -234,7 +236,7 @@ namespace Planning.Service
                 CancellationTokenSource cancellationTokenSource = new(30000);
                 var token = cancellationTokenSource.Token;
                 
-                var userSettings = (await _userSettingsRepo.GetAsync(new Filter<UserSettings>()
+                var userSettings = (await _userSettingsRepo.GetAsync(new Filter<DB.Context.UserSettings>()
                 {
                     Selector = s => s.UserId == userId
                 }, token)).Data.FirstOrDefault();

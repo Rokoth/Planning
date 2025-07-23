@@ -18,7 +18,7 @@ namespace Planning.Service
         Task<IEnumerable<Schedule>> GetNextShedules(
             Guid userId,
             int count,
-            DateTime? beginDate,
+            DateTimeOffset? beginDate,
             CancellationToken token);
     }
 }
