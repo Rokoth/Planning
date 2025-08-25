@@ -1,4 +1,4 @@
-﻿using Contracts.Model.Direction;
+﻿using Contracts.Model.Common;
 using Contracts.Model.User;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -12,19 +12,108 @@ using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public class UserDataService : DataService<DB.Context.User, User,
-        UserFilter, UserCreator, UserUpdater>
+    public class UserDataService : DataService<DB.Context.User, User>, IUserDataService
     {
         public UserDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
 
         }
 
+        public async Task<PagedResult<User>> GetAsync(UserFilter filter, CancellationToken token)
+        {
+            return await ExecuteListAsync(async (repo) =>
+            {
+                string sort = filter.Sort;
+                if (string.IsNullOrEmpty(sort))
+                {
+                    sort = DefaultSort;
+                }
+
+                var data = await repo.GetAsync(new DB.Context.Filter<DB.Context.User>
+                {
+                    Size = filter.Size,
+                    Page = filter.Page,
+                    Sort = sort,
+                    Selector = GetFilter(filter)
+                }, token);
+                var result = new List<User>();
+                foreach (var item in data.Data)
+                {
+                    result.Add(await Map(item, token));
+                }
+                return new PagedResult<User>(result, data.PageCount);
+            });
+        }
+
+        public async Task<User> GetAsync(Guid id, CancellationToken token)
+        {
+            return await ExecuteAsync(async (repo) =>
+            {
+                var result = await repo.GetAsync(id, token);
+                var prepare = await Map(result, token);
+                return prepare;
+            });
+        }
+
+        /// <summary>
+        /// add item method
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<User> AddAsync(UserCreator creator, CancellationToken token)
+        {
+            return await ExecuteAsync(async (repo) =>
+            {
+                var entity = MapToEntityAdd(creator);
+                var result = await repo.AddAsync(entity, false, token);
+                await ActionAfterAdd(creator, result, token);
+                await repo.SaveChangesAsync();
+                return await Map(result, token);
+            });
+        }
+
+        public async Task<User> UpdateAsync(UserUpdater entity, CancellationToken token)
+        {
+            return await ExecuteAsync(async (repo) =>
+            {
+                var entry = await repo.GetAsync(entity.Id, token);
+                entry = UpdateFillFields(entity, entry);
+                var result = await repo.UpdateAsync(entry, false, token);
+                await ActionAfterUpdate(entity, result, token);
+                await repo.SaveChangesAsync();
+                return await Map(result, token);
+            });
+        }
+
+        public async Task<User> DeleteAsync(Guid id, CancellationToken token)
+        {
+            return await ExecuteAsync(async (repo) =>
+            {
+                var entity = await repo.GetAsync(id, token) ??
+                    throw new DataServiceException($"Entity with id = {id} not found in DB");
+                entity = await repo.DeleteAsync(entity, false, token);
+                await ActionAfterDelete(entity, token);
+                await repo.SaveChangesAsync();
+                return await Map(entity, token);
+            });
+        }
+
         /// <summary>
         /// function for enrichment data item
         /// </summary>
-        protected override async Task<User> Enrich(User entity, CancellationToken token)
+        private async Task<User> Map(DB.Context.User entity, CancellationToken token)
         {
+            User result = new()
+            {
+                Description = entity.Description,
+                FormulaId = entity.FormulaId,
+                Id = entity.Id,
+                Login = entity.Login,
+                Name = entity.Name,
+                VersionDate = entity.VersionDate
+            };
+
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var formulaRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Formula>>();
             var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
@@ -35,82 +124,45 @@ namespace Planning.Service
             {
                 Selector = s => s.Id == entity.FormulaId
             }, token)).Data.Single();
-            entity.Formula = formula.Name;
-            entity.DefaultProjectTimespan = userSettings.DefaultProjectTimespan;
-            entity.LeafOnly = userSettings.LeafOnly;
-            entity.ScheduleCount = userSettings.ScheduleCount;
-            entity.ScheduleMode = userSettings.ScheduleMode;
-            entity.ScheduleShift = userSettings.ScheduleShift;
-            entity.ScheduleTimeSpan = userSettings.ScheduleTimeSpan;
-            return entity;
-        }
-
-        /// <summary>
-        /// function for enrichment data item
-        /// </summary>
-        protected override async Task<IEnumerable<User>> Enrich(IEnumerable<User> entities, CancellationToken token)
-        {
-            var result = new List<User>();
-            var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
-            var formulaRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Formula>>();
-            var userIds = entities.Select(s => s.Id).ToList();
-            var formulaIds = entities.Select(s => s.FormulaId).Distinct().ToList();
-            var userSettingss = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
-            {
-                Selector = s => userIds.Contains(s.UserId)
-            }, token)).Data.ToList();
-            var formulas = (await formulaRepo.GetAsync(new DB.Context.Filter<DB.Context.Formula>()
-            {
-                Selector = s => formulaIds.Contains(s.Id)
-            }, token)).Data.ToList();
-
-            foreach (var entity in entities)
-            {
-                var formula = formulas.Where(s=>s.Id == entity.FormulaId).Single();
-                var userSettings = userSettingss.Where(s => s.UserId == entity.Id).Single();
-                entity.Formula = formula.Name;
-                entity.DefaultProjectTimespan = userSettings.DefaultProjectTimespan;
-                entity.LeafOnly = userSettings.LeafOnly;
-                entity.ScheduleCount = userSettings.ScheduleCount;
-                entity.ScheduleMode = userSettings.ScheduleMode;
-                entity.ScheduleShift = userSettings.ScheduleShift;
-                entity.ScheduleTimeSpan = userSettings.ScheduleTimeSpan;
-                result.Add(entity);
-            }
-
+            result.Formula = formula.Name;
+            result.DefaultProjectTimespan = userSettings.DefaultProjectTimespan;
+            result.LeafOnly = userSettings.LeafOnly;
+            result.ScheduleCount = userSettings.ScheduleCount;
+            result.ScheduleMode = userSettings.ScheduleMode;
+            result.ScheduleShift = userSettings.ScheduleShift;
+            result.ScheduleTimeSpan = userSettings.ScheduleTimeSpan;
             return result;
         }
 
-        protected override Expression<Func<DB.Context.User, bool>> GetFilter(UserFilter filter)
+        private static Expression<Func<DB.Context.User, bool>> GetFilter(UserFilter filter)
         {
             return s => filter.Name == null || s.Name.Contains(filter.Name);
         }
 
-        protected override async Task ActionAfterAdd(DB.Repository.IRepository<DB.Context.User> repository,
-            UserCreator creator, DB.Context.User entity, CancellationToken token)
+        private async Task ActionAfterAdd(UserCreator creator, DB.Context.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
-            await userSettingsRepo.AddAsync(new DB.Context.UserSettings() { 
-               DefaultProjectTimespan = creator.DefaultProjectTimespan,
-               Id = Guid.NewGuid(),
-               IsDeleted = false,
-               LeafOnly = creator.LeafOnly,
-               ScheduleCount = creator.ScheduleCount,
-               ScheduleMode = creator.ScheduleMode,
-               ScheduleShift = creator.ScheduleShift,
-               ScheduleTimeSpan = creator.ScheduleTimeSpan,
-               UserId = entity.Id,
-               VersionDate = DateTimeOffset.Now
+            await userSettingsRepo.AddAsync(new DB.Context.UserSettings()
+            {
+                DefaultProjectTimespan = creator.DefaultProjectTimespan,
+                Id = Guid.NewGuid(),
+                IsDeleted = false,
+                LeafOnly = creator.LeafOnly,
+                ScheduleCount = creator.ScheduleCount,
+                ScheduleMode = creator.ScheduleMode,
+                ScheduleShift = creator.ScheduleShift,
+                ScheduleTimeSpan = creator.ScheduleTimeSpan,
+                UserId = entity.Id,
+                VersionDate = DateTimeOffset.Now
             }, false, token);
         }
 
-        protected override async Task ActionAfterUpdate(DB.Repository.IRepository<DB.Context.User> repository,
-            UserUpdater updater, DB.Context.User entity, CancellationToken token)
+        private async Task ActionAfterUpdate(UserUpdater updater, DB.Context.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
-            { 
-               Selector = s=>s.UserId == entity.Id
+            {
+                Selector = s => s.UserId == entity.Id
             }, token)).Data.Single();
 
             userSettings.DefaultProjectTimespan = updater.DefaultProjectTimespan;
@@ -123,101 +175,44 @@ namespace Planning.Service
             await userSettingsRepo.UpdateAsync(userSettings, false, token);
         }
 
-        protected override async Task ActionAfterDelete(DB.Repository.IRepository<DB.Context.User> repository,
-            DB.Context.User entity, CancellationToken token)
+        private async Task ActionAfterDelete(DB.Context.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
             {
                 Selector = s => s.UserId == entity.Id
-            }, token)).Data.Single();                       
+            }, token)).Data.Single();
 
             await userSettingsRepo.DeleteAsync(userSettings, false, token);
         }
 
-        protected override DB.Context.User MapToEntityAdd(UserCreator creator)
+        private static DB.Context.User MapToEntityAdd(UserCreator creator)
         {
-            var entity = base.MapToEntityAdd(creator);
-            entity.Password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(creator.Password));
+            var entity = new DB.Context.User
+            {
+                Description = creator.Description,
+                Login = creator.Login,
+                Name = creator.Name,
+                Password = SHA512.HashData(Encoding.UTF8.GetBytes(creator.Password)),
+                FormulaId = creator.FormulaId,
+                VersionDate = DateTimeOffset.Now,
+                Id = Guid.NewGuid()
+            };
             return entity;
         }
 
-        protected override DB.Context.User UpdateFillFields(UserUpdater entity, DB.Context.User entry)
+        private static DB.Context.User UpdateFillFields(UserUpdater entity, DB.Context.User entry)
         {
             entry.Description = entity.Description;
             entry.Login = entity.Login;
             entry.Name = entity.Name;
             if (entity.PasswordChanged)
             {
-                entry.Password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(entity.Password));
+                entry.Password = SHA512.HashData(Encoding.UTF8.GetBytes(entity.Password));
             }
             return entry;
         }
 
-        protected override string DefaultSort => "Name";
-        
-    }
-
-    public class DirectionCategoryDataService : DataService<DB.Context.DirectionCategory, DirectionCategory,
-        DirectionCategoryFilter, DirectionCategoryCreator, DirectionCategoryUpdater>
-    {
-        public DirectionCategoryDataService(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-
-        }
-               
-        protected override string DefaultSort => "Name";
-
-        protected override Expression<Func<DB.Context.DirectionCategory, bool>> GetFilter(DirectionCategoryFilter filter)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DB.Context.DirectionCategory UpdateFillFields(DirectionCategoryUpdater entity, DB.Context.DirectionCategory entry)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class DirectionDataService : DataService<DB.Context.Direction, Direction,
-        DirectionFilter, DirectionCreator, DirectionUpdater>
-    {
-        public DirectionDataService(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-
-        }
-
-        protected override string DefaultSort => "Name";
-
-        protected override Expression<Func<DB.Context.Direction, bool>> GetFilter(DirectionFilter filter)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DB.Context.Direction UpdateFillFields(DirectionUpdater entity, DB.Context.Direction entry)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class DirectionProjectDataService : DataService<DB.Context.DirectionProject, DirectionProject,
-        DirectionProjectFilter, DirectionProjectCreator, DirectionProjectUpdater>
-    {
-        public DirectionProjectDataService(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-
-        }
-
-        protected override string DefaultSort => "Id";
-
-        protected override Expression<Func<DB.Context.DirectionProject, bool>> GetFilter(DirectionProjectFilter filter)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DB.Context.DirectionProject UpdateFillFields(DirectionProjectUpdater entity, DB.Context.DirectionProject entry)
-        {
-            throw new NotImplementedException();
-        }
+        private static string DefaultSort => "Name";
     }
 }

@@ -39,7 +39,7 @@
     <ProjectReference Include="..\DB\DB.csproj" />
     <ProjectReference Include="..\Deploy\Deploy.csproj" />
     <ProjectReference Include="..\Planning\Planning.csproj" />
-    <ProjectReference Include="..\Service\Service.csproj" />
+    <ProjectReference Include="..\Service\Planning.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

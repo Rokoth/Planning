@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning", "Planning\Planning.csproj", "{EE0FE85B-EBC8-4B7D-80A4-23E6F04ABABC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DB", "DB\DB.csproj", "{53E49120-9914-412E-9065-88C0CB6696A8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.csproj", "{EED5E367-E3E9-436D-8967-91D002BFDED6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.Service", "Service\Planning.Service.csproj", "{EED5E367-E3E9-436D-8967-91D002BFDED6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project", "Client\Project.csproj", "{ED882BB3-7AE9-4AE9-BCA9-885754D1AD08}"
 EndProject
