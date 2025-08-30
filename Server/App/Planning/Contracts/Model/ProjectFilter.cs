@@ -4,7 +4,7 @@
 //ref1
 using System;
 
-namespace Planning.Contract.Model
+namespace Planning.Contracts.Model
 {
     /// <summary>
     /// Filter class

@@ -195,13 +195,13 @@ namespace Planning.Service
             }
         }
 
-        public async Task<Contract.Model.Schedule> AddProjectToSchedule(Guid userId, UserSettings settings, Guid? projectId = null,
+        public async Task<Contracts.Model.Schedule> AddProjectToSchedule(Guid userId, UserSettings settings, Guid? projectId = null,
             DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
         {
             var schedule = await AddProjectToScheduleInternal(userId, settings, projectId, beginDate, setBeginDate, isLocked);
             var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
             var project = await _projectRepo.GetAsync(schedule.ProjectId, new CancellationTokenSource(30000).Token);
-            return new Contract.Model.Schedule()
+            return new Contracts.Model.Schedule()
             {
                 Id = schedule.Id,
                 VersionDate = schedule.VersionDate,

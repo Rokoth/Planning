@@ -10,7 +10,7 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Planning.Contract.Model;
+using Planning.Contracts.Model;
 using Planning.Service;
 
 namespace Planning.Controllers

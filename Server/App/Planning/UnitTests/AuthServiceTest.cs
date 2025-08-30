@@ -32,7 +32,7 @@ namespace Planning.UnitTests
             await context.SaveChangesAsync();
 
             var authService = _serviceProvider.GetRequiredService<IAuthService>();
-            var result = await authService.Auth(new Contract.Model.UserIdentity() {
+            var result = await authService.Auth(new Contracts.Model.UserIdentity() {
                Login = user.Login,
                Password = $"user_password_{user.Id}"
             }, CancellationToken.None);
@@ -41,7 +41,7 @@ namespace Planning.UnitTests
             var check = result.Claims.FirstOrDefault(s => s.Type == ClaimsIdentity.DefaultNameClaimType);
             Assert.Equal(user.Id.ToString(), check.Value);
 
-            var result2 = await authService.AuthApi(new Contract.Model.UserIdentity()
+            var result2 = await authService.AuthApi(new Contracts.Model.UserIdentity()
             {
                 Login = user.Login,
                 Password = $"user_password_{user.Id}"

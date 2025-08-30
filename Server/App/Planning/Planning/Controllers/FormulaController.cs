@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Planning.Contract.Model;
+using Planning.Contracts.Model;
 using Planning.Service;
 using System;
 using System.Collections.Generic;

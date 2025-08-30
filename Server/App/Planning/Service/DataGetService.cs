@@ -14,8 +14,8 @@ namespace Planning.Service
     public abstract class DataGetService<TEntity, Tdto, TFilter> :
         IGetDataService<Tdto, TFilter>
         where TEntity : DB.Context.IEntity
-        where Tdto : Contract.Model.Entity
-        where TFilter : Contract.Model.Filter<Tdto>
+        where Tdto : Contracts.Model.Entity
+        where TFilter : Contracts.Model.Filter<Tdto>
     {
         protected IServiceProvider _serviceProvider;
         protected IMapper _mapper;
@@ -28,7 +28,7 @@ namespace Planning.Service
         /// </summary>
         protected abstract Expression<Func<TEntity, bool>> GetFilter(TFilter filter);
 
-        protected virtual Func<DB.Context.Filter<TEntity>, CancellationToken, Task<Contract.Model.PagedResult<TEntity>>> GetListFunc(DB.Repository.IRepository<TEntity> repo)
+        protected virtual Func<DB.Context.Filter<TEntity>, CancellationToken, Task<Contracts.Model.PagedResult<TEntity>>> GetListFunc(DB.Repository.IRepository<TEntity> repo)
         {
             return repo.GetAsync;
         }
@@ -66,7 +66,7 @@ namespace Planning.Service
         /// <param name="filter"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<Contract.Model.PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token)
+        public async Task<Contracts.Model.PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token)
         {
             return await ExecuteAsync(async (repo) =>
             {
@@ -85,7 +85,7 @@ namespace Planning.Service
                 }, token);
                 var prepare = result.Data.Select(s => _mapper.Map<Tdto>(s));
                 prepare = await Enrich(prepare, token);
-                return new Contract.Model.PagedResult<Tdto>(prepare, result.PageCount);
+                return new Contracts.Model.PagedResult<Tdto>(prepare, result.PageCount);
             });
         }
 

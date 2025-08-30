@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning", "Planning\Planning.csproj", "{EE0FE85B-EBC8-4B7D-80A4-23E6F04ABABC}"
 EndProject
@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbClient", "DbClient\DbClie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deploy", "Deploy\Deploy.csproj", "{4F280D86-D659-479C-AB81-7F3E6F3A11DF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "Contracts\Contracts.csproj", "{2F7869B5-A2E3-4A29-9FFB-6E34629863BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.Contracts", "Contracts\Planning.Contracts.csproj", "{2F7869B5-A2E3-4A29-9FFB-6E34629863BB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientHttpClient", "ClientHttpClient\ClientHttpClient.csproj", "{54A77E4B-D597-4386-A53E-391077E43AC4}"
 EndProject

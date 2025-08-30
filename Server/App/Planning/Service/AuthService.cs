@@ -34,9 +34,9 @@ namespace Planning.Service
         /// <param name="login"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<ClaimsIdentity> AuthApi(Contract.Model.UserIdentity login, CancellationToken token)
+        public async Task<ClaimsIdentity> AuthApi(Contracts.Model.UserIdentity login, CancellationToken token)
         {
-            return await AuthInternal<DB.Context.User, Contract.Model.UserIdentity>(login, CLIENT_ROLE_TYPE, TOKEN_AUTH_TYPE, token);
+            return await AuthInternal<DB.Context.User, Contracts.Model.UserIdentity>(login, CLIENT_ROLE_TYPE, TOKEN_AUTH_TYPE, token);
         }
 
         /// <summary>
@@ -45,14 +45,14 @@ namespace Planning.Service
         /// <param name="login"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<ClaimsIdentity> Auth(Contract.Model.UserIdentity login, CancellationToken token)
+        public async Task<ClaimsIdentity> Auth(Contracts.Model.UserIdentity login, CancellationToken token)
         {
-            return await AuthInternal<DB.Context.User, Contract.Model.UserIdentity>(login, USER_ROLE_TYPE, COOKIES_AUTH_TYPE, token);
+            return await AuthInternal<DB.Context.User, Contracts.Model.UserIdentity>(login, USER_ROLE_TYPE, COOKIES_AUTH_TYPE, token);
         }
 
         private async Task<ClaimsIdentity> AuthInternal<T, I>(I login, string roleType, string authType, CancellationToken token)
             where T : DB.Context.Entity, DB.Context.IIdentity
-            where I : Contract.Model.IIdentity
+            where I : Contracts.Model.IIdentity
         {
             var repo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<T>>();
             var password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(login.Password));

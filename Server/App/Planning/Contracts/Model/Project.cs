@@ -4,9 +4,10 @@
 //ref1
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Planning.Contract.Model
+namespace Planning.Contracts.Model
 {
     /// <summary>
     /// Проект
@@ -67,6 +68,12 @@ namespace Planning.Contract.Model
         /// </summary>
         [Display(Name = "Родитель")]
         public string Parent { get; set; }
+
+        /// <summary>
+        /// Родитель
+        /// </summary>
+        [Display(Name = "Дополнительные действия")]
+        public List<AdditionalTask> AdditionalTasks { get; set; }
 
         public bool CanSelect { get; set; }
 

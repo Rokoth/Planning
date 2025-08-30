@@ -368,9 +368,9 @@
       <Project>{285d0399-da8c-4860-a7c0-7b3890e97fcc}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Contracts\Contracts.csproj">
+    <ProjectReference Include="..\Contracts\Planning.Contracts.csproj">
       <Project>{2f7869b5-a2e3-4a29-9ffb-6e34629863bb}</Project>
-      <Name>Contracts</Name>
+      <Name>Planning.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\DbClient\DbClient.csproj">
       <Project>{740a2e39-8ef9-48bb-bff5-34a23a2c20f8}</Project>

@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\Contracts\Planning.Contracts.csproj" />
     <ProjectReference Include="..\DB\DB.csproj" />
     <ProjectReference Include="..\Deploy\Deploy.csproj" />
     <ProjectReference Include="..\Planning\Planning.csproj" />

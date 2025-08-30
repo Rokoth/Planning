@@ -175,43 +175,43 @@ namespace Planning
     {
         public MappingProfile()
         {
-            CreateMap<User, Contract.Model.User>();
+            CreateMap<User, Contracts.Model.User>();
 
-            CreateMap<Contract.Model.UserCreator, User>()
+            CreateMap<Contracts.Model.UserCreator, User>()
                  .ForMember(s => s.Password, s => s.Ignore())
                  .ForMember(s => s.Formula, s => s.Ignore());
 
-            CreateMap<UserHistory, Contract.Model.UserHistory>();
+            CreateMap<UserHistory, Contracts.Model.UserHistory>();
 
-            CreateMap<Contract.Model.UserUpdater, User>()
+            CreateMap<Contracts.Model.UserUpdater, User>()
                 .ForMember(s => s.Password, s => s.Ignore())
                 .ForMember(s => s.Formula, s => s.Ignore());
 
-            CreateMap<Formula, Contract.Model.Formula>();
+            CreateMap<Formula, Contracts.Model.Formula>();
 
-            CreateMap<Contract.Model.FormulaCreator, Formula>();
+            CreateMap<Contracts.Model.FormulaCreator, Formula>();
 
-            CreateMap<FormulaHistory, Contract.Model.FormulaHistory>();
+            CreateMap<FormulaHistory, Contracts.Model.FormulaHistory>();
 
-            CreateMap<Contract.Model.FormulaUpdater, Formula>();
-
-
-            CreateMap<Project, Contract.Model.Project>();
-
-            CreateMap<Contract.Model.ProjectCreator, Project>();
-
-            CreateMap<ProjectHistory, Contract.Model.ProjectHistory>();
-
-            CreateMap<Contract.Model.ProjectUpdater, Project>();
+            CreateMap<Contracts.Model.FormulaUpdater, Formula>();
 
 
-            CreateMap<Schedule, Contract.Model.Schedule>();
+            CreateMap<Project, Contracts.Model.Project>();
 
-            CreateMap<Contract.Model.ScheduleCreator, Schedule>();
+            CreateMap<Contracts.Model.ProjectCreator, Project>();
 
-            CreateMap<ScheduleHistory, Contract.Model.ScheduleHistory>();
+            CreateMap<ProjectHistory, Contracts.Model.ProjectHistory>();
 
-            CreateMap<Contract.Model.ScheduleUpdater, Schedule>();
+            CreateMap<Contracts.Model.ProjectUpdater, Project>();
+
+
+            CreateMap<Schedule, Contracts.Model.Schedule>();
+
+            CreateMap<Contracts.Model.ScheduleCreator, Schedule>();
+
+            CreateMap<ScheduleHistory, Contracts.Model.ScheduleHistory>();
+
+            CreateMap<Contracts.Model.ScheduleUpdater, Schedule>();
 
         }
     }

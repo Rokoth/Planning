@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Planning.Contract.Model
+namespace Planning.Contracts.Model
 {
     public class UserHistoryFilter : Filter<UserHistory>
     {

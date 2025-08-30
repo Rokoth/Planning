@@ -10,7 +10,7 @@ namespace Planning.DB.Context
         [ColumnName("userid")]        
         public Guid UserId { get; set; }
         [ColumnName("schedule_mode")]
-        public Contract.Model.ScheduleMode ScheduleMode { get; set; }
+        public Contracts.Model.ScheduleMode ScheduleMode { get; set; }
         [ColumnName("schedule_count")]
         public int? ScheduleCount { get; set; }
         [ColumnName("schedule_timespan")]

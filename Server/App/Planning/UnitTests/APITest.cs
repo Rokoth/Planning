@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using Planning.Contract.Model;
+using Planning.Contracts.Model;
 using Planning.Controllers;
 using System;
 using System.Collections.Generic;
@@ -245,7 +245,7 @@ namespace Planning.UnitTests
             Assert.Equal(10, actuals.Count);
             foreach (var assert in actuals)
             {
-                var actual = assert.ToObject<Contract.Model.Project>();
+                var actual = assert.ToObject<Contracts.Model.Project>();
                 Assert.Contains("project_select", actual.Name);
             }
         }
@@ -253,7 +253,7 @@ namespace Planning.UnitTests
         private async Task<ClientIdentityResponse> AuthAndAssert(DB.Context.User user)
         {
             var clientController = new AuthController(_serviceProvider);
-            var result = await clientController.Auth(new Contract.Model.UserIdentity()
+            var result = await clientController.Auth(new Contracts.Model.UserIdentity()
             {
                 Login = user.Login,
                 Password = $"user_password_{user.Id}"

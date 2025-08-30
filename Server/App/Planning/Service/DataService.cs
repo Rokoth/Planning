@@ -9,9 +9,9 @@ namespace Planning.Service
     public abstract class DataService<TEntity, Tdto, TFilter, TCreator, TUpdater> :
         DataGetService<TEntity, Tdto, TFilter>, IAddDataService<Tdto, TCreator>, IUpdateDataService<Tdto, TUpdater>, IDeleteDataService<Tdto>
           where TEntity : DB.Context.IEntity
-          where TUpdater : Contract.Model.IEntity
-          where Tdto : Contract.Model.Entity
-          where TFilter : Contract.Model.Filter<Tdto>
+          where TUpdater : Contracts.Model.IEntity
+          where Tdto : Contracts.Model.Entity
+          where TFilter : Contracts.Model.Filter<Tdto>
     {
 
         public DataService(IServiceProvider serviceProvider) : base(serviceProvider)
@@ -113,24 +113,24 @@ namespace Planning.Service
     }
 
     public interface IGetDataService<Tdto, TFilter>
-        where Tdto : Contract.Model.Entity
-        where TFilter : Contract.Model.Filter<Tdto>
+        where Tdto : Contracts.Model.Entity
+        where TFilter : Contracts.Model.Filter<Tdto>
     {
         Task<Tdto> GetAsync(Guid id, CancellationToken token);
-        Task<Contract.Model.PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token);
+        Task<Contracts.Model.PagedResult<Tdto>> GetAsync(TFilter filter, CancellationToken token);
     }
 
-    public interface IAddDataService<Tdto, TCreator> where Tdto : Contract.Model.Entity
+    public interface IAddDataService<Tdto, TCreator> where Tdto : Contracts.Model.Entity
     {
         Task<Tdto> AddAsync(TCreator entity, CancellationToken token);
     }
 
-    public interface IUpdateDataService<Tdto, TUpdater> where Tdto : Contract.Model.Entity
+    public interface IUpdateDataService<Tdto, TUpdater> where Tdto : Contracts.Model.Entity
     {
         Task<Tdto> UpdateAsync(TUpdater entity, CancellationToken token);
     }
 
-    public interface IDeleteDataService<Tdto> where Tdto : Contract.Model.Entity
+    public interface IDeleteDataService<Tdto> where Tdto : Contracts.Model.Entity
     {
         Task<Tdto> DeleteAsync(Guid id, CancellationToken token);
     }
@@ -139,19 +139,19 @@ namespace Planning.Service
     {
         public static IServiceCollection AddDataServices(this IServiceCollection services)
         {
-            services.AddDataService<UserDataService, DB.Context.User, Contract.Model.User,
-                Contract.Model.UserFilter, Contract.Model.UserCreator, Contract.Model.UserUpdater>();
-            services.AddDataService<FormulaDataService, DB.Context.Formula, Contract.Model.Formula,
-                Contract.Model.FormulaFilter, Contract.Model.FormulaCreator, Contract.Model.FormulaUpdater>();
-            services.AddDataService<ProjectDataService, DB.Context.Project, Contract.Model.Project,
-                Contract.Model.ProjectFilter, Contract.Model.ProjectCreator, Contract.Model.ProjectUpdater>();
-            services.AddDataService<ScheduleDataService, DB.Context.Schedule, Contract.Model.Schedule,
-               Contract.Model.ScheduleFilter, Contract.Model.ScheduleCreator, Contract.Model.ScheduleUpdater>();
+            services.AddDataService<UserDataService, DB.Context.User, Contracts.Model.User,
+                Contracts.Model.UserFilter, Contracts.Model.UserCreator, Contracts.Model.UserUpdater>();
+            services.AddDataService<FormulaDataService, DB.Context.Formula, Contracts.Model.Formula,
+                Contracts.Model.FormulaFilter, Contracts.Model.FormulaCreator, Contracts.Model.FormulaUpdater>();
+            services.AddDataService<ProjectDataService, DB.Context.Project, Contracts.Model.Project,
+                Contracts.Model.ProjectFilter, Contracts.Model.ProjectCreator, Contracts.Model.ProjectUpdater>();
+            services.AddDataService<ScheduleDataService, DB.Context.Schedule, Contracts.Model.Schedule,
+               Contracts.Model.ScheduleFilter, Contracts.Model.ScheduleCreator, Contracts.Model.ScheduleUpdater>();
 
-            services.AddScoped<IGetDataService<Contract.Model.UserHistory, Contract.Model.UserHistoryFilter>, UserHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.FormulaHistory, Contract.Model.FormulaHistoryFilter>, FormulaHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.ProjectHistory, Contract.Model.ProjectHistoryFilter>, ProjectHistoryDataService>();
-            services.AddScoped<IGetDataService<Contract.Model.ScheduleHistory, Contract.Model.ScheduleHistoryFilter>, ScheduleHistoryDataService>();
+            services.AddScoped<IGetDataService<Contracts.Model.UserHistory, Contracts.Model.UserHistoryFilter>, UserHistoryDataService>();
+            services.AddScoped<IGetDataService<Contracts.Model.FormulaHistory, Contracts.Model.FormulaHistoryFilter>, FormulaHistoryDataService>();
+            services.AddScoped<IGetDataService<Contracts.Model.ProjectHistory, Contracts.Model.ProjectHistoryFilter>, ProjectHistoryDataService>();
+            services.AddScoped<IGetDataService<Contracts.Model.ScheduleHistory, Contracts.Model.ScheduleHistoryFilter>, ScheduleHistoryDataService>();
             services.AddScoped<IAuthService, AuthService>();
 
             return services;
@@ -159,10 +159,10 @@ namespace Planning.Service
 
         private static IServiceCollection AddDataService<TService, TEntity, Tdto, TFilter, TCreator, TUpdater>(this IServiceCollection services)
             where TEntity : DB.Context.Entity
-            where TUpdater : Contract.Model.IEntity
+            where TUpdater : Contracts.Model.IEntity
             where TService : DataService<TEntity, Tdto, TFilter, TCreator, TUpdater>
-            where Tdto : Contract.Model.Entity
-            where TFilter : Contract.Model.Filter<Tdto>
+            where Tdto : Contracts.Model.Entity
+            where TFilter : Contracts.Model.Filter<Tdto>
         {
             services.AddScoped<IGetDataService<Tdto, TFilter>, TService>();
             services.AddScoped<IAddDataService<Tdto, TCreator>, TService>();

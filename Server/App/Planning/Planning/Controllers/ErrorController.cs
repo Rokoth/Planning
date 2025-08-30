@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Planning.Contract.Model;
+using Planning.Contracts.Model;
 
 namespace Planning.Controllers
 {

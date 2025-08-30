@@ -5,7 +5,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Planning.Contract.Model
+namespace Planning.Contracts.Model
 {
     public class Schedule : Entity
     {       
@@ -24,6 +24,8 @@ namespace Planning.Contract.Model
         public string Project { get; set; }
         [Display(Name = "Путь проекта")]
         public string ProjectPath { get; set; }
+        [Display(Name = "Дополнительные действия")]
+        public string AdditionalTasks { get; set; }
     }
 
     public class ScheduleHistory : EntityHistory

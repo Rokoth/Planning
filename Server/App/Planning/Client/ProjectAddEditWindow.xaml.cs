@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Planning.Client.ClientHttpClient;
-using Planning.Contract.Model;
+using Planning.Contracts.Model;
 using System;
 using System.Windows;
 

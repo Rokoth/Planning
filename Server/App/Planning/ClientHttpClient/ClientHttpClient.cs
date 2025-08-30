@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Planning.Contract.Model;
+using Planning.Contracts.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

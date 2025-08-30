@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Planning.Contract.Model
+namespace Planning.Contracts.Model
 {
     public class UserHistory : EntityHistory
     {

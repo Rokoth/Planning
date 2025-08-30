@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 
-namespace Planning.Contract.Model
+namespace Planning.Contracts.Model
 {
     public class PagedResult<T>
     {

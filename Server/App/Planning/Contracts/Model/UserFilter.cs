@@ -2,7 +2,7 @@
 //Licensed under the Apache License, Version 2.0
 //
 //ref1
-namespace Planning.Contract.Model
+namespace Planning.Contracts.Model
 {
     /// <summary>
     /// Filter for user model

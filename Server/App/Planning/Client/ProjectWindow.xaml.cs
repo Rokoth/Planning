@@ -135,7 +135,7 @@ namespace PlanningClient
                 var row = DataGridMain.SelectedItem;
                 if (row != null)
                 {
-                    if (await _dataService.DeleteProject(((Planning.Contract.Model.Project)row).Id))
+                    if (await _dataService.DeleteProject(((Planning.Contracts.Model.Project)row).Id))
                     {
                         FillTable();
                     }                    
@@ -208,7 +208,7 @@ namespace PlanningClient
             var row = DataGridMain.SelectedItem;
             if (row != null)
             {
-                addTreeWindow.ShowDialog(AddEditMode.Edit, ((Planning.Contract.Model.Project)row).Id);
+                addTreeWindow.ShowDialog(AddEditMode.Edit, ((Planning.Contracts.Model.Project)row).Id);
             }
 
             FillTable();

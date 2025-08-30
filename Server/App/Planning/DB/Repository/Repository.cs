@@ -61,7 +61,7 @@ namespace Planning.DB.Repository
         /// <param name="filter">фильтр</param>
         /// <param name="token">токен</param>
         /// <returns>список моделей</returns>
-        public async Task<Contract.Model.PagedResult<T>> GetAsync(Filter<T> filter, CancellationToken token)
+        public async Task<Contracts.Model.PagedResult<T>> GetAsync(Filter<T> filter, CancellationToken token)
         {
             return await ExecuteAsync(async (context) => {
                 var all = context.Set<T>().Where(s => !s.IsDeleted).Where(filter.Selector);
@@ -91,7 +91,7 @@ namespace Planning.DB.Repository
                 {
                     pageCount = 1;
                 }
-                return new Contract.Model.PagedResult<T>(result, pageCount);
+                return new Contracts.Model.PagedResult<T>(result, pageCount);
             }, "GetAsync");
         }
 
@@ -109,7 +109,7 @@ namespace Planning.DB.Repository
             }, "GetAsync");
         }
 
-        public async Task<Contract.Model.PagedResult<T>> GetAsyncDeleted(Filter<T> filter, CancellationToken token)
+        public async Task<Contracts.Model.PagedResult<T>> GetAsyncDeleted(Filter<T> filter, CancellationToken token)
         {
             return await ExecuteAsync(async (context) => {
                 var all = context.Set<T>().Where(filter.Selector);
@@ -139,7 +139,7 @@ namespace Planning.DB.Repository
                 {
                     pageCount = 1;
                 }
-                return new Contract.Model.PagedResult<T>(result, pageCount);
+                return new Contracts.Model.PagedResult<T>(result, pageCount);
             }, "GetAsyncDeleted");
         }
 

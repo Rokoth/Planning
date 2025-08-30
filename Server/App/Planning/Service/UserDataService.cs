@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace Planning.Service
 {
-    public class UserDataService : DataService<DB.Context.User, Contract.Model.User,
-        Contract.Model.UserFilter, Contract.Model.UserCreator, Contract.Model.UserUpdater>
+    public class UserDataService : DataService<DB.Context.User, Contracts.Model.User,
+        Contracts.Model.UserFilter, Contracts.Model.UserCreator, Contracts.Model.UserUpdater>
     {
         public UserDataService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
@@ -21,7 +21,7 @@ namespace Planning.Service
         /// <summary>
         /// function for enrichment data item
         /// </summary>
-        protected override async Task<Contract.Model.User> Enrich(Contract.Model.User entity, CancellationToken token)
+        protected override async Task<Contracts.Model.User> Enrich(Contracts.Model.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var formulaRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Formula>>();
@@ -46,9 +46,9 @@ namespace Planning.Service
         /// <summary>
         /// function for enrichment data item
         /// </summary>
-        protected override async Task<IEnumerable<Contract.Model.User>> Enrich(IEnumerable<Contract.Model.User> entities, CancellationToken token)
+        protected override async Task<IEnumerable<Contracts.Model.User>> Enrich(IEnumerable<Contracts.Model.User> entities, CancellationToken token)
         {
-            var result = new List<Contract.Model.User>();
+            var result = new List<Contracts.Model.User>();
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var formulaRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Formula>>();
             var userIds = entities.Select(s => s.Id).ToList();
@@ -79,13 +79,13 @@ namespace Planning.Service
             return result;
         }
 
-        protected override Expression<Func<DB.Context.User, bool>> GetFilter(Contract.Model.UserFilter filter)
+        protected override Expression<Func<DB.Context.User, bool>> GetFilter(Contracts.Model.UserFilter filter)
         {
             return s => filter.Name == null || s.Name.Contains(filter.Name);
         }
 
         protected override async Task ActionAfterAdd(DB.Repository.IRepository<DB.Context.User> repository,
-            Contract.Model.UserCreator creator, DB.Context.User entity, CancellationToken token)
+            Contracts.Model.UserCreator creator, DB.Context.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             await userSettingsRepo.AddAsync(new DB.Context.UserSettings() { 
@@ -103,7 +103,7 @@ namespace Planning.Service
         }
 
         protected override async Task ActionAfterUpdate(DB.Repository.IRepository<DB.Context.User> repository,
-            Contract.Model.UserUpdater updater, DB.Context.User entity, CancellationToken token)
+            Contracts.Model.UserUpdater updater, DB.Context.User entity, CancellationToken token)
         {
             var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
             var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
@@ -133,14 +133,14 @@ namespace Planning.Service
             await userSettingsRepo.DeleteAsync(userSettings, false, token);
         }
 
-        protected override DB.Context.User MapToEntityAdd(Contract.Model.UserCreator creator)
+        protected override DB.Context.User MapToEntityAdd(Contracts.Model.UserCreator creator)
         {
             var entity = base.MapToEntityAdd(creator);
             entity.Password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(creator.Password));
             return entity;
         }
 
-        protected override DB.Context.User UpdateFillFields(Contract.Model.UserUpdater entity, DB.Context.User entry)
+        protected override DB.Context.User UpdateFillFields(Contracts.Model.UserUpdater entity, DB.Context.User entry)
         {
             entry.Description = entity.Description;
             entry.Login = entity.Login;
