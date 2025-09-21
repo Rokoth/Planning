@@ -9,6 +9,7 @@
     @Html.ActionLink("Добавить", "Create", "Schedule", null, new { @class = "btn btn-dark" })    
     <button id="move_next_button" class="btn btn-dark">Переключиться на следующий проект</button>
     @Html.ActionLink("История", "History", "Schedule", null, new { @class = "btn btn-dark" })
+    <button id="end_schedule_button" class="btn btn-dark" title="Переключение на следующий элемент расписания">Завершить</button>
     <hr>
     Фильтры:
     <div id="filter">
@@ -127,6 +128,12 @@
                 $.post("Schedule/MoveNext/", {text:'text'}, function (data) {
                     refresh();
                 });                
+            });
+
+            $("#end_schedule_button").click(function () {
+                $.post("Schedule/EndSchedule/", {text:'text'}, function (data) {
+                    refresh();
+                });
             });
 
             $("#refresh_filter_button").click(function () {

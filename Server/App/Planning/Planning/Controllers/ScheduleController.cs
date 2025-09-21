@@ -213,6 +213,26 @@ namespace Planning.Controllers
 
         [HttpPost]
         [Authorize]
+        public async Task<IActionResult> EndSchedule()
+        {
+            return await Execute(async () => {
+                var userId = Guid.Parse(User.Identity.Name);
+                var selectService = _serviceProvider.GetRequiredService<IProjectSelectService>();
+                var userSettingsRepo = _serviceProvider.GetRequiredService<IRepository<DB.Context.UserSettings>>();
+                CancellationTokenSource source = new CancellationTokenSource(30000);
+                var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
+                {
+                    Selector = s => s.UserId == userId
+                }, source.Token)).Data.Single();
+
+                await selectService.MoveToNextSchedule(userId);
+                return Ok();
+            }, "ScheduleController", "EndSchedule");
+        }
+        
+
+        [HttpPost]
+        [Authorize]
         public async Task<IActionResult> GetCurrentNotify()
         {
             return await Execute(async () => {

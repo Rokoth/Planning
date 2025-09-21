@@ -1,3 +1,4 @@
+using Contracts.Model.Direction;
 using Contracts.Model.Project;
 using Contracts.Model.Schedule;
 using Contracts.Model.User;
@@ -6,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using Planning.Contract.Model;
 using Planning.Controllers;
+using Planning.DB.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using Project = Contracts.Model.Project.Project;
 
 namespace Planning.UnitTests
 {
@@ -173,6 +176,43 @@ namespace Planning.UnitTests
         }
 
         /// <summary>
+        /// ProjectController. Test for Get method (positive scenario)
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task ScheduleGetTest()
+        {
+            ScheduleApiController controller = new ScheduleApiController(_serviceProvider);
+            var formula = await AddFormula("default_formula_{0}");
+            var user = await AddUser(formula.Id);
+            var identity = await AuthAndAssert(user);
+            var direction = await AddDirection(user.Id);
+            var projects = await AddProjects("project{0}", user.Id, 10);
+            
+            var schedProject = projects.FirstOrDefault();
+            var schedules = await AddSchedule(schedProject.Id, user.Id);
+           
+            var claims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
+                                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                                        new Claim(ClaimTypes.Name, user.Id.ToString())
+                                   }, "TestAuthentication"));
+
+            controller.ControllerContext = new ControllerContext();
+            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = claims };
+
+            var res = await controller.Get("project_select", size: 10, page: 0);
+            Assert.True(res is OkObjectResult);
+            var result = res as OkObjectResult;
+            var actuals = JArray.FromObject(result.Value);
+            Assert.Equal(10, actuals.Count);
+            foreach (var assert in actuals)
+            {
+                var actual = assert.ToObject<Project>();
+                Assert.Contains("project_select", actual.Name);
+            }
+        }
+
+        /// <summary>
         /// ScheduleController. Test for Add method (positive scenario)
         /// </summary>
         /// <returns></returns>
@@ -307,6 +347,28 @@ namespace Planning.UnitTests
             return result;
         }
 
+        private async Task<DB.Context.Direction> AddDirection(Guid userId)
+        {
+            var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
+            var direction = CreateDirection(userId);
+            context.Set<DB.Context.Direction>().Add(direction);
+            await context.SaveChangesAsync();
+
+            return direction;
+        }
+
+        private async Task<DB.Context.Schedule> AddSchedule(Guid project, Guid directionId, Guid userId)
+        {
+            var beginDate = DateTimeOffset.Now;            
+            
+            var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
+            var schedule = CreateSchedule(project, directionId, userId, beginDate, true);
+            context.Set<DB.Context.Schedule>().Add(schedule);
+            await context.SaveChangesAsync();
+            
+            return schedule;
+        }
+
         private async Task<IEnumerable<DB.Context.Project>> AddProjects(string nameMask, Guid userId, int count)
         {
             List<DB.Context.Project> result = new List<DB.Context.Project>();
@@ -366,6 +428,41 @@ namespace Planning.UnitTests
                 IsDefault = true,
                 Text = "Min(SelectCount)",
                 VersionDate = DateTimeOffset.Now
+            };
+        }
+
+        private DB.Context.Schedule CreateSchedule(Guid projectId, Guid directionId, Guid userId, DateTimeOffset date, bool isRunning)
+        {
+            var project_id = Guid.NewGuid();
+            return new DB.Context.Schedule()
+            {                
+                Id = project_id,
+                IsDeleted = false,
+                AddTime = 0,               
+                UserId = userId,
+                VersionDate = DateTimeOffset.Now,
+                BeginDate = date,
+                DirectionId = directionId,
+                EndDate = date.AddHours(1),
+                IsClosed = false,
+                IsRunning = isRunning,
+                ProjectId = projectId                
+            };
+        }
+        private DB.Context.Direction CreateDirection(Guid userId, Guid categoryId)
+        {
+            var id = Guid.NewGuid();
+            return new DB.Context.Direction()
+            {
+                Id = id,
+                IsDeleted = false,               
+                UserId = userId,
+                VersionDate = DateTimeOffset.Now,
+                BeginDate = DateTime.Now,
+                Description = "test_direction",
+                DirectionCategoryId = categoryId,
+                Name = "test_direction",
+                Priority = 5000
             };
         }
 

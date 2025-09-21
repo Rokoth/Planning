@@ -21,5 +21,6 @@ namespace Contracts.Model.Schedule
         public string Project { get; set; }
         [Display(Name = "Установить дату начала")]
         public bool SetBeginDate { get; set; }
+        public Guid? DirectionId { get; set; }
     }
 }
