@@ -24,4 +24,40 @@ namespace Contracts.Model.Direction
         [Display(Name = "Дата начала направления")]
         public DateTime? BeginDate { get; set; }
     }
+
+    public class DirectionCategoryFilter : Filter<DirectionCategory>
+    {
+        public DirectionCategoryFilter(int size, int page, string sort, string name) : base(size, page, sort)
+        {
+            Name = name;
+        }
+        /// <summary>
+        /// User Name
+        /// </summary>
+        public string Name { get; }
+    }
+
+    public class DirectionFilter : Filter<Direction>
+    {
+        public DirectionFilter(int size, int page, string sort, string name) : base(size, page, sort)
+        {
+            Name = name;
+        }
+        /// <summary>
+        /// User Name
+        /// </summary>
+        public string Name { get; }
+    }
+
+    public class DirectionProjectFilter : Filter<DirectionProject>
+    {
+        public DirectionProjectFilter(int size, int page, string sort, string name) : base(size, page, sort)
+        {
+            Name = name;
+        }
+        /// <summary>
+        /// User Name
+        /// </summary>
+        public string Name { get; }
+    }
 }

@@ -3,6 +3,7 @@ using Contracts.Model.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Planning.Service;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,29 @@ using System.Threading.Tasks;
 namespace Planning.Controllers
 {
     public class ProjectController : CommonControllerBase
-    {        
-        public ProjectController(IServiceProvider serviceProvider):base(serviceProvider)
-        {            
+    {
+        private readonly IGetDataService<Project, ProjectFilter> _dataService;
+        private readonly IGetDataService<User, UserFilter> _userDataService;
+        private readonly IUpdateDataService<Project, ProjectUpdater> _updateDataService;
+        private readonly IGetDataService<ProjectHistory, ProjectHistoryFilter> _historyDataService;
+        private readonly IAddDataService<Project, ProjectCreator> _addDataService;
+        private readonly IDeleteDataService<Project> _deleteDataService;
+
+        public ProjectController(ILogger<ProjectController> logger,
+            IGetDataService<Project, ProjectFilter> dataService,
+            IGetDataService<User, UserFilter> userDataService,
+            IUpdateDataService<Project, ProjectUpdater> updateDataService,
+            IGetDataService<ProjectHistory, ProjectHistoryFilter> historyDataService,
+            IAddDataService<Project, ProjectCreator> addDataService,
+            IDeleteDataService<Project> deleteDataService
+            ) :base(logger)
+        {
+            _dataService = dataService;
+            _userDataService = userDataService;
+            _updateDataService = updateDataService;
+            _historyDataService = historyDataService;
+            _addDataService = addDataService;
+            _deleteDataService = deleteDataService;
         }
 
         // GET: UserController
@@ -24,7 +45,7 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+               
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, null, null), source.Token);               
@@ -37,7 +58,6 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);                            
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);                
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, parentId, null), source.Token);                
@@ -51,8 +71,6 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
-                var _userDataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, parentId, null), source.Token);
@@ -71,8 +89,7 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Details([FromRoute] Guid id)
         {
-            return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+            return await Execute(async () => {               
                 var cancellationTokenSource = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, cancellationTokenSource.Token);
                 return View(result);
@@ -86,8 +103,7 @@ namespace Planning.Controllers
             var userId = Guid.Parse(User.Identity.Name);
             bool result = false;
             if (!string.IsNullOrEmpty(name))
-            {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+            {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var check = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, name, null, null, null, parentId, null), source.Token);
                 result = !check.Data.Where(s=>s.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)).Any();
@@ -102,8 +118,7 @@ namespace Planning.Controllers
             var userId = Guid.Parse(User.Identity.Name);
             bool result = false;
             if (!string.IsNullOrEmpty(name))
-            {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+            {               
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var check = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, name, null, null, null, parentId, null), source.Token);
                 result = !check.Data.Where(s=> s.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && s.Id!=id).Any();
@@ -119,7 +134,6 @@ namespace Planning.Controllers
             bool result = false;
             if (!string.IsNullOrEmpty(path))
             {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var check = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null, null, null, parentId, path), source.Token);
                 result = !check.Data.Where(s => s.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase)).Any();
@@ -135,7 +149,6 @@ namespace Planning.Controllers
             bool result = false;
             if (!string.IsNullOrEmpty(path))
             {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var check = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null, null, null, parentId, path), source.Token);
                 result = !check.Data.Where(s => s.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase) && s.Id != id).Any();
@@ -148,9 +161,7 @@ namespace Planning.Controllers
         public async Task<IActionResult> ListSelect(bool canSelectAll = false)
         {
             return await Execute(async () => {
-                var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
-                var _userDataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
+                var userId = Guid.Parse(User.Identity.Name);                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, null, null), source.Token);
@@ -171,7 +182,6 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Project result = await _dataService.GetAsync(id, source.Token);
                 if(result.UserId!= userId) return RedirectToAction("Index", "Error", new { Message = "Проект привязан к другому пользователю" });
@@ -199,10 +209,9 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(Guid id, ProjectUpdater updater)
         {
-            return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<Project, ProjectUpdater>>();
+            return await Execute(async () => {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                Project result = await _dataService.UpdateAsync(updater, source.Token);
+                Project result = await _updateDataService.UpdateAsync(updater, source.Token);
                 return RedirectToAction("Details", new { id = result.Id });
             }, "ProjectController", "Edit");
         }
@@ -220,9 +229,8 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<ProjectHistory, ProjectHistoryFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new ProjectHistoryFilter(size, page, sort, name, null, null, id, userId), source.Token);
+                var result = await _historyDataService.GetAsync(new ProjectHistoryFilter(size, page, sort, name, null, null, id, userId), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
             }, "ProjectController", "HistoryListPaged");
@@ -240,7 +248,6 @@ namespace Planning.Controllers
                 };
                 if (parentId.HasValue)
                 {
-                    var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                     CancellationTokenSource source = new CancellationTokenSource(30000);
                     var parent = await _dataService.GetAsync(parentId.Value, source.Token);
                     project.ParentId = parentId;
@@ -259,10 +266,9 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 creator.IsLeaf = true;
-                creator.LastUsedDate = DateTimeOffset.Now;
-                var _dataService = _serviceProvider.GetRequiredService<IAddDataService<Project, ProjectCreator>>();
+                creator.LastUsedDate = DateTimeOffset.Now;                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                Project result = await _dataService.AddAsync(creator, source.Token);
+                Project result = await _addDataService.AddAsync(creator, source.Token);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
             }, "ProjectController", "Create");
         }
@@ -271,8 +277,7 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+            return await Execute(async () => {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, source.Token);
                 return View(result);
@@ -285,10 +290,9 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(Guid id, Project model)
         {
-            return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IDeleteDataService<Project>>();
+            return await Execute(async () => {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.DeleteAsync(id, source.Token);
+                var result = await _deleteDataService.DeleteAsync(id, source.Token);
                 return RedirectToAction(nameof(Index));
             }, "ProjectController", "Delete");
         }

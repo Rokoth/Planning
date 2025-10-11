@@ -1,4 +1,5 @@
 using Contracts.Model.Direction;
+using Contracts.Model.Formula;
 using Contracts.Model.Project;
 using Contracts.Model.Schedule;
 using Contracts.Model.User;
@@ -6,9 +7,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Planning.Controllers;
 using Planning.DB.Context;
+using Planning.DB.Repository;
+using Planning.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +33,12 @@ namespace Planning.UnitTests
     public class APITest : IClassFixture<CustomFixture>
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly CustomFixture _fixture;
 
         public APITest(CustomFixture fixture)
         {
             _serviceProvider = fixture.ServiceProvider;
+            _fixture = fixture;
         }
 
         /// <summary>
@@ -70,7 +76,7 @@ namespace Planning.UnitTests
             });
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;
-            var changed = JObject.FromObject(result.Value).ToObject<Formula>();
+            var changed = JObject.FromObject(result.Value).ToObject<Contracts.Model.Formula.Formula>();
             Assert.Equal(newName, changed.Name);
 
             var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
@@ -98,7 +104,7 @@ namespace Planning.UnitTests
             });
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;
-            var changed = JObject.FromObject(result.Value).ToObject<Formula>();
+            var changed = JObject.FromObject(result.Value).ToObject<Contracts.Model.Formula.Formula>();
             Assert.Equal(testName, changed.Name);
 
             var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
@@ -127,7 +133,7 @@ namespace Planning.UnitTests
             Assert.Equal(10, actuals.Count);
             foreach (var assert in actuals)
             {
-                var actual = assert.ToObject<Formula>();
+                var actual = assert.ToObject<Contracts.Model.Formula.Formula>();
                 Assert.Contains("formula_select", actual.Name);
             }           
         }
@@ -149,7 +155,7 @@ namespace Planning.UnitTests
             var res = await controller.GetItem(testFormula.Id);
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;
-            var actual = result.Value as Formula;
+            var actual = result.Value as Contracts.Model.Formula.Formula;
             Assert.Equal(testFormula.Id, actual.Id);
         }
 
@@ -178,19 +184,29 @@ namespace Planning.UnitTests
         /// <summary>
         /// ProjectController. Test for Get method (positive scenario)
         /// </summary>
-        /// <returns></returns>
-        [Fact]
+        /// IGetDataService<Schedule, ScheduleFilter> dataService,
+        //IProjectSelectService projectSelectService,
+        //DB.Repository.IRepository<DB.Context.UserSettings> userSettingsRepo,
+        //ILogger<ScheduleApiController> logger
+    /// <returns></returns>
+    [Fact]
         public async Task ScheduleGetTest()
         {
-            ScheduleApiController controller = new ScheduleApiController(_serviceProvider);
+            ScheduleApiController controller = new(
+                _serviceProvider.GetRequiredService<IGetDataService<Contracts.Model.Schedule.Schedule, ScheduleFilter>>(),
+                _serviceProvider.GetRequiredService<IProjectSelectService>(),
+                _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>> (),
+                _serviceProvider.GetRequiredService<ILogger<ScheduleApiController>>()
+                );
             var formula = await AddFormula("default_formula_{0}");
             var user = await AddUser(formula.Id);
             var identity = await AuthAndAssert(user);
-            var direction = await AddDirection(user.Id);
+            var category = await AddDirectionCategory(user.Id);
+            var direction = await AddDirection(user.Id, category.Id);
             var projects = await AddProjects("project{0}", user.Id, 10);
             
             var schedProject = projects.FirstOrDefault();
-            var schedules = await AddSchedule(schedProject.Id, user.Id);
+            var schedules = await AddSchedule(schedProject.Id, direction.Id, user.Id);
            
             var claims = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
                                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -225,7 +241,12 @@ namespace Planning.UnitTests
 
             var testProject = await AddProject("project_select_{0}", user.Id);
 
-            ScheduleApiController controller = new(_serviceProvider);
+            ScheduleApiController controller = new(
+                _serviceProvider.GetRequiredService<IGetDataService<Contracts.Model.Schedule.Schedule, ScheduleFilter>>(),
+                _serviceProvider.GetRequiredService<IProjectSelectService>(),
+                _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>(),
+                _serviceProvider.GetRequiredService<ILogger<ScheduleApiController>>()
+                );
 
             var claims = new ClaimsPrincipal(new ClaimsIdentity([
                                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -247,7 +268,7 @@ namespace Planning.UnitTests
 
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;
-            var actual = result.Value as Schedule;
+            var actual = result.Value as Contracts.Model.Schedule.Schedule;
             Assert.NotNull(actual);
 
             var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
@@ -296,7 +317,7 @@ namespace Planning.UnitTests
         private async Task<ClientIdentityResponse> AuthAndAssert(DB.Context.User user)
         {
             var clientController = new AuthController(_serviceProvider);
-            var result = await clientController.Auth(new Contract.Model.UserIdentity()
+            var result = await clientController.Auth(new UserIdentity()
             {
                 Login = user.Login,
                 Password = $"user_password_{user.Id}"
@@ -347,10 +368,20 @@ namespace Planning.UnitTests
             return result;
         }
 
-        private async Task<DB.Context.Direction> AddDirection(Guid userId)
+        private async Task<DB.Context.DirectionCategory> AddDirectionCategory(Guid userId)
         {
             var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
-            var direction = CreateDirection(userId);
+            var category = CreateDirectionCategory(userId);
+            context.Set<DB.Context.DirectionCategory>().Add(category);
+            await context.SaveChangesAsync();
+
+            return category;
+        }
+
+        private async Task<DB.Context.Direction> AddDirection(Guid userId, Guid categoryId)
+        {
+            var context = _serviceProvider.GetRequiredService<DB.Context.DbPgContext>();
+            var direction = CreateDirection(userId, categoryId);
             context.Set<DB.Context.Direction>().Add(direction);
             await context.SaveChangesAsync();
 
@@ -463,6 +494,21 @@ namespace Planning.UnitTests
                 DirectionCategoryId = categoryId,
                 Name = "test_direction",
                 Priority = 5000
+            };
+        }
+
+        private DB.Context.DirectionCategory CreateDirectionCategory(Guid userId)
+        {
+            var id = Guid.NewGuid();
+            return new DB.Context.DirectionCategory()
+            {
+                Id = id,
+                IsDeleted = false,
+                UserId = userId,
+                VersionDate = DateTimeOffset.Now,             
+                Description = "test_direction_category",              
+                Name = "test_direction_category",
+                Priority = 5000                
             };
         }
 

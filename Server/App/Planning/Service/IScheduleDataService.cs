@@ -10,4 +10,6 @@ namespace Planning.Service
     {
         Task<PagedResult<Schedule>> GetListAsync(ScheduleFilter filter, CancellationToken token);
     }
+
+    
 }
