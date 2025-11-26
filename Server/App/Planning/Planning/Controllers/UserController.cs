@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Planning.Contracts.Model;
 using Planning.Service;
 using System;
@@ -13,9 +14,27 @@ namespace Planning.Controllers
 {
     public class UserController : CommonControllerBase
     {
-        
-        public UserController(IServiceProvider serviceProvider) : base(serviceProvider)
+        private IGetDataService<User, UserFilter> _dataService;
+        private IUpdateDataService<User, UserUpdater> _updateDataService;
+        private IAddDataService<User, UserCreator> _addDataService;
+        private IGetDataService<UserHistory, UserHistoryFilter> _historyDataService;
+        private IDeleteDataService<User> _deleteDataService;
+        private IGetDataService<Formula, FormulaFilter> _formulaDataService;
+
+        public UserController(ILogger<UserController> logger,
+             IGetDataService<User, UserFilter> dataService,
+            IUpdateDataService<User, UserUpdater> updateDataService,
+            IAddDataService<User, UserCreator> addDataService,
+            IGetDataService<UserHistory, UserHistoryFilter> historyDataService,
+            IDeleteDataService<User> deleteDataService,
+            IGetDataService<Formula, FormulaFilter> formulaDataService) : base(logger)
         {
+            _dataService = dataService;
+            _updateDataService = updateDataService;
+            _addDataService = addDataService;
+            _historyDataService = historyDataService;
+            _deleteDataService = deleteDataService;
+            _formulaDataService = formulaDataService;
         }
 
         // GET: UserController
@@ -29,8 +48,7 @@ namespace Planning.Controllers
         public async Task<IActionResult> ListPaged(int page = 0, int size = 10, string sort = null, string name = null)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
-                CancellationTokenSource source = new CancellationTokenSource(30000);
+                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new UserFilter(size, page, sort, name), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
@@ -48,9 +66,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> HistoryListPaged(int page = 0, int size = 10, string sort = null, string name = null, Guid? id = null)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<UserHistory, UserHistoryFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new UserHistoryFilter(size, page, sort, name, id), source.Token);
+                var result = await _historyDataService.GetAsync(new UserHistoryFilter(size, page, sort, name, id), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
             }, "UserController", "HistoryListPaged");
@@ -61,7 +78,6 @@ namespace Planning.Controllers
         public async Task<IActionResult> Details(Guid id)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
                 var cancellationTokenSource = new CancellationTokenSource(30000);
                 User result = await _dataService.GetAsync(id, cancellationTokenSource.Token);
                 return View(result);
@@ -72,8 +88,7 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Create()
         {
-            return await ExecuteApi(async () => {
-                var _formulaDataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+            return await ExecuteApi(async () => {               
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var defaultFormula = (await _formulaDataService.GetAsync(new FormulaFilter(1, 0, null, null, true), source.Token)).Data.FirstOrDefault();
                 if (defaultFormula == null)
@@ -96,9 +111,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Create(UserCreator creator)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IAddDataService<User, UserCreator>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                User result = await _dataService.AddAsync(creator, source.Token);
+                User result = await _addDataService.AddAsync(creator, source.Token);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
             }, "UserController", "Create");
         }
@@ -107,8 +121,7 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(Guid id)
         {
-            return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
+            return await ExecuteApi(async () => {               
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 User result = await _dataService.GetAsync(id, source.Token);
                 var updater = new UserUpdater()
@@ -138,9 +151,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Edit(Guid id, UserUpdater updater)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<User, UserUpdater>>();
-                CancellationTokenSource source = new CancellationTokenSource(30000);
-                User result = await _dataService.UpdateAsync(updater, source.Token);
+                 CancellationTokenSource source = new CancellationTokenSource(30000);
+                User result = await _updateDataService.UpdateAsync(updater, source.Token);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
             }, "UserController", "Edit");
         }
@@ -149,8 +161,7 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<User, UserFilter>>();
+            return await ExecuteApi(async () => {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 User result = await _dataService.GetAsync(id, source.Token);
                 return View(result);
@@ -163,10 +174,9 @@ namespace Planning.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(Guid id, User model)
         {
-            return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IDeleteDataService<User>>();
+            return await ExecuteApi(async () => {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                User result = await _dataService.DeleteAsync(id, source.Token);
+                User result = await _deleteDataService.DeleteAsync(id, source.Token);
                 return RedirectToAction(nameof(Index));
             }, "UserController", "Delete");
         }

@@ -19,8 +19,15 @@ namespace Planning.Controllers
     [ApiController]
     public class ProjectApiController : CommonControllerBase
     {
-       
-        public ProjectApiController(IServiceProvider serviceProvider): base(serviceProvider)
+        private IGetDataService<Project, ProjectFilter> _dataService;
+        private IUpdateDataService<Project, ProjectUpdater> _updateDataService;
+        private IAddDataService<Project, ProjectCreator> _addDataService;
+        private IGetDataService<ProjectHistory, ProjectHistoryFilter> _historyDataService;
+        public ProjectApiController(ILogger<ProjectApiController> logger,
+            IGetDataService<Project, ProjectFilter> dataService,
+            IUpdateDataService<Project, ProjectUpdater> updateDataService,
+            IAddDataService<Project, ProjectCreator> addDataService,
+            IGetDataService<ProjectHistory, ProjectHistoryFilter> historyDataService) : base(logger)
         {
            
         }
@@ -32,8 +39,7 @@ namespace Planning.Controllers
         {
             return await ExecuteApi(async () => {
                 var cur = ClaimsPrincipal.Current;
-                var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
+                var userId = Guid.Parse(User.Identity.Name);               
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, size, page, sort, name, isLeaf,
                     lastUsedDateBegin, lastUsedDateEnd, parentId, path), source.Token);                
@@ -47,7 +53,6 @@ namespace Planning.Controllers
         public async Task<IActionResult> GetItem([FromRoute] Guid id)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, source.Token);
                 return Ok(result);

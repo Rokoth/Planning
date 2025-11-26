@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Planning.Contracts.Model;
 using System;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -126,7 +127,7 @@ namespace Planning.Service
     }
 
     public interface IUpdateDataService<Tdto, TUpdater> where Tdto : Contracts.Model.Entity
-    {
+    {       
         Task<Tdto> UpdateAsync(TUpdater entity, CancellationToken token);
     }
 
@@ -145,6 +146,8 @@ namespace Planning.Service
                 Contracts.Model.FormulaFilter, Contracts.Model.FormulaCreator, Contracts.Model.FormulaUpdater>();
             services.AddDataService<ProjectDataService, DB.Context.Project, Contracts.Model.Project,
                 Contracts.Model.ProjectFilter, Contracts.Model.ProjectCreator, Contracts.Model.ProjectUpdater>();
+            services.AddDataService<AdditionalTaskDataService, DB.Context.AdditionalTask, Contracts.Model.AdditionalTask,
+                Contracts.Model.AdditionalTaskFilter, Contracts.Model.AdditionalTaskCreator, Contracts.Model.AdditionalTaskUpdater>();
             services.AddDataService<ScheduleDataService, DB.Context.Schedule, Contracts.Model.Schedule,
                Contracts.Model.ScheduleFilter, Contracts.Model.ScheduleCreator, Contracts.Model.ScheduleUpdater>();
 
@@ -153,6 +156,8 @@ namespace Planning.Service
             services.AddScoped<IGetDataService<Contracts.Model.ProjectHistory, Contracts.Model.ProjectHistoryFilter>, ProjectHistoryDataService>();
             services.AddScoped<IGetDataService<Contracts.Model.ScheduleHistory, Contracts.Model.ScheduleHistoryFilter>, ScheduleHistoryDataService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IIntegrationService, IntegrationService>();
+            
 
             return services;
         }

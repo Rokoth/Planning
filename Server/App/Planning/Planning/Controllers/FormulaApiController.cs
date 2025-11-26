@@ -18,9 +18,22 @@ namespace Planning.Controllers
     [ApiController]
     public class FormulaApiController : CommonControllerBase
     {
-        public FormulaApiController(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
+        private IGetDataService<Formula, FormulaFilter> _dataService;
+        private IUpdateDataService<Formula, FormulaUpdater> _updateDataService;
+        private IAddDataService<Formula, FormulaCreator> _addDataService;
+        private IGetDataService<FormulaHistory, FormulaHistoryFilter> _historyDataService;
 
+        public FormulaApiController(ILogger<FormulaApiController> logger, 
+            IGetDataService<Formula, FormulaFilter> dataService,
+            IUpdateDataService<Formula, FormulaUpdater> updateDataService,
+            IAddDataService<Formula, FormulaCreator> addDataService,
+            IGetDataService<FormulaHistory, FormulaHistoryFilter> historyDataService
+            ) : base(logger)
+        {
+            _dataService = dataService;
+            _updateDataService = updateDataService;
+            _addDataService = addDataService;
+            _historyDataService = historyDataService;
         }
 
         [HttpGet]
@@ -28,9 +41,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Get(string name = null, int size = 10,
             int page = 0, string sort = null)
         {
-            return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
-                CancellationTokenSource source = new CancellationTokenSource(30000);
+            return await ExecuteApi(async () => {                
+                CancellationTokenSource source = new(30000);
                 var result = await _dataService.GetAsync(new FormulaFilter(size, page, sort, name, null), source.Token);
                 Response?.Headers?.Add("x-pages", result.PageCount.ToString());
                 return Ok(result.Data);
@@ -41,9 +53,8 @@ namespace Planning.Controllers
         [Authorize("Token")]
         public async Task<IActionResult> GetItem([FromRoute] Guid id)
         {
-            return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
-                CancellationTokenSource source = new CancellationTokenSource(30000);
+            return await ExecuteApi(async () => {               
+                CancellationTokenSource source = new(30000);
                 var result = await _dataService.GetAsync(id, source.Token);
                 return Ok(result);
             }, "FormulaApiController", "GetItem");
@@ -53,10 +64,9 @@ namespace Planning.Controllers
         [Authorize("Token")]
         public async Task<IActionResult> Update([FromBody] FormulaUpdater updater)
         {
-            return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<Formula, FormulaUpdater>>();
+            return await ExecuteApi(async () => {               
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.UpdateAsync(updater, source.Token);
+                var result = await _updateDataService.UpdateAsync(updater, source.Token);
                 return Ok(result);
             }, "FormulaApiController", "Update");
         }
@@ -65,10 +75,9 @@ namespace Planning.Controllers
         [Authorize("Token")]
         public async Task<IActionResult> Create([FromBody] FormulaCreator creator)
         {
-            return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IAddDataService<Formula, FormulaCreator>>();
+            return await ExecuteApi(async () => {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.AddAsync(creator, source.Token);
+                var result = await _addDataService.AddAsync(creator, source.Token);
                 return Ok(result);
             }, "FormulaApiController", "Create");
         }
@@ -79,9 +88,8 @@ namespace Planning.Controllers
             [FromQuery] string sort = null, [FromQuery] string name = null)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<FormulaHistory, FormulaHistoryFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new FormulaHistoryFilter(id, size, page, sort, name), source.Token);
+                var result = await _historyDataService.GetAsync(new FormulaHistoryFilter(id, size, page, sort, name), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return Ok(result.Data);
             }, "FormulaApiController", "GetHistory");

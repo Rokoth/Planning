@@ -17,10 +17,28 @@ namespace Planning.Controllers
     [Produces("application/json")]
     [ApiController]
     public class ScheduleApiController : CommonControllerBase
-    {       
-        public ScheduleApiController(IServiceProvider serviceProvider): base(serviceProvider)
+    {
+        private IGetDataService<Schedule, ScheduleFilter> _dataService;
+        private IUpdateDataService<Schedule, ScheduleUpdater> _updateDataService;
+        private IAddDataService<Schedule, ScheduleCreator> _addDataService;
+        private IGetDataService<ScheduleHistory, ScheduleHistoryFilter> _historyDataService;
+        private IProjectSelectService _projectSelectService;
+        private DB.Repository.IRepository<DB.Context.UserSettings> _userSettingsRepository;
+
+        public ScheduleApiController(ILogger<ScheduleApiController> logger,
+            IGetDataService<Schedule, ScheduleFilter> dataService,
+            IUpdateDataService<Schedule, ScheduleUpdater> updateDataService,
+            IAddDataService<Schedule, ScheduleCreator> addDataService,
+            IGetDataService<ScheduleHistory, ScheduleHistoryFilter> historyDataService,
+            IProjectSelectService projectSelectService,
+            DB.Repository.IRepository<DB.Context.UserSettings> userSettingsRepository) : base(logger)
         {
-           
+            _dataService = dataService;
+            _updateDataService = updateDataService;
+            _addDataService = addDataService;
+            _historyDataService = historyDataService;
+            _projectSelectService = projectSelectService;
+            _userSettingsRepository = userSettingsRepository;
         }
 
         [HttpGet]
@@ -30,7 +48,6 @@ namespace Planning.Controllers
         {
             return await ExecuteApi(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new ScheduleFilter(size, page, sort, name, null, userId), source.Token);                
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
@@ -43,8 +60,7 @@ namespace Planning.Controllers
         public async Task<IActionResult> GetItem([FromRoute]Guid id)
         {
             return await ExecuteApi(async () => {
-                var userId = Guid.Parse(User.Identity.Name);
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>();
+                var userId = Guid.Parse(User.Identity.Name);                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, source.Token);
                 if (result.UserId != userId) return BadRequest("Found schedule of another user");
@@ -57,16 +73,14 @@ namespace Planning.Controllers
         public async Task<IActionResult> Create([FromBody]ScheduleCreator creator)
         {
             return await ExecuteApi(async () => {
-                var userId = Guid.Parse(User.Identity.Name);
-                var selectService = _serviceProvider.GetRequiredService<IProjectSelectService>();
-                var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>();
+                var userId = Guid.Parse(User.Identity.Name);               
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var userSettings = (await userSettingsRepo.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
+                var userSettings = (await _userSettingsRepository.GetAsync(new DB.Context.Filter<DB.Context.UserSettings>()
                 {
                     Selector = s => s.UserId == userId
                 }, source.Token)).Data.Single();
 
-                var result = await selectService.AddProjectToSchedule(userId, userSettings, creator.ProjectId, creator.BeginDate, creator.SetBeginDate);
+                var result = await _projectSelectService.AddProjectToSchedule(userId, userSettings, creator.ProjectId, creator.BeginDate, creator.SetBeginDate);
                 return Ok(result);
             }, "ScheduleApiController", "Create");
         }

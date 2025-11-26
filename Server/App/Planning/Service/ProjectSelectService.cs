@@ -44,8 +44,9 @@ namespace Planning.Service
                 var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Schedule>>();
                 var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
                 var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<UserSettings>>();
-                              
-
+                var _additionalTaskRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.AdditionalTask>>();
+                var _integrationService = _serviceProvider.GetRequiredService<IIntegrationService>();
+                
                 await ShiftSchedule(userId, settings, now, true, true);                
 
                 var currentSchedules = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
@@ -89,6 +90,22 @@ namespace Planning.Service
                         }
                         currentProject.LastUsedDate = now;
                         await _projectRepo.UpdateAsync(currentProject, false, cancellationTokenSource.Token);
+
+                        var additionalTasks = await _additionalTaskRepo.GetAsync(new Filter<AdditionalTask>()
+                        {
+                            Selector = s => s.ProjectId == currentProject.Id
+                        }, cancellationTokenSource.Token);
+
+                        foreach(var task in additionalTasks.Data)
+                        {
+                            if(task.ConditionId == AdditionalTaskCondition.OnPostpone || task.ConditionId == AdditionalTaskCondition.OnClose)
+                            {
+                                if(task.TypeId == AdditionalTaskType.BuhgalteryReserveAdd && task.TaskData != null)
+                                {
+                                    bool result = await _integrationService.BuhgalteryAddReserve(task.TaskData, cancellationTokenSource.Token);
+                                }
+                            }
+                        }
                     }
                     await _scheduleRepo.UpdateAsync(runningSchedule, false, cancellationTokenSource.Token);
                     nextSchedule = currentSchedules
@@ -98,6 +115,23 @@ namespace Planning.Service
                 
                 if (nextSchedule == null) nextSchedule = await AddProjectToScheduleInternal(userId, userSettings, isLocked: true);
                 nextSchedule.IsRunning = true;
+
+                var newAdditionalTasks = await _additionalTaskRepo.GetAsync(new Filter<AdditionalTask>()
+                {
+                    Selector = s => s.ProjectId == nextSchedule.ProjectId
+                }, cancellationTokenSource.Token);
+
+                foreach (var task in newAdditionalTasks.Data)
+                {
+                    if (task.ConditionId == AdditionalTaskCondition.OnAdd)
+                    {
+                        if (task.TypeId == AdditionalTaskType.BuhgalteryReserveAdd && task.TaskData != null)
+                        {
+                            bool result = await _integrationService.BuhgalteryAddReserve(task.TaskData, cancellationTokenSource.Token);
+                        }
+                    }
+                }
+
                 await _scheduleRepo.UpdateAsync(nextSchedule, false, cancellationTokenSource.Token);
                 await _projectRepo.SaveChangesAsync();
             }

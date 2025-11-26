@@ -17,7 +17,7 @@ namespace Planning.Controllers
 {
     public class HomeController :  CommonControllerBase
     {
-        public HomeController(IServiceProvider serviceProvider) : base(serviceProvider)
+        public HomeController(ILogger<FormulaController> logger) : base(logger)
         {            
         }
 
@@ -46,17 +46,6 @@ namespace Planning.Controllers
         public IActionResult SendReport()
         {
             return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> SendReport(ErrorNotifyMessage errMessage)
-        {
-            return await Execute(async () => {
-                await errorNotifyService.Send(errMessage.Message, errMessage.MessageLevel, errMessage.Title);               
-                return RedirectToAction(nameof(Index));
-            }, "ProjectController", "Create");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

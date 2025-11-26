@@ -63,9 +63,34 @@
         <dd class="col-sm-10">
             @Html.DisplayNameFor(model => model.Priority)
         </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayFor(model => model.Priority)
+        </dt>        
     </dl>
+    <div class="col-sm-4">
+        @Html.DisplayNameFor(model => model.AdditionalTasks)
+    </div>
+    <div class="col-sm-4">
+        @Html.ActionLink("Добавить допзадачу", "Create", new { }, new { @class = "btn btn-dark" })
+    </div>
+    <div class="col-sm-4">
+        @foreach (var item in Model.AdditionalTasks)
+        {
+            <div>
+                <div style="margin-top:4px;padding:0px;">
+                    @Html.HiddenFor(m => item.Id)
+                    @Html.LabelFor(m => item.Name) : @Html.DisplayFor(m => item.Name)
+                    @Html.LabelFor(m => item.TaskData) : @Html.DisplayFor(m => item.TaskData)
+                    @Html.LabelFor(m => item.TypeId) : @Html.DisplayFor(m => item.TypeId)
+                    @Html.LabelFor(m => item.ConditionId) : @Html.DisplayFor(m => item.ConditionId)
+                    @Html.ActionLink("Редактировать", "Edit", new { id = item.Id }, new { @class = "btn btn-dark" })
+                    @Html.ActionLink("Удалить", "Delete", new { id = item.Id }, new { @class = "btn btn-dark" })
+                </div>
+                <div id="child_@item.Id" style="margin-left:20px"></div>
+            </div>
+        }
+    </div>
 </div>
-<div>
-    @Html.DisplayFor(model => model.Priority) 
+<div>   
     <a asp-action="Index" class = "btn btn-dark">Вернуться</a>
 </div>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Planning.Contracts.Model;
 using Planning.Service;
 using System;
@@ -14,9 +15,21 @@ namespace Planning.Controllers
     [ApiController]
     public class UserSettingsApiController : CommonControllerBase
     {
-        public UserSettingsApiController(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
+        private IGetDataService<UserSettings, UserSettingsFilter> _dataService;
+        private IUpdateDataService<UserSettings, UserSettingsUpdater> _updateDataService;
+        private IAddDataService<UserSettings, UserSettingsCreator> _addDataService;
+        private IDeleteDataService<UserSettings> _deleteDataService;
 
+        public UserSettingsApiController(ILogger<UserSettingsApiController> logger,
+             IGetDataService<UserSettings, UserSettingsFilter> dataService,
+            IUpdateDataService<UserSettings, UserSettingsUpdater> updateDataService,
+            IAddDataService<UserSettings, UserSettingsCreator> addDataService,            
+            IDeleteDataService<UserSettings> deleteDataService) : base(logger)
+        {
+            _dataService = dataService;
+            _updateDataService = updateDataService;
+            _addDataService = addDataService;           
+            _deleteDataService = deleteDataService;
         }
 
         [HttpGet]
@@ -25,7 +38,6 @@ namespace Planning.Controllers
             int page = 0, string sort = null)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<UserSettings, UserSettingsFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new UserSettingsFilter(size, page, sort, id), source.Token);
                 Response?.Headers?.Add("x-pages", result.PageCount.ToString());
@@ -38,7 +50,6 @@ namespace Planning.Controllers
         public async Task<IActionResult> GetItem([FromRoute] Guid id)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<UserSettings, UserSettingsFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, source.Token);
                 return Ok(result);
@@ -50,9 +61,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Update([FromBody] UserSettingsUpdater updater)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<UserSettings, UserSettingsUpdater>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.UpdateAsync(updater, source.Token);
+                var result = await _updateDataService.UpdateAsync(updater, source.Token);
                 return Ok(result);
             }, "UserSettingsApiController", "Update");
         }
@@ -62,9 +72,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Create([FromBody] UserSettingsCreator creator)
         {
             return await ExecuteApi(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IAddDataService<UserSettings, UserSettingsCreator>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.AddAsync(creator, source.Token);
+                var result = await _addDataService.AddAsync(creator, source.Token);
                 return Ok(result);
             }, "UserSettingsApiController", "Create");
         }

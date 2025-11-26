@@ -1,10 +1,14 @@
+using Castle.Core.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Planning.Contracts.Model;
 using Planning.Controllers;
+using Planning.DB.Repository;
+using Planning.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,7 +59,13 @@ namespace Planning.UnitTests
 
             var testFormula = await AddFormula("formula_{0}");
             var newName = testFormula.Name + "_changed";
-            FormulaApiController controller = new FormulaApiController(_serviceProvider);            
+            FormulaApiController controller = new FormulaApiController(
+                _serviceProvider.GetRequiredService<ILogger<FormulaApiController>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>(),
+                _serviceProvider.GetRequiredService<IUpdateDataService<Formula, FormulaUpdater>>(),
+                _serviceProvider.GetRequiredService<IAddDataService<Formula, FormulaCreator>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<FormulaHistory, FormulaHistoryFilter>>()
+                );            
             var res = await controller.Update(new FormulaUpdater()
             { 
                Id = testFormula.Id,
@@ -84,7 +94,11 @@ namespace Planning.UnitTests
             var identity = await AuthAndAssert(user);
 
             var testName = $"formula_{Guid.NewGuid()}";
-            FormulaApiController controller = new FormulaApiController(_serviceProvider);
+            FormulaApiController controller = new FormulaApiController(_serviceProvider.GetRequiredService<ILogger<FormulaApiController>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>(),
+                _serviceProvider.GetRequiredService<IUpdateDataService<Formula, FormulaUpdater>>(),
+                _serviceProvider.GetRequiredService<IAddDataService<Formula, FormulaCreator>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<FormulaHistory, FormulaHistoryFilter>>());
             var res = await controller.Create(new FormulaCreator()
             {               
                 Name = testName,
@@ -113,7 +127,11 @@ namespace Planning.UnitTests
 
             await AddFormulas("formula_select_{0}", 10);
             await AddFormulas("formula_not_select_{0}", 10);
-            FormulaApiController controller = new FormulaApiController(_serviceProvider);
+            FormulaApiController controller = new FormulaApiController(_serviceProvider.GetRequiredService<ILogger<FormulaApiController>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>(),
+                _serviceProvider.GetRequiredService<IUpdateDataService<Formula, FormulaUpdater>>(),
+                _serviceProvider.GetRequiredService<IAddDataService<Formula, FormulaCreator>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<FormulaHistory, FormulaHistoryFilter>>());
             var res = await controller.Get("formula_select", 10, 0, null);
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;
@@ -139,7 +157,11 @@ namespace Planning.UnitTests
 
             var testFormula = await AddFormula("formula_select_{0}");
             
-            FormulaApiController controller = new FormulaApiController(_serviceProvider);
+            FormulaApiController controller = new FormulaApiController(_serviceProvider.GetRequiredService<ILogger<FormulaApiController>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>(),
+                _serviceProvider.GetRequiredService<IUpdateDataService<Formula, FormulaUpdater>>(),
+                _serviceProvider.GetRequiredService<IAddDataService<Formula, FormulaCreator>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<FormulaHistory, FormulaHistoryFilter>>());
             var res = await controller.GetItem(testFormula.Id);
             Assert.True(res is OkObjectResult);
             var result = res as OkObjectResult;
@@ -160,7 +182,11 @@ namespace Planning.UnitTests
 
             var testProject = await AddProject("project_select_{0}", user.Id);
 
-            ProjectApiController controller = new(_serviceProvider);
+            ProjectApiController controller = new(_serviceProvider.GetRequiredService<ILogger<ProjectApiController>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>(),
+                _serviceProvider.GetRequiredService<IUpdateDataService<Project, ProjectUpdater>>(),
+                _serviceProvider.GetRequiredService<IAddDataService<Project, ProjectCreator>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<ProjectHistory, ProjectHistoryFilter>>());
             var res = await controller.GetItem(testProject.Id);
 
             Assert.True(res is OkObjectResult);
@@ -181,8 +207,14 @@ namespace Planning.UnitTests
             var identity = await AuthAndAssert(user);
 
             var testProject = await AddProject("project_select_{0}", user.Id);
-
-            ScheduleApiController controller = new(_serviceProvider);
+          
+            ScheduleApiController controller = new(_serviceProvider.GetRequiredService<ILogger<ScheduleApiController>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<Schedule, ScheduleFilter>>(),
+                _serviceProvider.GetRequiredService<IUpdateDataService<Schedule, ScheduleUpdater>>(),
+                _serviceProvider.GetRequiredService<IAddDataService<Schedule, ScheduleCreator>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<ScheduleHistory, ScheduleHistoryFilter>>(),
+                _serviceProvider.GetRequiredService<IProjectSelectService>(),
+                _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.UserSettings>>());
 
             var claims = new ClaimsPrincipal(new ClaimsIdentity([
                                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -222,7 +254,11 @@ namespace Planning.UnitTests
 
 
 
-            ProjectApiController controller = new ProjectApiController(_serviceProvider);
+            ProjectApiController controller = new ProjectApiController(_serviceProvider.GetRequiredService<ILogger<ProjectApiController>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<Project, ProjectFilter>>(),
+                _serviceProvider.GetRequiredService<IUpdateDataService<Project, ProjectUpdater>>(),
+                _serviceProvider.GetRequiredService<IAddDataService<Project, ProjectCreator>>(),
+                _serviceProvider.GetRequiredService<IGetDataService<ProjectHistory, ProjectHistoryFilter>>());
             var formula = await AddFormula("default_formula_{0}");
             var user = await AddUser(formula.Id);
             var identity = await AuthAndAssert(user);
@@ -252,7 +288,8 @@ namespace Planning.UnitTests
 
         private async Task<ClientIdentityResponse> AuthAndAssert(DB.Context.User user)
         {
-            var clientController = new AuthController(_serviceProvider);
+            var clientController = new AuthController(_serviceProvider.GetRequiredService<ILogger<AuthController>>(),
+                _serviceProvider.GetRequiredService<IAuthService>());
             var result = await clientController.Auth(new Contracts.Model.UserIdentity()
             {
                 Login = user.Login,

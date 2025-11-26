@@ -20,12 +20,15 @@ namespace Planning.Controllers
     [Produces("application/json")]
     public class CommonController : CommonControllerBase
     {
+        private IDeployService _deployService;
+
         /// <summary>
         /// ctor
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public CommonController(IServiceProvider serviceProvider): base(serviceProvider)
-        {            
+        public CommonController(ILogger<CommonController> logger, IDeployService deployService) : base(logger)
+        {
+            _deployService = deployService;
         }
 
         /// <summary>
@@ -47,32 +50,10 @@ namespace Planning.Controllers
         public async Task<IActionResult> Deploy()
         {
             return await ExecuteApi(async () =>
-            {
-                var deployService = _serviceProvider.GetRequiredService<IDeployService>();
-                await deployService.Deploy();
+            {               
+                await _deployService.Deploy();
                 return Ok();
             }, "CommonController", "Deploy");
-        }
-
-        /// <summary>
-        /// Отправить сообщение об ошибке или оставить отзыв (сервис TaskCollector)
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        [Authorize]
-        [HttpPost("send_error")]        
-        public async Task<IActionResult> SendErrorMessage([FromBody] ErrorNotifyMessage message)
-        {
-            try
-            {
-                await errorNotifyService.Send(message.Message, message.MessageLevel, message.Title);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error at SendErrorMessage: {ex.Message} {ex.StackTrace}");
-                return InternalServerError(ex.Message);
-            }
         }
     }
 }

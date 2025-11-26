@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Planning.Contracts.Model;
 using Planning.Service;
+using Microsoft.Extensions.Logging;
 
 namespace Planning.Controllers
 {
@@ -33,7 +34,7 @@ namespace Planning.Controllers
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="authService"></param>
-        public AccountController(IServiceProvider serviceProvider, IAuthService authService) : base(serviceProvider)
+        public AccountController(ILogger<AccountController> logger, IAuthService authService) : base(logger)
         {
             _authService = authService;
         }

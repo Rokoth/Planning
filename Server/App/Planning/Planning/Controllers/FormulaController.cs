@@ -13,10 +13,25 @@ using System.Threading.Tasks;
 namespace Planning.Controllers
 {
     public class FormulaController : CommonControllerBase
-    {       
-        public FormulaController(IServiceProvider serviceProvider): base(serviceProvider)
+    {
+        private IGetDataService<Formula, FormulaFilter> _dataService;
+        private IUpdateDataService<Formula, FormulaUpdater> _updateDataService;
+        private IAddDataService<Formula, FormulaCreator> _addDataService;
+        private IGetDataService<FormulaHistory, FormulaHistoryFilter> _historyDataService;
+        private IDeleteDataService<Formula> _deleteDataService;
+
+        public FormulaController(ILogger<FormulaController> logger,
+             IGetDataService<Formula, FormulaFilter> dataService,
+            IUpdateDataService<Formula, FormulaUpdater> updateDataService,
+            IAddDataService<Formula, FormulaCreator> addDataService,
+            IGetDataService<FormulaHistory, FormulaHistoryFilter> historyDataService,
+            IDeleteDataService<Formula> deleteDataService) : base(logger)
         {
-           
+            _dataService = dataService;
+            _updateDataService = updateDataService;
+            _addDataService = addDataService;
+            _historyDataService = historyDataService;
+            _deleteDataService = deleteDataService;
         }
 
         // GET: UserController
@@ -31,8 +46,7 @@ namespace Planning.Controllers
         public async Task<IActionResult> ListPaged([FromQuery]int page = 0, [FromQuery]int size = 10,
             [FromQuery]string sort = null, [FromQuery]string name = null)
         {
-            return await Execute(async ()=> {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+            return await Execute(async ()=> {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new FormulaFilter(size, page, sort, name, null), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
@@ -45,8 +59,7 @@ namespace Planning.Controllers
         {
             bool result = false;
             if (!string.IsNullOrEmpty(name))
-            {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
+            {                
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var check = await _dataService.GetAsync(new FormulaFilter(10, 0, null, name, null), source.Token);
                 result = !check.Data.Any();
@@ -60,7 +73,6 @@ namespace Planning.Controllers
             bool result = false;
             if (!string.IsNullOrEmpty(name))
             {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var check = await _dataService.GetAsync(new FormulaFilter(10, 0, null, name, null), source.Token);
                 result = !check.Data.Where(s=>s.Id!=id).Any();
@@ -80,7 +92,6 @@ namespace Planning.Controllers
             [FromQuery] string sort = null, [FromQuery] string name = null)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(new FormulaFilter(size, page, sort, name, null), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
@@ -93,7 +104,6 @@ namespace Planning.Controllers
         public async Task<IActionResult> Edit(Guid id)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Formula result = await _dataService.GetAsync(id, source.Token);
                 var updater = new FormulaUpdater()
@@ -114,9 +124,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Edit(Guid id, FormulaUpdater updater)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IUpdateDataService<Formula, FormulaUpdater>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                Formula result = await _dataService.UpdateAsync(updater, source.Token);
+                Formula result = await _updateDataService.UpdateAsync(updater, source.Token);
                 return RedirectToAction("Details", new { id = result.Id });
             }, "FormulaController", "ListSelectPaged");
         }
@@ -133,9 +142,8 @@ namespace Planning.Controllers
             [FromQuery] string sort = null, [FromQuery] string name = null)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<FormulaHistory, FormulaHistoryFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                var result = await _dataService.GetAsync(new FormulaHistoryFilter(id, size, page, sort, name), source.Token);
+                var result = await _historyDataService.GetAsync(new FormulaHistoryFilter(id, size, page, sort, name), source.Token);
                 Response.Headers.Add("x-pages", result.PageCount.ToString());
                 return PartialView(result.Data);
             }, "FormulaController", "HistoryListPaged");
@@ -146,7 +154,6 @@ namespace Planning.Controllers
         public async Task<IActionResult> Details([FromRoute] Guid id)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
                 var cancellationTokenSource = new CancellationTokenSource(30000);
                 var result = await _dataService.GetAsync(id, cancellationTokenSource.Token);
                 return View(result);
@@ -169,9 +176,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Create(FormulaCreator creator)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IAddDataService<Formula, FormulaCreator>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);                
-                Formula result = await _dataService.AddAsync(creator, source.Token);
+                Formula result = await _addDataService.AddAsync(creator, source.Token);
                 return RedirectToAction(nameof(Details), new { id = result.Id });
             }, "FormulaController", "Create");
         }
@@ -181,7 +187,6 @@ namespace Planning.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IGetDataService<Formula, FormulaFilter>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
                 Formula result = await _dataService.GetAsync(id, source.Token);
                 return View(result);
@@ -195,9 +200,8 @@ namespace Planning.Controllers
         public async Task<IActionResult> Delete(Guid id, Formula model)
         {
             return await Execute(async () => {
-                var _dataService = _serviceProvider.GetRequiredService<IDeleteDataService<Formula>>();
                 CancellationTokenSource source = new CancellationTokenSource(30000);
-                Formula result = await _dataService.DeleteAsync(id, source.Token);
+                Formula result = await _deleteDataService.DeleteAsync(id, source.Token);
                 return RedirectToAction(nameof(Index));
             }, "FormulaController", "Delete");
         }

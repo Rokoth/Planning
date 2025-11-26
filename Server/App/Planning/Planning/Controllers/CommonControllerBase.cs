@@ -10,8 +10,6 @@ namespace Planning.Controllers
     public abstract class CommonControllerBase : Controller
     {
         protected ILogger _logger;
-        protected readonly IErrorNotifyService errorNotifyService;
-        protected IServiceProvider _serviceProvider;
 
         protected const int CancellationTokenSourceDelay = 30000;
         protected const string IndexMethodName = "Index";
@@ -19,11 +17,9 @@ namespace Planning.Controllers
         protected const string HomeControllerName = "Home";
 
 
-        public CommonControllerBase(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-            _logger = serviceProvider.GetRequiredService<ILogger<CommonControllerBase>>();
-            errorNotifyService = serviceProvider.GetRequiredService<IErrorNotifyService>();
+        public CommonControllerBase(ILogger<CommonControllerBase> logger)
+        {            
+            _logger = logger;           
         }
 
         protected async Task<IActionResult> Execute(Func<Task<IActionResult>> action, string controller, string method)
@@ -34,8 +30,7 @@ namespace Planning.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error at {controller}::{method}: {ex.Message} {ex.StackTrace}");
-                await errorNotifyService.Send($"Error at {controller}::{method}: {ex.Message} {ex.StackTrace}");
+                _logger.LogError($"Error at {controller}::{method}: {ex.Message} {ex.StackTrace}");               
                 return RedirectToAction("Index", "Error", new { Message = $"Error at {controller}::{method}: {ex.Message}" });                
             }
         }
@@ -49,7 +44,6 @@ namespace Planning.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Error at {controller}::{method}: {ex.Message} {ex.StackTrace}");
-                await errorNotifyService.Send($"Error at {controller}::{method}: {ex.Message} {ex.StackTrace}");
                 return InternalServerError($"Error at {controller}::{method}: {ex.Message}");
             }
         }

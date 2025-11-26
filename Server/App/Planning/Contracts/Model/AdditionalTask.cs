@@ -31,4 +31,52 @@ namespace Planning.Contracts.Model
         [Display(Name = "ИД проекта")]
         public Guid ProjectId { get; set; }
     }
+
+    public class AdditionalTaskCreator
+    {
+        [Display(Name = "Наименование дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        public string Name { get; set; }
+
+        [Display(Name = "Тип дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        [EnumDataType(typeof(AdditionalTaskType))]
+        public AdditionalTaskType TypeId { get; set; }
+
+        [Display(Name = "Тип сработки дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        [EnumDataType(typeof(AdditionalTaskCondition))]
+        public AdditionalTaskCondition ConditionId { get; set; }
+
+        [Display(Name = "Дополнительные данные")]
+        public string TaskData { get; set; }
+
+        [Display(Name = "ИД проекта")]
+        public Guid ProjectId { get; set; }
+    }
+
+    public class AdditionalTaskUpdater: IEntity
+    {
+        [Display(Name = "ИД")]
+        public Guid Id { get; set; }
+        [Display(Name = "Наименование дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        public string Name { get; set; }
+
+        [Display(Name = "Тип дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        [EnumDataType(typeof(AdditionalTaskType))]
+        public AdditionalTaskType TypeId { get; set; }
+
+        [Display(Name = "Тип сработки дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        [EnumDataType(typeof(AdditionalTaskCondition))]
+        public AdditionalTaskCondition ConditionId { get; set; }
+
+        [Display(Name = "Дополнительные данные")]
+        public string TaskData { get; set; }
+
+        [Display(Name = "ИД проекта")]
+        public Guid ProjectId { get; set; }
+    }
 }
