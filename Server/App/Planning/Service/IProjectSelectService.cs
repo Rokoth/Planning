@@ -11,9 +11,7 @@ namespace Planning.Service
         Task<Schedule> MoveToNextSchedule(Guid userId, 
             Guid? projectId = null, 
             Guid? directionIdId = null, 
-            DateTimeOffset? beginDate = null, 
-            bool setBeginDate = false, 
-            bool isLocked = false);
+            DateTimeOffset? beginDate = null);
 
         Task<IEnumerable<Schedule>> GetNextShedules(
             Guid userId,

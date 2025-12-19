@@ -59,8 +59,7 @@ namespace Planning.Service
             _directionProjectRepo = directionProjectRepo;
         }
 
-        public async Task<Contracts.Model.Schedule.Schedule> MoveToNextSchedule(Guid userId, Guid? projectId = null, Guid? directionId = null,
-            DateTimeOffset? beginDate = null, bool setBeginDate = false, bool isLocked = false)
+        public async Task<Contracts.Model.Schedule.Schedule> MoveToNextSchedule(Guid userId, Guid? projectId = null, Guid? directionId = null, DateTimeOffset? beginDate = null)
         {
             try
             {
@@ -124,24 +123,25 @@ namespace Planning.Service
                     }
                 }
 
-                var nextSchedule = await GetNextProjectSchedule(userId, allDirections, allProjects, projectId, directionId);
+                var nextSchedule = await GetNextShedule(allDirections, allProjects, projectId, directionId, now);
                 nextSchedule.IsRunning = true;
-                await _scheduleRepo.UpdateAsync(nextSchedule, false, token);
-                await _projectRepo.SaveChangesAsync();
+                await _scheduleRepo.AddAsync(new DB.Context.Schedule()
+                {
+                    BeginDate = nextSchedule.BeginDate,
+                    DirectionId = nextSchedule.DirectionId,
+                    EndDate = nextSchedule.EndDate,
+                    Id = nextSchedule.Id,
+                    IsClosed = false,
+                    IsDeleted = false,
+                    IsRunning = true,
+                    ProjectId = nextSchedule.ProjectId,
+                    UserId = userId,
+                    VersionDate = DateTimeOffset.Now
+                }, false, token);
+                await _scheduleRepo.SaveChangesAsync();
 
                 var project = await _projectRepo.GetAsync(nextSchedule.ProjectId, token);
-                return new Contracts.Model.Schedule.Schedule()
-                {
-                    Id = nextSchedule.Id,
-                    VersionDate = nextSchedule.VersionDate,
-                    UserId = nextSchedule.UserId,
-                    BeginDate = nextSchedule.BeginDate,
-                    EndDate = nextSchedule.EndDate,
-                    IsRunning = nextSchedule.IsRunning,
-                    Project = project.Name,
-                    ProjectId = nextSchedule.ProjectId,
-                    ProjectPath = project.Name
-                };
+                return nextSchedule;
             }
             catch (Exception ex)
             {
@@ -152,38 +152,6 @@ namespace Planning.Service
             finally
             {
                 UnlockUserId(userId);
-            }
-        }
-
-        private static void UnlockUserId(Guid userId)
-        {
-            lock (_lockObjects[userId])
-            {
-                _editEnables[userId] = true;
-            }
-        }
-
-        private static async Task LockUserId(Guid userId)
-        {
-            if (!_lockObjects.ContainsKey(userId))
-            {
-                lock (_lockObject)
-                {
-                    _lockObjects.Add(userId, new object());
-                    _editEnables.Add(userId, true);
-                }
-            }
-            while (true)
-            {
-                lock (_lockObjects[userId])
-                {
-                    if (_editEnables[userId])
-                    {
-                        _editEnables[userId] = false;
-                        break;
-                    }
-                }
-                await Task.Delay(10);
             }
         }
 
@@ -210,12 +178,12 @@ namespace Planning.Service
             {
                 var next = await GetNextShedule(directions, projects, null, null, intBeginDate);
                 intBeginDate = next.EndDate;
-                result.Add();
+                result.Add(next);
             }
             return result;
         }
 
-        private async Task<Contracts.Model.Schedule.Schedule> GetNextShedule(
+        private async Task<Contracts.Model.Schedule.Schedule> GetNextShedule(            
             IEnumerable<Direction> directions,
             IEnumerable<DB.Context.Project> projects,
             Guid? projectId,
@@ -223,6 +191,15 @@ namespace Planning.Service
             DateTimeOffset beginDate)
         {
             //todo
+            try
+            {
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         private async Task<DB.Context.Schedule> GetNextProjectSchedule(Guid userId, 
@@ -386,7 +363,39 @@ namespace Planning.Service
             }            
         }
 
-        
+        private static void UnlockUserId(Guid userId)
+        {
+            lock (_lockObjects[userId])
+            {
+                _editEnables[userId] = true;
+            }
+        }
+
+        private static async Task LockUserId(Guid userId)
+        {
+            if (!_lockObjects.ContainsKey(userId))
+            {
+                lock (_lockObject)
+                {
+                    _lockObjects.Add(userId, new object());
+                    _editEnables.Add(userId, true);
+                }
+            }
+            while (true)
+            {
+                lock (_lockObjects[userId])
+                {
+                    if (_editEnables[userId])
+                    {
+                        _editEnables[userId] = false;
+                        break;
+                    }
+                }
+                await Task.Delay(10);
+            }
+        }
+
+
     }
 
 

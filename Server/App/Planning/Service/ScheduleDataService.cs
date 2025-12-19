@@ -28,13 +28,13 @@ namespace Planning.Service
 
         public async Task<IEnumerable<Schedule>> GetCurrentScheduleAsync(Guid userId, CancellationToken token)
         {
-            var data = await _sheduleRepository.GetAsync(new DB.Context.Filter<DB.Context.Schedule>
+            var data = (await _sheduleRepository.GetAsync(new DB.Context.Filter<DB.Context.Schedule>
             {                
-                Selector = s => s.UserId == userId && !s.IsDeleted && !s.IsClosed
-            }, token);
+                Selector = s => s.UserId == userId && s.IsRunning
+            }, token)).Data.FirstOrDefault();
 
-            var result = (await Map(data, token)).ToList();
-            var nextSchedules = await _projectSelectService.GetNextShedules(userId, 10, null, token);
+            var result = (await Map(new List<DB.Context.Schedule>() { data }, token)).ToList();
+            var nextSchedules = await _projectSelectService.GetNextShedules(userId, 9, data.EndDate, token);
             nextSchedules = await Enrich(nextSchedules, token);
             result.AddRange(nextSchedules);
             return result.OrderBy(s => s.BeginDate);
@@ -53,9 +53,9 @@ namespace Planning.Service
             return new PagedResult<Schedule>(await Map(result, token), result.PageCount);
         }
 
-        private async Task<IEnumerable<Schedule>> Map(PagedResult<DB.Context.Schedule> result, CancellationToken token)
+        private async Task<IEnumerable<Schedule>> Map(List<DB.Context.Schedule> result, CancellationToken token)
         {
-            var prepare = result.Data.Select(s => new Schedule()
+            var prepare = result.Select(s => new Schedule()
             {
                 BeginDate = s.BeginDate,
                 EndDate = s.EndDate,

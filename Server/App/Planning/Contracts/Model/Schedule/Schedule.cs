@@ -25,5 +25,6 @@ namespace Contracts.Model.Schedule
         public string Project { get; set; }
         [Display(Name = "Путь проекта")]
         public string ProjectPath { get; set; }
+        public Guid DirectionId { get; set; }
     }
 }
