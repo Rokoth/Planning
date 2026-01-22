@@ -1,7 +1,10 @@
-﻿namespace Planning.Common
+﻿using System.ComponentModel;
+
+namespace Planning.Common
 {
     public enum AdditionalTaskType
     {
-        BuhgalteryReserveAdd = 1
+        [Description("Добавление резерва")]
+        BuhgalteryReserveAdd = 1,
     }
 }

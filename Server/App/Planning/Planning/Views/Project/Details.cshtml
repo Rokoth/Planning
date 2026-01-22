@@ -71,7 +71,7 @@
         @Html.DisplayNameFor(model => model.AdditionalTasks)
     </div>
     <div class="col-sm-4">
-        @Html.ActionLink("Добавить допзадачу", "Create", new { }, new { @class = "btn btn-dark" })
+        @Html.ActionLink("Добавить допзадачу", "AddAdditionalTask", new { }, new { @class = "btn btn-dark" })
     </div>
     <div class="col-sm-4">
         @foreach (var item in Model.AdditionalTasks)
@@ -81,10 +81,10 @@
                     @Html.HiddenFor(m => item.Id)
                     @Html.LabelFor(m => item.Name) : @Html.DisplayFor(m => item.Name)
                     @Html.LabelFor(m => item.TaskData) : @Html.DisplayFor(m => item.TaskData)
-                    @Html.LabelFor(m => item.TypeId) : @Html.DisplayFor(m => item.TypeId)
-                    @Html.LabelFor(m => item.ConditionId) : @Html.DisplayFor(m => item.ConditionId)
-                    @Html.ActionLink("Редактировать", "Edit", new { id = item.Id }, new { @class = "btn btn-dark" })
-                    @Html.ActionLink("Удалить", "Delete", new { id = item.Id }, new { @class = "btn btn-dark" })
+                    @Html.LabelFor(m => item.TaskType) : @Html.DisplayFor(m => item.TaskType)
+                    @Html.LabelFor(m => item.TaskCondition) : @Html.DisplayFor(m => item.TaskCondition)
+                    @Html.ActionLink("Редактировать", "EditAdditionalTask", new { id = item.Id }, new { @class = "btn btn-dark" })
+                    @Html.ActionLink("Удалить", "DeleteAdditionalTask", new { id = item.Id }, new { @class = "btn btn-dark" })
                 </div>
                 <div id="child_@item.Id" style="margin-left:20px"></div>
             </div>

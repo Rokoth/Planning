@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Planning.Contracts.Model;
 using Planning.Service;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,7 +44,7 @@ namespace Planning.Controllers
         {
             return await Execute(async () => {
                 var userId = Guid.Parse(User.Identity.Name);
-                CancellationTokenSource source = new CancellationTokenSource(30000);
+                CancellationTokenSource source = new(30000);
                 var result = await _dataService.GetAsync(new ProjectFilter(userId, null, null, null, null, null,
                     null, null, null, null), source.Token);               
                 return View(result.Data);

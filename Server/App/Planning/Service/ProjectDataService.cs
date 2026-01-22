@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Planning.Common;
 using Planning.Contracts.Model;
 using Planning.DB.Repository;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -138,11 +141,34 @@ namespace Planning.Service
                 ProjectId = s.ProjectId,
                 TaskData = s.TaskData,
                 TypeId = s.TypeId,
+                TaskType = s.TypeId.GetDescription(),
+                TaskCondition = s.ConditionId.GetDescription(),
                 VersionDate = s.VersionDate
             }).ToList();
         }
 
         protected override string DefaultSort => "Name";
 
+    }
+
+    public static class EnumExtensions
+    {
+        public static string GetDescription(this Enum value)
+        {
+            // Get the field info for the enum value
+            FieldInfo field = value.GetType().GetField(value.ToString());
+
+            if (field != null)
+            {
+                // Get the DescriptionAttribute applied to the field
+                DescriptionAttribute attribute = field.GetCustomAttribute<DescriptionAttribute>();
+
+                // Return the description if found, otherwise return the enum member's name
+                return attribute?.Description ?? value.ToString();
+            }
+
+            // If field info is null (shouldn't happen for valid enum values), return the name
+            return value.ToString();
+        }
     }
 }

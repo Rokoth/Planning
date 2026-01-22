@@ -20,10 +20,18 @@ namespace Planning.Contracts.Model
         [EnumDataType(typeof(AdditionalTaskType))]
         public AdditionalTaskType TypeId { get; set; }
 
+        [Display(Name = "Тип дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]        
+        public string TaskType { get; set; }
+
         [Display(Name = "Тип сработки дополнительного задания")]
         [Required(ErrorMessage = "Поле должно быть установлено")]
         [EnumDataType(typeof(AdditionalTaskCondition))]
         public AdditionalTaskCondition ConditionId { get; set; }
+
+        [Display(Name = "Тип сработки дополнительного задания")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]        
+        public string TaskCondition { get; set; }
 
         [Display(Name = "Дополнительные данные")]
         public string TaskData { get; set; }
