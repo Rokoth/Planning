@@ -193,7 +193,20 @@ namespace Planning.Service
             //todo
             try
             {
+                if(projectId != null)
+                {
 
+
+                    return new Contracts.Model.Schedule.Schedule()
+                    {
+
+                    };
+                }
+
+                if(directionId == null)
+                {
+                    directionId = directions.OrderByDescending(s => s.Priority).FirstOrDefault().Id;
+                }
             }
             catch (Exception)
             {
