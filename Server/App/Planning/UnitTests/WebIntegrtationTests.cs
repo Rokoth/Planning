@@ -51,7 +51,9 @@ namespace Planning.UnitTests
                 BuildProject(projPath);
                 ReplaceConfig(projPath);
                 mainProcess = RunProject(projPath);
-                var tryCount = 10;
+                var tryCount = 0;
+
+                //todo: переделать на playwright
                 while (true)
                 {
                     try
@@ -64,7 +66,7 @@ namespace Planning.UnitTests
                     }
                     catch (Exception)
                     {
-                        if (tryCount == 0) throw;
+                        if (tryCount == 10) throw;
                         tryCount++;
                     }
                 }

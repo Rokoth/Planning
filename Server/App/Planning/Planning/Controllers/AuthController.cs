@@ -6,6 +6,7 @@
 using Contracts.Model.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Planning.Common;
 using Planning.Service;
@@ -23,9 +24,11 @@ namespace Planning.Controllers
     [ApiController]
     public class AuthController : CommonControllerBase
     {
-        public AuthController(IServiceProvider serviceProvider): base(serviceProvider)
+        private readonly IAuthService _authService;
+
+        public AuthController(ILogger<AuthController> logger, IAuthService authService) : base(logger)
         {
-            
+            _authService = authService;
         }
 
         /// <summary>
@@ -38,9 +41,8 @@ namespace Planning.Controllers
         {
             return await ExecuteApi(async ()=> {
                 var source = new CancellationTokenSource(30000);
-                var dataService = _serviceProvider.GetRequiredService<IAuthService>();
 
-                var identity = await dataService.AuthApi(login, source.Token);
+                var identity = await _authService.AuthApi(login, source.Token);
                 if (identity == null)
                 {
                     return BadRequest(new { errorText = "Invalid username or password." });
