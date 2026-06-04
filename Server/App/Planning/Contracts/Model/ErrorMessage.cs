@@ -5,14 +5,20 @@
     /// </summary>
     public class ErrorMessage
     {
+        public ErrorMessage(string message, string source)
+        {
+            Message = message;
+            Source = source;
+        }
+
         /// <summary>
         /// Сообщение об ошибке
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; }
 
         /// <summary>
         /// Источник (метод) ошибки
         /// </summary>
-        public string Source { get; set; }
+        public string Source { get; }
     }
 }

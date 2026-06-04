@@ -23,12 +23,6 @@ namespace Planning.Controllers
         /// <param name="source"></param>
         /// <returns></returns>
         public IActionResult Index([FromQuery] string message, [FromQuery] string source = null)
-        {
-            return View(new ErrorMessage()
-            {
-                Message = message,
-                Source = source
-            });
-        }
+            => View(new ErrorMessage(message, source));
     }
 }
