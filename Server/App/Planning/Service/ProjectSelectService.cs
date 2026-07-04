@@ -104,8 +104,8 @@ namespace Planning.Service
                 var allSchedules = await _scheduleRepo.GetAsync(new Filter<DB.Context.Schedule>() { 
                     Selector = s => s.ProjectId == runningSchedule.ProjectId && s.IsRunning == false
                 }, token);
-                var avgPeriod = Math.Ceiling((decimal)(allSchedules.Data.Sum(s => (s.EndDate - s.BeginDate).TotalMinutes) + schPeriod) /
-                    (decimal)(allSchedules.Data.Count() + 1)) + 1;
+                var avgPeriod = Math.Ceiling((decimal)(allSchedules.Data.Sum(s => (s.EndDate - s.BeginDate).TotalMinutes) + schPeriod + 60) /
+                    (decimal)(allSchedules.Data.Count() + 2)) + 1;
 
                 currentProject.Period = (int)avgPeriod;
                 currentProject.Priority -= (int)Math.Ceiling(schPeriod * (currentProject.Priority / 5000));
@@ -183,9 +183,38 @@ namespace Planning.Service
             return result;
         }
 
+        private async Task<Dictionary<Guid, Guid[]>> GetDirectionProjects(
+            IEnumerable<Direction> directions,
+            IEnumerable<DB.Context.Project> projects,
+            CancellationToken token)
+        {
+            Dictionary<Guid, Guid[]> result = new Dictionary<Guid, Guid[]>();
+            foreach(var direction in directions)
+            {
+                List<Guid> projectIds = new List<Guid>();
+                var directionProjects = await _directionProjectRepo.GetAsync(new Filter<DirectionProject>()
+                {
+                    Selector = s=> s.DirectionId == direction.Id
+                }, token);
+
+                foreach(var dirPr in directionProjects.Data)
+                {
+                    projectIds.Add(dirPr.ProjectId);
+                    projectIds.AddRange(GetProjectChilds(dirPr.ProjectId));
+                }
+                result.Add(direction.Id, projectIds.ToArray());
+            }
+        }
+
+        private IEnumerable<Guid> GetProjectChilds(Guid projectId)
+        {
+            throw new NotImplementedException();
+        }
+
         private async Task<Contracts.Model.Schedule.Schedule> GetNextShedule(            
             IEnumerable<Direction> directions,
             IEnumerable<DB.Context.Project> projects,
+            Dictionary<Guid, Guid[]> directionProjects,
             Guid? projectId,
             Guid? directionId,
             DateTimeOffset beginDate)
@@ -195,11 +224,20 @@ namespace Planning.Service
             {
                 if(projectId != null)
                 {
+                    if(directionId == null)
+                    {
+                        throw new ArgumentException("Не задано направление расписания");
+                    }
 
+                    var project = projects.FirstOrDefault(s => s.Id == projectId);
 
                     return new Contracts.Model.Schedule.Schedule()
                     {
-
+                        BeginDate = beginDate,
+                        DirectionId = directionId.Value,
+                        EndDate = beginDate.AddMinutes((project.Period ?? 60) * 2),
+                        ProjectId = projectId.Value,
+                        UserId = project.UserId 
                     };
                 }
 
