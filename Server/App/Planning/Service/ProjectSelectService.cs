@@ -66,9 +66,8 @@ namespace Planning.Service
                 await LockUserId(userId);
 
                 CancellationTokenSource cancellationTokenSource = new(30000);
-                var now = DateTimeOffset.Now;
+                var now = beginDate ?? DateTimeOffset.Now;
                 var token = cancellationTokenSource.Token;
-
 
                 var runningSchedule = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
                 {
@@ -86,11 +85,16 @@ namespace Planning.Service
                 var allDirections = (await _directionRepo.GetAsync(new Filter<Direction>() { Selector = s => !s.IsDeleted && s.UserId == userId }, token)).Data;
                 var runningDirection = allDirections.FirstOrDefault(s => s.Id == runningSchedule.DirectionId);
                 runningDirection.Priority -= (int)Math.Ceiling(schPeriod);
-                foreach(var direct in allDirections)
+                foreach(var directions in allDirections.GroupBy(s => s.DirectionCategoryId))
                 {
-                    var category = allCategories.FirstOrDefault(s => s.Id == direct.DirectionCategoryId);
-                    direct.Priority += (decimal)(category.Priority * (schPeriod / 60));
-                    await _directionRepo.UpdateAsync(direct, false, token);
+                    var category = allCategories.FirstOrDefault(s => s.Id == directions.Key);
+                    var prio = category.Priority / directions.Count();
+
+                    foreach(var direct in directions)
+                    {
+                        direct.Priority += (decimal)(prio * (schPeriod / 60));
+                        await _directionRepo.UpdateAsync(direct, false, token);
+                    }
                 }
 
                 var allProjects = (await _projectRepo.GetAsync(new Filter<DB.Context.Project>()
@@ -123,7 +127,7 @@ namespace Planning.Service
                     }
                 }
 
-                var nextSchedule = await GetNextShedule(allDirections, allProjects, projectId, directionId, now);
+                var nextSchedule = GetNextShedule(allDirections, allProjects, await GetDirectionProjects(allDirections, allProjects, token), projectId, directionId, now);
                 nextSchedule.IsRunning = true;
                 await _scheduleRepo.AddAsync(new DB.Context.Schedule()
                 {
@@ -139,8 +143,7 @@ namespace Planning.Service
                     VersionDate = DateTimeOffset.Now
                 }, false, token);
                 await _scheduleRepo.SaveChangesAsync();
-
-                var project = await _projectRepo.GetAsync(nextSchedule.ProjectId, token);
+                                
                 return nextSchedule;
             }
             catch (Exception ex)
@@ -200,26 +203,33 @@ namespace Planning.Service
                 foreach(var dirPr in directionProjects.Data)
                 {
                     projectIds.Add(dirPr.ProjectId);
-                    projectIds.AddRange(GetProjectChilds(dirPr.ProjectId));
+                    projectIds.AddRange(GetProjectChilds(dirPr.ProjectId, projects));
                 }
                 result.Add(direction.Id, projectIds.ToArray());
             }
+            return result;
         }
 
-        private IEnumerable<Guid> GetProjectChilds(Guid projectId)
+        private static IEnumerable<Guid> GetProjectChilds(Guid projectId, IEnumerable<DB.Context.Project> projects)
         {
-            throw new NotImplementedException();
+            List<Guid> projectIds = new List<Guid>();
+            var childs = projects.Where(s => s.ParentId == projectId);
+            foreach(var child in childs)
+            {
+                projectIds.Add(child.Id);
+                projectIds.AddRange(GetProjectChilds(child.Id, projects));
+            }
+            return projectIds;
         }
 
-        private async Task<Contracts.Model.Schedule.Schedule> GetNextShedule(            
+        private Contracts.Model.Schedule.Schedule GetNextShedule(            
             IEnumerable<Direction> directions,
             IEnumerable<DB.Context.Project> projects,
             Dictionary<Guid, Guid[]> directionProjects,
             Guid? projectId,
             Guid? directionId,
             DateTimeOffset beginDate)
-        {
-            //todo
+        {            
             try
             {
                 if(projectId != null)
@@ -245,10 +255,22 @@ namespace Planning.Service
                 {
                     directionId = directions.OrderByDescending(s => s.Priority).FirstOrDefault().Id;
                 }
-            }
-            catch (Exception)
-            {
 
+                var projectGuids = directionProjects.FirstOrDefault(s => s.Key == directionId).Value;
+
+                var project2 = projects.Where(s => projectGuids.Contains(s.Id)).OrderByDescending(s => s.Priority).FirstOrDefault();
+                return new Contracts.Model.Schedule.Schedule()
+                {
+                    BeginDate = beginDate,
+                    DirectionId = directionId.Value,
+                    EndDate = beginDate.AddMinutes((project2.Period ?? 60) * 2),
+                    ProjectId = project2.Id,
+                    UserId = project2.UserId
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении следующего элемента расписания");
                 throw;
             }
         }
