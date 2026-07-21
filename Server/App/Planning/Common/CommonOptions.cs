@@ -21,5 +21,6 @@ namespace Planning.Common
         /// options for error' notify lib
         /// </summary>
         public ErrorNotifyOptions ErrorNotifyOptions { get; set; }
+        public IntegrationOptions IntegrationOptions { get; set; }
     }
 }
