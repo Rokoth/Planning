@@ -174,12 +174,18 @@ namespace Planning.Service
                 && s.UserId == userId
                 && s.IsLeaf
             }, token)).Data;
+            var allProjects = (await _projectRepo.GetAsync(new Filter<DB.Context.Project>()
+            {
+                Selector = s => !s.IsDeleted
+                && s.UserId == userId
+                && s.IsLeaf
+            }, token)).Data;
 
             List<Contracts.Model.Schedule.Schedule> result = new();
             var intBeginDate = beginDate ?? DateTimeOffset.Now;
             for (int i = 0; i< count; i++)
             {
-                var next = await GetNextShedule(directions, projects, null, null, intBeginDate);
+                var next = GetNextShedule(directions, projects, await GetDirectionProjects(directions, allProjects, token), null, null, intBeginDate);
                 intBeginDate = next.EndDate;
                 result.Add(next);
             }
