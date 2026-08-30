@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Planning.Common;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -162,23 +163,23 @@ namespace Planning.Service
                 }
                 else
                 {
-                    Console.WriteLine($"ErrorNotifyService: Error in Auth method: cant wait for auth with lock");
+                    Console.WriteLine($"Integration: Error in Auth method: cant wait for auth with lock");
                     return false;
                 }
             }
 
             var result = await Execute(client =>
-                client.PostAsync($"{_server}/api/v1/client/auth", new ErrorNotifyClientIdentity()
+                client.PostAsync($"{_server}/api/v1/auth", new IntegrationIdentity()
                 {
                     Login = _login,
                     Password = _password
-                }.SerializeRequest()), "Post", s => s.ParseResponse<ErrorNotifyClientIdentityResponse>(), false);
+                }.SerializeRequest()), "Post", s => s.ParseResponseExt<IntegrationIdentityResponse>(), false);
 
             if (result.ResponseCode == ResponseEnum.Error)
             {
                 if (_isConnected)
                 {
-                    Console.WriteLine($"ErrorNotifyService: Error in Auth method: wrong login or password");
+                    Console.WriteLine($"Integration: Error in Auth method: wrong login or password");
                     _sendMessage = false;
                 }
                 return false;
@@ -199,7 +200,7 @@ namespace Planning.Service
         /// <param name="level"></param>
         /// <param name="title"></param>
         /// <returns></returns>
-        public async Task Send(string message, MessageLevelEnum level = MessageLevelEnum.Error, string title = null)
+        public async Task<S> Send<T, S>(T message, string path, HttpMethod method) where S: class
         {
             if (!_init) _init = await Init();
             if (_init && _sendMessage)
@@ -212,25 +213,23 @@ namespace Planning.Service
                             { HttpRequestHeader.Authorization.ToString(), $"Bearer {_token}" },
                             { HttpRequestHeader.ContentType.ToString(), "application/json" },
                         },
-                        RequestUri = new Uri($"{_server}/api/v1/message/send"),
-                        Method = HttpMethod.Post,
-                        Content = new MessageCreator()
-                        {
-                            Description = message,
-                            FeedbackContact = _feedback,
-                            Level = (int)level,
-                            Title = title ?? _defaultTitle
-                        }.SerializeRequest()
+                        RequestUri = new Uri($"{_server}/api/v1/{path}"),
+                        Method = method,
+                        Content = message.SerializeRequest()
                     };
 
                     return client.SendAsync(request);
-                }, "Send", s => s.ParseResponse<MessageCreator>());
+                }, "Send", s => s.ParseResponseExt<S>());
 
                 if (result.ResponseCode == ResponseEnum.Error)
                 {
-                    Console.WriteLine($"ErrorNotifyService: Error in Send method: cant send message error");
+                    Console.WriteLine($"Integration: Error in Send method: cant send message error");
+                    return null;
                 }
+
+                return result.ResponseBody;
             }
+            return null;
         }
 
         /// <summary>
