@@ -86,6 +86,17 @@ namespace Planning.Contract.Model
         public int ScheduleShift { get; set; }
     }
 
+    public class Role : Entity
+    {
+        [Display(Name = "Имя")]
+        [Required(ErrorMessage = "Поле должно быть установлено")]
+        [Microsoft.AspNetCore.Mvc.Remote("CheckName", "Role", ErrorMessage = "Имя уже используется")]
+        public string Name { get; set; }
+
+        [Display(Name = "Описание")]
+        public string Description { get; set; }       
+    }
+
     public class UserSettings : Entity
     {
         [Display(Name = "ИД пользователя")]
