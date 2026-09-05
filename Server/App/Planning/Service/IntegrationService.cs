@@ -346,6 +346,12 @@ namespace Planning.Service
 
     public class IntegrationProduct
     {
-
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public decimal MinValue { get; set; }
+        public decimal MaxValue { get; set; }
+        public string FullName { get; set; }
+        public decimal Reserve { get; set; }
+        public Guid Id { get; set; }
     }
 }
