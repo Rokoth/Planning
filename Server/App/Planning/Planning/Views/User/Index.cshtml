@@ -4,9 +4,25 @@
     ViewData["Title"] = "Пользователи";
 }
 
-<div class="container">
-    @Html.ActionLink("Добавить", "Create", "User", null, new { @class = "btn btn-dark" })
-    @Html.ActionLink("История", "History", "User", null, new { @class = "btn btn-dark" })
+<div class="modal fade" id="modal-action-create" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">Добавление пользователя</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dialogCreateContent">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">    
+    @Html.ActionLink("Добавить пользователя", "Create", "User",
+            null, new { @class = "btn btn-dark", @id = "create_user" });
+    @Html.ActionLink("История", "History", "User", null, new { @class = "btn btn-dark" });
     <hr>
     Фильтры:
     <div id="filter">
@@ -73,6 +89,42 @@
                     refresh();
                 }
             });
-        })
+
+            $("#create_user").click(function (e) {
+                e.preventDefault();
+                $.get(this.href, function (data) {
+                    $('#modal-action-create').modal('show');
+                    $('#dialogCreateContent').html(data);
+                });
+            });
+
+            $('#modal-container').on('show.bs.modal', function (event) {
+
+                //var button = $(event.relatedTarget); // Button that triggered the modal
+
+                //var url = button.attr("href");
+
+                //var modal = $(this);
+
+                //// note that this will replace the content of modal-content everytime the modal is opened
+                //modal.find('.modal-content').load(url);
+
+            });
+
+            $('#modal-container').on('hidden.bs.modal', function () {
+
+                // remove the bs.modal data attribute from it
+
+                $(this).removeData('bs.modal');
+
+                // and empty the modal-content element
+
+                $('#modal-container .modal-content').empty();
+                refresh();
+
+            });
+
+        });
+
     </script>
 }
