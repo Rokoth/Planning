@@ -19,13 +19,12 @@ namespace Planning.Service
         private const string USER_ROLE_TYPE = "User";
         private const string COOKIES_AUTH_TYPE = "Cookies";
 
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IErrorNotifyService errorNotifyService;
+        private readonly IServiceProvider _serviceProvider;       
+        private readonly DB.Repository.IRepository<DB.Context.User> _repo;
 
-        public AuthService(IServiceProvider serviceProvider)
+        public AuthService(DB.Repository.IRepository<DB.Context.User> repo)
         {
-            _serviceProvider = serviceProvider;
-            errorNotifyService = _serviceProvider.GetRequiredService<IErrorNotifyService>();
+            _repo = repo;
         }
 
         /// <summary>
@@ -36,7 +35,7 @@ namespace Planning.Service
         /// <returns></returns>
         public async Task<ClaimsIdentity> AuthApi(Contracts.Model.UserIdentity login, CancellationToken token)
         {
-            return await AuthInternal<DB.Context.User, Contracts.Model.UserIdentity>(login, CLIENT_ROLE_TYPE, TOKEN_AUTH_TYPE, token);
+            return await AuthInternal(login, CLIENT_ROLE_TYPE, TOKEN_AUTH_TYPE, token);
         }
 
         /// <summary>
@@ -47,16 +46,13 @@ namespace Planning.Service
         /// <returns></returns>
         public async Task<ClaimsIdentity> Auth(Contracts.Model.UserIdentity login, CancellationToken token)
         {
-            return await AuthInternal<DB.Context.User, Contracts.Model.UserIdentity>(login, USER_ROLE_TYPE, COOKIES_AUTH_TYPE, token);
+            return await AuthInternal(login, USER_ROLE_TYPE, COOKIES_AUTH_TYPE, token);
         }
 
-        private async Task<ClaimsIdentity> AuthInternal<T, I>(I login, string roleType, string authType, CancellationToken token)
-            where T : DB.Context.Entity, DB.Context.IIdentity
-            where I : Contracts.Model.IIdentity
-        {
-            var repo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<T>>();
+        private async Task<ClaimsIdentity> AuthInternal(Contracts.Model.UserIdentity login, string roleType, string authType, CancellationToken token)           
+        {            
             var password = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(login.Password));
-            var client = (await repo.GetAsync(new DB.Context.Filter<T>()
+            var client = (await _repo.GetAsync(new DB.Context.Filter<DB.Context.User>()
             {
                 Page = 0,
                 Size = 10,
