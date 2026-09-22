@@ -122,13 +122,14 @@ namespace PlanningClient
         {
             while (true)
             {
-                if (needRefresh)
-                {
-                    Dispatcher.Invoke(() => FillTable());
-                    //FillTable();
-                    needRefresh = false;
-                }
-                await Task.Delay(1000);
+                //if (needRefresh)
+                //{
+                //    Dispatcher.Invoke(() => FillTable());
+                //    //FillTable();
+                //    needRefresh = false;
+                //}
+                Dispatcher.Invoke(() => FillTable());
+                await Task.Delay(10000);
             }
         }
 
