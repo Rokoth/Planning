@@ -1,8 +1,4 @@
-﻿//Copyright 2025 Dmitriy Rokoth
-//Licensed under the Apache License, Version 2.0
-//
-//ref 1
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Planning.Service;
 using Contracts.Model.User;
+using Microsoft.Extensions.Logging;
 
 namespace Planning.Controllers
 {
@@ -33,7 +30,7 @@ namespace Planning.Controllers
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="authService"></param>
-        public AccountController(IServiceProvider serviceProvider, IAuthService authService) : base(serviceProvider)
+        public AccountController(ILogger<AccountController> logger, IAuthService authService) : base(logger)
         {
             _authService = authService;
         }
@@ -99,8 +96,7 @@ namespace Planning.Controllers
         private Task<ClaimsIdentity> GetIdentity(UserIdentity userIdentity)
             => _authService.Auth(userIdentity, GetToken());
 
-        private static CancellationToken GetToken()
-            => new CancellationTokenSource(CancellationTokenSourceDelay).Token;
+        
 
         private async Task<IActionResult> LogoutInternal()
         {

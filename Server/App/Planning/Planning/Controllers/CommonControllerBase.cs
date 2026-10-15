@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Planning.Common;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Planning.Controllers
@@ -56,6 +57,9 @@ namespace Planning.Controllers
         protected InternalServerErrorObjectResult InternalServerError(object value)
         {
             return new InternalServerErrorObjectResult(value);
-        }       
+        }
+
+        protected static CancellationToken GetToken()
+            => new CancellationTokenSource(CancellationTokenSourceDelay).Token;
     }
 }
