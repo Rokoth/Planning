@@ -24,7 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Contracts\Planning.Contracts.csproj" />
-    <ProjectReference Include="..\DB\DB.csproj" />
+    <ProjectReference Include="..\DB\Planning.DB.csproj" />
   </ItemGroup>
 
   <ItemGroup>
