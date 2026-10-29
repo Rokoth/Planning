@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Planning.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -333,15 +334,32 @@ namespace Planning.Service
             _isDisposed = true;
         }
 
-        public Task<bool> BuhgalteryAddReserve(string taskData, CancellationToken token)
+        public async Task<bool> BuhgalteryAddReserve(string taskData, CancellationToken token)
         {
-            throw new NotImplementedException();
+            var productIds = taskData.Split(',').Select(s => s.Trim());            
+            foreach (var productId in productIds)
+            {
+                var result = await Send<AddReserveRequest,AddReserveResponse>(
+                    new AddReserveRequest() { ProductId=Guid.Parse(productId) }, "/reserve/add", HttpMethod.Post);
+            }
+            return true;
         }
 
         public Task<List<IntegrationProduct>> BuhgalteryGetProducts(string name, CancellationToken token)
         {
             throw new NotImplementedException();
         }
+    }
+
+    public  class AddReserveRequest
+    {
+        public  Guid ProductId { get; set; }
+    }
+
+    public class AddReserveResponse
+    {
+        public Guid ProductId { get; set; }
+        public  decimal Value { get; set; }
     }
 
     public class IntegrationProduct

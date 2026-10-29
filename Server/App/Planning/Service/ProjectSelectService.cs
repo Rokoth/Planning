@@ -41,15 +41,15 @@ namespace Planning.Service
 
                 CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(30000);
                 var now = DateTimeOffset.Now;
-                var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Schedule>>();
-                var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.Project>>();
+                var _scheduleRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Model.Schedule>>();
+                var _projectRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Model.Project>>();
                 var userSettingsRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<UserSettings>>();
                 var _additionalTaskRepo = _serviceProvider.GetRequiredService<DB.Repository.IRepository<DB.Context.AdditionalTask>>();
                 var _integrationService = _serviceProvider.GetRequiredService<IIntegrationService>();
                 
                 await ShiftSchedule(userId, settings, now, true, true);                
 
-                var currentSchedules = (await _scheduleRepo.GetAsync(new DB.Context.Filter<DB.Context.Schedule>()
+                var currentSchedules = (await _scheduleRepo.GetAsync(new Filter<DB.Model.Schedule>()
                 {
                     Selector = s => s.UserId == userId && !s.IsClosed
                 }, cancellationTokenSource.Token)).Data;
@@ -59,7 +59,7 @@ namespace Planning.Service
                     Selector = s => s.UserId == userId
                 }, cancellationTokenSource.Token)).Data.FirstOrDefault();
 
-                Schedule nextSchedule = currentSchedules.OrderBy(s=>s.BeginDate).FirstOrDefault();
+                var nextSchedule = currentSchedules.OrderBy(s=>s.BeginDate).FirstOrDefault();
                 var runningSchedule = currentSchedules.FirstOrDefault(s => s.IsRunning);
                 if (runningSchedule != null)
                 {
@@ -405,13 +405,13 @@ namespace Planning.Service
             }
         }
 
-        private void SetEndDate(UserSettings settings, Project project, Schedule schedule)
+        private void SetEndDate(UserSettings settings, DB.Model.Project project, DB.Model.Schedule schedule)
         {
             int minutes = GetPeriod(settings, project);
             schedule.EndDate = schedule.BeginDate.AddMinutes(minutes);
         }
 
-        private int GetPeriod(UserSettings settings, Project project)
+        private int GetPeriod(UserSettings settings, DB.Model.Project project)
         {
             var minutes = settings.DefaultProjectTimespan;
             if (project == null) minutes = 1;
@@ -419,7 +419,7 @@ namespace Planning.Service
             return minutes;
         }
 
-        private int GetAddTime(UserSettings settings, Project project, Schedule schedule)
+        private int GetAddTime(UserSettings settings, DB.Model.Project project, DB.Model.Schedule schedule)
         {
             if (project.Period.HasValue)
             {
