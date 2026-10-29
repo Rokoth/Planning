@@ -1,4 +1,5 @@
 ﻿using Contracts.Model.Common;
+using Contracts.Model.Formula;
 using Contracts.Model.User;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
