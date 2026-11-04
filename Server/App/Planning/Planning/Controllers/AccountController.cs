@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using Planning.Service;
 using Contracts.Model.User;
@@ -21,19 +19,12 @@ namespace Planning.Controllers
         private const string WrongIdentityMessage = "Неверный логин или пароль";
         #endregion
 
-        #region Private fields
-        private readonly IAuthService _authService; 
-        #endregion
-
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="authService"></param>
-        public AccountController(ILogger<AccountController> logger, IAuthService authService) : base(logger)
-        {
-            _authService = authService;
-        }
+        public AccountController(ILogger<AccountController> logger) : base(logger) {}
 
         #region Public
 
@@ -54,8 +45,8 @@ namespace Planning.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public Task<IActionResult> Login(UserIdentity userIdentity, string returnUrl)
-            => Execute(() => LoginInternal(userIdentity, returnUrl), nameof(AccountController), nameof(Login));
+        public Task<IActionResult> Login([FromServices]IAuthService authService, [FromBody]UserIdentity userIdentity, string returnUrl)
+            => Execute(() => LoginInternal(authService, userIdentity, returnUrl), nameof(AccountController), nameof(Login));
 
         // POST: AccountController/Logout
         /// <summary>
@@ -70,12 +61,12 @@ namespace Planning.Controllers
 
         #region Private
 
-        private async Task<IActionResult> LoginInternal(UserIdentity userIdentity, string returnUrl)
+        private async Task<IActionResult> LoginInternal(IAuthService authService,UserIdentity userIdentity, string returnUrl)
         {
             if (!ModelState.IsValid)
                 return base.RedirectToAction(nameof(Login));
 
-            var identity = await GetIdentity(userIdentity);
+            var identity = await GetIdentity(authService, userIdentity);
             if (identity == null)
                 return base.RedirectToAction(IndexMethodName, ErrorControllerName, new { Message = WrongIdentityMessage });
 
@@ -93,10 +84,8 @@ namespace Planning.Controllers
             return base.RedirectToAction(IndexMethodName, HomeControllerName);
         }
 
-        private Task<ClaimsIdentity> GetIdentity(UserIdentity userIdentity)
-            => _authService.Auth(userIdentity, GetToken());
-
-        
+        private static Task<ClaimsIdentity> GetIdentity(IAuthService authService, UserIdentity userIdentity)
+            => authService.Auth(userIdentity, GetToken());
 
         private async Task<IActionResult> LogoutInternal()
         {
